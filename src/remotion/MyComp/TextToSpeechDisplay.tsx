@@ -6,6 +6,8 @@ import {
 	staticFile,
 	useDelayRender,
 	Html5Audio,
+	interpolate,
+	Easing,
 } from 'remotion';
 
 interface Caption {
@@ -83,59 +85,145 @@ function formatTime(ms: number): string {
 interface TextToSpeechDisplayProps {
 	audioFile?: string;
 	vttFile?: string;
+	imageInterval?: number; // Time interval for image switching in seconds
+	imageListFile?: string; // Path to JSON file containing list of images
 }
 
 export const TextToSpeechDisplay: React.FC<TextToSpeechDisplayProps> = ({
 	audioFile = 'audio/audio.mp3',
-	vttFile = 'audio/audio.vtt'
+	vttFile = 'audio/audio.vtt',
+	imageInterval = 15, // Default 15 seconds per image
+	imageListFile = 'image/image-list.json', // Default image list file
 }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();
 	const [captions, setCaptions] = useState<Caption[]>([]);
+	const [imageList, setImageList] = useState<string[]>([]);
+	const [vttLoaded, setVttLoaded] = useState(false);
+	const [imageListLoaded, setImageListLoaded] = useState(false);
 	const { delayRender, continueRender, cancelRender } = useDelayRender();
 	const [handle] = useState(() => delayRender());
 
 	const fetchAndProcessVtt = useCallback(async () => {
 		try {
-			// 读取 VTT 文件
+			// Read VTT file
 			const response = await fetch(staticFile(vttFile));
 			const vttContent = await response.text();
 
-			// 解析 VTT 文件
+			// Parse VTT file
 			const parsedCaptions = parseVtt(vttContent);
 
 			setCaptions(parsedCaptions);
-			continueRender(handle);
+			setVttLoaded(true);
 		} catch (e) {
 			console.error('Failed to load VTT file:', e);
 			cancelRender(e);
 		}
-	}, [vttFile, continueRender, cancelRender, handle]);
+	}, [vttFile, cancelRender]);
+
+	const fetchImageList = useCallback(async () => {
+		try {
+			// Read image list JSON file
+			const response = await fetch(staticFile(imageListFile));
+			const imageListData = await response.json();
+
+			// Ensure it's an array and sort by filename
+			const sortedImages = Array.isArray(imageListData)
+				? [...imageListData].sort()
+				: [];
+
+			setImageList(sortedImages);
+			setImageListLoaded(true);
+		} catch (e) {
+			console.error('Failed to load image list file:', e);
+			// Fallback to empty array if file doesn't exist
+			setImageList([]);
+			setImageListLoaded(true);
+		}
+	}, [imageListFile]);
 
 	useEffect(() => {
 		fetchAndProcessVtt();
-	}, [fetchAndProcessVtt]);
+		fetchImageList();
+	}, [fetchAndProcessVtt, fetchImageList]);
 
-	if (captions.length === 0) {
+	// Continue render after both VTT and image list are loaded
+	useEffect(() => {
+		if (vttLoaded && imageListLoaded) {
+			continueRender(handle);
+		}
+	}, [vttLoaded, imageListLoaded, continueRender, handle]);
+
+	if (captions.length === 0 || imageList.length === 0) {
 		return null;
 	}
 
-	// 根据当前帧计算应该显示哪个字幕
+	// Calculate current time in seconds
 	const currentTimeMs = (frame / fps) * 1000;
+	const currentTimeSeconds = currentTimeMs / 1000;
+
+	// Calculate which image to display based on time interval
+	// Each image is shown for imageInterval seconds, then loops through all images
+	const imageIndex = Math.floor(currentTimeSeconds / imageInterval) % imageList.length;
+	const imagePath = imageList[imageIndex];
+
+	// Calculate progress within current image interval (0 to 1)
+	const timeInCurrentInterval = currentTimeSeconds % imageInterval;
+	const progress = timeInCurrentInterval / imageInterval;
+
+	// Create a slow zoom animation from 120% to 125%
+	// Use easing for smooth animation
+	const scale = interpolate(
+		progress,
+		[0, 1],
+		[1.2, 1.25], // Start at 120%, end at 125%
+		{
+			easing: Easing.bezier(0.4, 0, 0.2, 1), // Smooth easing function
+			extrapolateLeft: 'clamp',
+			extrapolateRight: 'clamp',
+		}
+	);
+
+	// Find current caption
 	const currentCaption = captions.find(
 		caption => currentTimeMs >= caption.startMs && currentTimeMs < caption.endMs
 	);
 
 	return (
 		<AbsoluteFill>
-			{/* 添加音频轨道 */}
+			{/* Audio track */}
 			<Html5Audio
 				src={staticFile(audioFile)}
 				volume={1}
 				name="TTS Audio"
 			/>
 
-			{/* 只显示当前时间段的字幕 */}
+			{/* Background image - loops every imageInterval seconds with slow zoom animation */}
+			<div
+				style={{
+					position: 'absolute',
+					width: '100%',
+					height: '100%',
+					backgroundImage: `url(${staticFile(imagePath)})`,
+					backgroundSize: 'cover',
+					backgroundPosition: 'center',
+					backgroundRepeat: 'no-repeat',
+					transform: `scale(${scale})`,
+					transition: 'transform 0.1s ease-out', // Smooth transition between frames
+				}}
+			/>
+
+			{/* Overlay gradient for better text readability */}
+			<div
+				style={{
+					position: 'absolute',
+					width: '100%',
+					height: '100%',
+					background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%)',
+				}}
+			/>
+
+			{/* Current caption display */}
 			{currentCaption && (
 				<div
 					style={{
@@ -154,21 +242,10 @@ export const TextToSpeechDisplay: React.FC<TextToSpeechDisplayProps> = ({
 						whiteSpace: 'pre-line',
 						maxWidth: '90%',
 						width: 'auto',
+						zIndex: 10,
 					}}
 				>
-					{/* 显示时间戳 */}
-					<div
-						style={{
-							fontSize: 14,
-							fontWeight: 'normal',
-							color: '#CCCCCC',
-							marginBottom: '8px',
-							opacity: 0.8,
-						}}
-					>
-						{formatTime(currentCaption.startMs)} - {formatTime(currentCaption.endMs)}
-					</div>
-					{/* 显示字幕文本 */}
+					{/* Caption text */}
 					<div>{currentCaption.text}</div>
 				</div>
 			)}

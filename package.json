@@ -1,11 +1,11 @@
 {
-  "name": "remotion-next",
+  "name": "auto-video-generator",
   "version": "0.1.0",
   "private": true,
   "author": {
-    "name": "Mohit Yadav",
-    "email": "mohit@mohitya.dev",
-    "url": "https://mohitya.dev"
+    "name": "szhshp",
+    "email": "24031shp@sina.com",
+    "url": "https://github.com/szhshp"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.409",

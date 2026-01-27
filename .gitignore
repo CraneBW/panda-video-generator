@@ -45,3 +45,7 @@ venv/
 tts/venv/
 public/audio/audio.mp3
 public/audio/audio.vtt
+input/input.txt
+.pnpm-store/
+public/audio/*
+public/image/*

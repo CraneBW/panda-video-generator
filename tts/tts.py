@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
 """
-Simple TTS tool
-Converts text to audio using pyttsx3 (offline) or gTTS (online)
+Simple TTS tool using Edge-TTS (Microsoft Edge Text-to-Speech)
 
 Install dependencies:
-    pip install pyttsx3 gtts pydub
+    pip install edge-tts pydub
 
 Usage:
     python tts/tts.py input.txt output_dir
-    python tts/tts.py caption/dj-okawari-intro.txt public/audio
+    python tts/tts.py caption/test.txt public/audio
+
+Environment variables (optional):
+    EDGE_TTS_VOICE - Voice name (default: 'zh-CN-XiaoxiaoNeural')
+    List available voices: edge-tts --list-voices
 """
 
 import sys
 import os
 from pathlib import Path
 import subprocess
+import asyncio
 
 def check_dependencies():
-    """Check if dependencies are installed"""
+    """Check if Edge-TTS is installed"""
     try:
-        import pyttsx3
-        return 'pyttsx3'
+        import edge_tts
+        return True
     except ImportError:
-        try:
-            from gtts import gTTS
-            return 'gtts'
-        except ImportError:
-            return None
+        return False
 
 def get_audio_duration(audio_path):
     """Get audio file duration in seconds"""
@@ -48,40 +48,36 @@ def get_audio_duration(audio_path):
             # If both are unavailable, estimate duration (approx 3.5 chars/sec for Chinese)
             return len(open(audio_path, 'rb').read()) / 16000  # Rough estimate
 
-def tts_with_pyttsx3(text, output_path, lang='zh'):
-    """Use pyttsx3 (offline)"""
-    import pyttsx3
+async def tts_with_edge(text, output_path, voice_name=None, max_retries=3):
+    """Use Edge-TTS (online, free, no API key required)"""
+    import edge_tts
+    import time
     
-    engine = pyttsx3.init()
+    # Default voice for Chinese
+    if not voice_name:
+        voice_name = os.getenv('EDGE_TTS_VOICE', 'zh-CN-XiaoxiaoNeural')
     
-    # Set language and voice
-    voices = engine.getProperty('voices')
-    for voice in voices:
-        if lang in voice.id.lower():
-            engine.setProperty('voice', voice.id)
-            break
-    
-    # Set speech rate and volume
-    engine.setProperty('rate', 150)  # Speech rate
-    engine.setProperty('volume', 1.0)  # Volume
-    
-    # Save to file
-    engine.save_to_file(text, output_path)
-    engine.runAndWait()
-    
-    return True
-
-def tts_with_gtts(text, output_path, lang='zh-cn'):
-    """Use gTTS (online, requires internet)"""
-    from gtts import gTTS
-    
-    tts = gTTS(text=text, lang=lang, slow=False)
-    tts.save(output_path)
-    
-    return True
+    for attempt in range(max_retries):
+        try:
+            communicate = edge_tts.Communicate(text, voice_name)
+            await communicate.save(output_path)
+            
+            # Verify file was created
+            if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+                raise Exception("Generated audio file is empty or not created")
+            return True
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 2  # Exponential backoff: 2s, 4s, 6s
+                print(f"  ⚠️  Retrying in {wait_time}s... (attempt {attempt + 1}/{max_retries})")
+                print(f"  Error: {str(e)}")
+                await asyncio.sleep(wait_time)
+            else:
+                raise e
+    return False
 
 def format_time(seconds):
-    """将秒数转换为 VTT 时间格式 (HH:MM:SS.mmm)"""
+    """Convert seconds to VTT time format (HH:MM:SS.mmm)"""
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
     secs = seconds % 60
@@ -97,7 +93,7 @@ def merge_audio_files(audio_files, output_path, speed=1.0):
             audio = AudioSegment.from_mp3(audio_file)
             combined += audio
         
-        # Adjust speed (1.5x speed)
+        # Adjust speed
         if speed != 1.0:
             combined = combined.speedup(playback_speed=speed)
         
@@ -140,13 +136,83 @@ def generate_vtt(lines, durations, output_path):
             
             current_time = end_time
 
-def process_file(input_file, output_dir='public/audio'):
-    """Process subtitle file"""
+def split_by_punctuation(text, max_length=2000):
+    """Split text by Chinese and English punctuation marks
+    If a sentence exceeds max_length characters, split it further at punctuation marks
+    """
+    # All punctuation marks: 。，、；：？！.?,;:!?
+    punctuation_marks = '。，、；：？！.?,;:!?'
+    
+    sentences = []
+    current_sentence = ''
+    
+    for char in text:
+        # Add character to current sentence
+        test_sentence = current_sentence + char
+        test_stripped = test_sentence.strip()
+        
+        # Check if adding this char would exceed max_length
+        if len(test_stripped) > max_length:
+            # Need to split before adding this char
+            if current_sentence.strip():
+                temp = current_sentence.strip()
+                # Find the last punctuation mark before max_length
+                split_pos = -1
+                for j in range(min(max_length, len(temp)), 0, -1):
+                    if temp[j-1] in punctuation_marks:
+                        split_pos = j
+                        break
+                
+                if split_pos > 0:
+                    # Split at punctuation
+                    sentences.append(temp[:split_pos].strip())
+                    current_sentence = temp[split_pos:] + char
+                else:
+                    # No punctuation found, force split at max_length
+                    sentences.append(temp[:max_length].strip())
+                    current_sentence = temp[max_length:] + char
+            else:
+                # Current sentence is empty or whitespace, just add char
+                current_sentence += char
+        else:
+            # Safe to add char
+            current_sentence += char
+            
+            # If we hit a sentence-ending punctuation, finalize
+            if char in '。！？.':
+                if current_sentence.strip():
+                    sentences.append(current_sentence.strip())
+                current_sentence = ''
+    
+    # Handle remaining text
+    if current_sentence.strip():
+        remaining = current_sentence.strip()
+        while len(remaining) > max_length:
+            # Find punctuation in remaining text
+            split_pos = -1
+            for j in range(min(max_length, len(remaining)), 0, -1):
+                if remaining[j-1] in punctuation_marks:
+                    split_pos = j
+                    break
+            
+            if split_pos > 0:
+                sentences.append(remaining[:split_pos].strip())
+                remaining = remaining[split_pos:]
+            else:
+                sentences.append(remaining[:max_length].strip())
+                remaining = remaining[max_length:]
+        
+        if remaining.strip():
+            sentences.append(remaining.strip())
+    
+    return [s for s in sentences if s]
+
+async def process_file_async(input_file, output_dir='public/audio'):
+    """Process subtitle file (async version)"""
     # Check dependencies
-    tts_method = check_dependencies()
-    if not tts_method:
-        print("❌ TTS library not found")
-        print("Please install: pip install pyttsx3 gtts pydub")
+    if not check_dependencies():
+        print("❌ Edge-TTS library not found")
+        print("Please install: pip install edge-tts pydub")
         return False
     
     # Read input file
@@ -155,7 +221,16 @@ def process_file(input_file, output_dir='public/audio'):
         return False
     
     with open(input_file, 'r', encoding='utf-8') as f:
-        lines = [line.strip() for line in f if line.strip()]
+        content = f.read()
+    
+    # Split by punctuation marks
+    lines = []
+    for line in content.split('\n'):
+        line = line.strip()
+        if line:
+            # Split each line by punctuation
+            sentences = split_by_punctuation(line)
+            lines.extend(sentences)
     
     if not lines:
         print("❌ File is empty")
@@ -164,7 +239,9 @@ def process_file(input_file, output_dir='public/audio'):
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
     
-    print(f"🎙️  Using {tts_method} to generate audio")
+    voice_name = os.getenv('EDGE_TTS_VOICE', 'zh-CN-XiaoxiaoNeural')
+    print(f"🎙️  Using Edge-TTS to generate audio")
+    print(f"🔊 Voice: {voice_name}")
     print(f"📝 Found {len(lines)} lines of text\n")
     
     # Generate temporary audio files
@@ -173,14 +250,12 @@ def process_file(input_file, output_dir='public/audio'):
     
     for i, text in enumerate(lines, 1):
         print(f"[{i}/{len(lines)}] Generating: {text[:30]}...")
+        print(f"    Text length: {len(text)} characters")
         
         temp_path = os.path.join(output_dir, f"sentence{i}.mp3")
         
         try:
-            if tts_method == 'pyttsx3':
-                tts_with_pyttsx3(text, temp_path)
-            else:
-                tts_with_gtts(text, temp_path)
+            await tts_with_edge(text, temp_path, voice_name)
             
             # Get audio duration
             duration = get_audio_duration(temp_path)
@@ -190,10 +265,13 @@ def process_file(input_file, output_dir='public/audio'):
             print(f"✅ Saved: {temp_path} (duration: {duration:.2f}s)\n")
         except Exception as e:
             print(f"❌ Failed: {e}\n")
+            print(f"    Error type: {type(e).__name__}")
+            import traceback
+            traceback.print_exc()
             return False
     
-    # Merge audio files and adjust speed to 1.5x
-    SPEED_FACTOR = 1.5
+    # Merge audio files and adjust speed to 1.2x
+    SPEED_FACTOR = 1.2
     print(f"🔗 Merging audio files and adjusting speed to {SPEED_FACTOR}x...")
     merged_audio_path = os.path.join(output_dir, 'audio.mp3')
     if merge_audio_files(temp_audio_files, merged_audio_path, speed=SPEED_FACTOR):
@@ -228,8 +306,24 @@ def process_file(input_file, output_dir='public/audio'):
     
     return True
 
+def process_file(input_file, output_dir='public/audio'):
+    """Process subtitle file (wrapper for async function)"""
+    return asyncio.run(process_file_async(input_file, output_dir))
+
 if __name__ == '__main__':
-    input_file = sys.argv[1] if len(sys.argv) > 1 else 'caption/dj-okawari-intro.txt'
+    if len(sys.argv) < 2:
+        print("Usage: python tts/tts.py <input_file> [output_dir]")
+        print("Example: python tts/tts.py caption/test.txt public/audio")
+        print("\nOptional environment variable:")
+        print("  EDGE_TTS_VOICE - Voice name (default: 'zh-CN-XiaoxiaoNeural')")
+        print("  List available voices: edge-tts --list-voices")
+        sys.exit(1)
+    
+    input_file = sys.argv[1]
     output_dir = sys.argv[2] if len(sys.argv) > 2 else 'public/audio'
+    
+    if not os.path.exists(input_file):
+        print(f"❌ Input file not found: {input_file}")
+        sys.exit(1)
     
     process_file(input_file, output_dir)
