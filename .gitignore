@@ -51,6 +51,7 @@ public/audio/*
 public/image/*
 
 # spider output files
+spider/tmp/
 spider/output-*.json
 spider/output-*.md
 spider/debug-*.png

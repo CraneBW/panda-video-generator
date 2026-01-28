@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer-extra';
 
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import type { Browser, Page } from 'puppeteer';
+import type { Browser } from 'puppeteer';
 
 // Use stealth plugin to avoid detection
 puppeteer.use(StealthPlugin());
@@ -28,8 +28,12 @@ export class ZhihuSpider {
    * Initialize the browser with stealth plugin
    */
   async init(): Promise<void> {
+    // Use executable path from environment if available (for GitHub Actions)
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    
     this.browser = await puppeteer.launch({
-      headless: 'new', // Use new headless mode with stealth plugin
+      headless: true, // Use headless mode with stealth plugin
+      executablePath: executablePath || undefined,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -344,39 +348,6 @@ export class ZhihuSpider {
     
     await fs.writeFile(outputPath, markdown, 'utf-8');
     console.log(`Markdown saved to: ${outputPath}`);
-  }
-}
-
-/**
- * Main function to run the spider
- */
-async function main() {
-  const url = process.argv[2] || 'https://www.zhihu.com/question/1999774552750778199';
-  const outputFormat = process.argv[3] || 'json'; // 'json' or 'markdown'
-  
-  const spider = new ZhihuSpider();
-  
-  try {
-    await spider.init();
-    const data = await spider.extractQuestion(url);
-    
-    console.log('\n=== Extracted Content ===');
-    console.log(`Title: ${data.title}`);
-    console.log(`Question: ${data.content.substring(0, 100)}...`);
-    console.log(`Answers: ${data.answers.length}`);
-    
-    // Save to file
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    if (outputFormat === 'markdown') {
-      await spider.saveToMarkdown(data, `spider/output-${timestamp}.md`);
-    } else {
-      await spider.saveToFile(data, `spider/output-${timestamp}.json`);
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    process.exit(1);
-  } finally {
-    await spider.close();
   }
 }
 

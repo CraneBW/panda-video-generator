@@ -46,14 +46,22 @@ if ! pnpm spider "$ZHIHU_URL"; then
 fi
 
 echo ""
-echo -e "${GREEN}✅ Step 1 completed: Content extracted and caption generated${NC}"
-echo ""
 
-# Check if input.txt was created
+# Check if spider extracted content successfully
 if [ ! -f "input/input.txt" ]; then
     echo -e "${RED}❌ Error: Caption file not found at input/input.txt${NC}"
+    echo -e "${YELLOW}This usually means:${NC}"
+    echo "  1. Spider failed to extract content from Zhihu"
+    echo "  2. The page may require login or has anti-bot protection"
+    echo "  3. The URL may be invalid or the page structure changed"
+    echo ""
+    echo -e "${BLUE}Checking spider output files...${NC}"
+    ls -la spider/output-*.json 2>/dev/null | tail -1 || echo "No spider output files found"
     exit 1
 fi
+
+echo -e "${GREEN}✅ Step 1 completed: Content extracted and caption generated${NC}"
+echo ""
 
 # Step 2: Run TTS
 echo -e "${YELLOW}🎙️  Step 2/3: Generating audio with TTS...${NC}"
