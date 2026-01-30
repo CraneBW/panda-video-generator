@@ -371,40 +371,64 @@ test('upload video to bilibili', async ({ page }) => {
   await page.waitForTimeout(1000);
   
   // Try to find submit button
-  const submitSelectors = [
-    'button:has-text("提交")',
-    'button:has-text("发布")',
-    'button:has-text("确认提交")',
-    'button:has-text("确认发布")',
-    '[class*="submit-button"]',
-    '[class*="publish-button"]',
-    '[class*="SubmitButton"]',
-    '[class*="PublishButton"]',
-    'button[type="submit"]',
-    '[data-v-*][class*="submit"]',
-    '[data-v-*][class*="publish"]',
-  ];
-  
   let submitClicked = false;
-  for (const selector of submitSelectors) {
-    try {
-      const submitButton = page.locator(selector).first();
-      const visible = await submitButton.isVisible({ timeout: 3000 });
-      if (visible) {
-        const isEnabled = await submitButton.isEnabled().catch(() => false);
-        if (isEnabled) {
-          console.log(`✅ Found submit button: ${selector}`);
-          await submitButton.click();
-          console.log('✅ Submit button clicked!');
-          submitClicked = true;
-          await page.waitForTimeout(2000);
-          break;
-        } else {
-          console.log(`⚠️  Submit button found but disabled: ${selector}`);
-        }
+  
+  // First, try using getByText for '立即投稿'
+  try {
+    const submitButton = page.getByText('立即投稿').first();
+    const visible = await submitButton.isVisible({ timeout: 3000 });
+    if (visible) {
+      const isEnabled = await submitButton.isEnabled().catch(() => false);
+      if (isEnabled) {
+        console.log(`✅ Found submit button: getByText('立即投稿')`);
+        await submitButton.click();
+        console.log('✅ Submit button clicked!');
+        submitClicked = true;
+        await page.waitForTimeout(2000);
+      } else {
+        console.log(`⚠️  Submit button found but disabled: getByText('立即投稿')`);
       }
-    } catch (e) {
-      // Continue checking other selectors
+    }
+  } catch (e) {
+    // Continue to fallback selectors
+  }
+  
+  // Fallback to other selectors if not found
+  if (!submitClicked) {
+    const submitSelectors = [
+      'button:has-text("提交")',
+      'button:has-text("发布")',
+      'button:has-text("确认提交")',
+      'button:has-text("确认发布")',
+      '[class*="submit-button"]',
+      '[class*="publish-button"]',
+      '[class*="SubmitButton"]',
+      '[class*="PublishButton"]',
+      'button[type="submit"]',
+      '[data-v-*][class*="submit"]',
+      '[data-v-*][class*="publish"]',
+    ];
+    
+    for (const selector of submitSelectors) {
+      try {
+        const submitButton = page.locator(selector).first();
+        const visible = await submitButton.isVisible({ timeout: 3000 });
+        if (visible) {
+          const isEnabled = await submitButton.isEnabled().catch(() => false);
+          if (isEnabled) {
+            console.log(`✅ Found submit button: ${selector}`);
+            await submitButton.click();
+            console.log('✅ Submit button clicked!');
+            submitClicked = true;
+            await page.waitForTimeout(2000);
+            break;
+          } else {
+            console.log(`⚠️  Submit button found but disabled: ${selector}`);
+          }
+        }
+      } catch (e) {
+        // Continue checking other selectors
+      }
     }
   }
   
@@ -418,25 +442,41 @@ test('upload video to bilibili', async ({ page }) => {
     await page.waitForTimeout(5000);
     
     // Check for success indicators
-    const successSelectors = [
-      'text=提交成功',
-      'text=发布成功',
-      'text=上传成功',
-      '[class*="success"]',
-      '[class*="Success"]',
-    ];
-    
     let submissionSuccess = false;
-    for (const selector of successSelectors) {
-      try {
-        const element = page.locator(selector).first();
-        if (await element.isVisible({ timeout: 5000 })) {
-          submissionSuccess = true;
-          console.log('✅ Submission successful!');
-          break;
+    
+    // First, check for '稿件投递成功' using getByText
+    try {
+      const successMessage = page.getByText('稿件投递成功').first();
+      if (await successMessage.isVisible({ timeout: 10000 })) {
+        submissionSuccess = true;
+        console.log('✅ Submission successful! Found: 稿件投递成功');
+      }
+    } catch (e) {
+      // Continue to fallback selectors
+    }
+    
+    // Fallback to other success indicators if not found
+    if (!submissionSuccess) {
+      const successSelectors = [
+        'text=提交成功',
+        'text=发布成功',
+        'text=上传成功',
+        'text=投稿成功',
+        '[class*="success"]',
+        '[class*="Success"]',
+      ];
+      
+      for (const selector of successSelectors) {
+        try {
+          const element = page.locator(selector).first();
+          if (await element.isVisible({ timeout: 5000 })) {
+            submissionSuccess = true;
+            console.log(`✅ Submission successful! Found: ${selector}`);
+            break;
+          }
+        } catch (e) {
+          // Continue
         }
-      } catch (e) {
-        // Continue
       }
     }
     

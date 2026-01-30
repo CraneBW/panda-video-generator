@@ -113,7 +113,7 @@ OUTPUT_FILE="out/video.mp4"
 # Ensure out directory exists
 mkdir -p out
 
-if ! pnpm render TextToSpeechDisplay "$OUTPUT_FILE"; then
+if ! pnpm exec remotion render TextToSpeechDisplay "$OUTPUT_FILE"; then
     echo -e "${RED}❌ Failed to render video${NC}"
     exit 1
 fi
