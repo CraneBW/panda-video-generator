@@ -72,12 +72,12 @@ function parseVtt(vttText: string): Caption[] {
 	return captions;
 }
 
-interface TextToSpeechDisplayProps {
+interface ContentProps {
 	audioFile?: string;
 	vttFile?: string;
 }
 
-export const TextToSpeechDisplay: React.FC<TextToSpeechDisplayProps> = ({
+export const Content: React.FC<ContentProps> = ({
 	audioFile = 'audio/audio.mp3',
 	vttFile = 'audio/audio.vtt',
 }) => {
@@ -116,20 +116,17 @@ export const TextToSpeechDisplay: React.FC<TextToSpeechDisplayProps> = ({
 		}
 	}, [vttLoaded, continueRender, handle]);
 
-	if (captions.length === 0) {
-		return null;
-	}
-
 	// Calculate current time in seconds
+	// When used in Sequence, frame starts from 0, which is correct for captions
 	const currentTimeMs = (frame / fps) * 1000;
 
 	// Find current caption
-	const currentCaption = captions.find(
+	const currentCaption = captions.length > 0 ? captions.find(
 		caption => currentTimeMs >= caption.startMs && currentTimeMs < caption.endMs
-	);
+	) : null;
 
 	return (
-		<AbsoluteFill style={{ backgroundColor: '#000000' }}>
+		<AbsoluteFill style={{ backgroundColor: '#FFFFFF' }}>
 			{/* Audio track */}
 			<Html5Audio
 				src={staticFile(audioFile)}
@@ -145,18 +142,19 @@ export const TextToSpeechDisplay: React.FC<TextToSpeechDisplayProps> = ({
 						top: '50%',
 						left: '50%',
 						transform: 'translate(-50%, -50%)',
-						color: '#FFFFFF',
+						color: '#000000',
 						fontSize: 48,
 						fontWeight: 'bold',
 						textAlign: 'center',
 						fontFamily: 'Arial, sans-serif',
-						backgroundColor: 'rgba(0, 0, 0, 0.7)',
+						backgroundColor: 'rgba(255, 255, 255, 0.9)',
 						padding: '20px 40px',
 						borderRadius: '8px',
 						whiteSpace: 'pre-line',
 						width: '80%',
 						maxWidth: '80%',
 						zIndex: 10,
+						border: '1px solid rgba(0, 0, 0, 0.1)',
 					}}
 				>
 					{/* Caption text */}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Composition } from "remotion";
-import { Main } from "./MyComp/Main";
+import { Intro } from "./compositions/Intro";
 import {
   COMP_NAME,
   defaultMyCompProps,
@@ -9,8 +9,9 @@ import {
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
 } from "../../types/constants";
-import { TerminalWindow } from "./MyComp/TerminalWindow";
-import { TextToSpeechDisplay } from "./MyComp/TextToSpeechDisplay";
+import { TerminalWindow } from "./compositions/TerminalWindow";
+import { Content } from "./compositions/Content";
+import { Video } from "./compositions/Video";
 import { staticFile } from "remotion";
 
 // Parse VTT file to get the last caption's end time (duration)
@@ -45,7 +46,7 @@ export const RemotionRoot: React.FC = () => {
     <>
       <Composition
         id={COMP_NAME}
-        component={Main}
+        component={Intro}
         durationInFrames={DURATION_IN_FRAMES}
         fps={VIDEO_FPS}
         width={VIDEO_WIDTH}
@@ -62,13 +63,45 @@ export const RemotionRoot: React.FC = () => {
         height={VIDEO_HEIGHT}
       />
       <Composition
-        id="TextToSpeechDisplay"
-        component={TextToSpeechDisplay}
-        calculateMetadata={async ({ props }: { props: { audioFile?: string; vttFile?: string } }) => {
+        id="Video"
+        component={Video}
+        calculateMetadata={async ({ props }: { props: { title?: string; audioFile?: string; vttFile?: string } }) => {
           // Get audio duration automatically from VTT file
           const vttFile = props.vttFile || "audio/audio.vtt";
-          const durationInSeconds = await getAudioDurationFromVtt(vttFile);
-          const durationInFrames = Math.ceil(durationInSeconds * VIDEO_FPS);
+          const audioDurationInSeconds = await getAudioDurationFromVtt(vttFile);
+          // Sequence 1: Intro (1.5 seconds) + Sequence 2: Third Title (3 seconds) + Sequence 3: Content (audio duration)
+          const SEQ1_DURATION_SECONDS = 1.5;
+          const SEQ2_DURATION_SECONDS = 3;
+          const totalDurationInSeconds = SEQ1_DURATION_SECONDS + SEQ2_DURATION_SECONDS + audioDurationInSeconds;
+          const durationInFrames = Math.ceil(totalDurationInSeconds * VIDEO_FPS);
+
+          return {
+            durationInFrames,
+            fps: VIDEO_FPS,
+            width: VIDEO_WIDTH,
+            height: VIDEO_HEIGHT,
+          };
+        }}
+        fps={VIDEO_FPS}
+        width={VIDEO_WIDTH}
+        height={VIDEO_HEIGHT}
+        defaultProps={{
+          title: defaultMyCompProps.title,
+          audioFile: "audio/audio.mp3",
+          vttFile: "audio/audio.vtt",
+        }}
+      />
+      <Composition
+        id="Content"
+        component={Content}
+        calculateMetadata={async ({ props }: { props: { audioFile?: string; vttFile?: string; title?: string; coverImage?: string; coverBackgroundColor?: string; coverGradientColors?: string[]; coverGradientDirection?: 'horizontal' | 'vertical' | 'diagonal' } }) => {
+          // Get audio duration automatically from VTT file
+          const vttFile = props.vttFile || "audio/audio.vtt";
+          const audioDurationInSeconds = await getAudioDurationFromVtt(vttFile);
+          // Add delay for Intro animation and title/cover display (2.75 seconds)
+          const TITLE_DELAY_SECONDS = 2.75;
+          const totalDurationInSeconds = audioDurationInSeconds + TITLE_DELAY_SECONDS;
+          const durationInFrames = Math.ceil(totalDurationInSeconds * VIDEO_FPS);
 
           return {
             durationInFrames,
@@ -83,6 +116,11 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{
           audioFile: "audio/audio.mp3",
           vttFile: "audio/audio.vtt",
+          title: undefined,
+          coverImage: undefined,
+          coverBackgroundColor: undefined,
+          coverGradientColors: undefined,
+          coverGradientDirection: undefined,
         }}
       />
     </>
