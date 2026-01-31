@@ -106,13 +106,11 @@ export async function performLogin(
       
       // Only check for login indicators if we don't see "not logged in" indicators
       if (!isNotLoggedIn) {
-        let loginFound = false;
         for (const selector of config.loginIndicators) {
           try {
             const indicator = page.locator(selector).first();
             const visible = await indicator.isVisible({ timeout: 3000 });
             if (visible) {
-              loginFound = true;
               // Double check: make sure we don't see "not logged in" indicators
               if (config.notLoggedInIndicators && config.notLoggedInIndicators.length > 0) {
                 let stillNotLoggedIn = false;
