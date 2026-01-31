@@ -20,9 +20,9 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ title }) => {
 
 	const transitionStart = 1 * fps;
 	const transitionDuration = 0.5 * fps;
-	const sequenceDuration = transitionStart + transitionDuration;
-	const titleFadeOutStart = sequenceDuration - 0.5 * fps;
-	const titleFadeOutDuration = 0.5 * fps;
+	const sequenceDuration = 2.5 * fps; // Extended to 2.5 seconds
+	const titleFadeOutStart = sequenceDuration - 0.2 * fps;
+	const titleFadeOutDuration = 0.2 * fps; // Faster fade out
 
 	const logoOut = spring({
 		fps,

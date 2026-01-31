@@ -6,6 +6,8 @@ import {
 	staticFile,
 	useDelayRender,
 	Html5Audio,
+	interpolate,
+	spring,
 } from 'remotion';
 
 interface Caption {
@@ -125,6 +127,61 @@ export const Content: React.FC<ContentProps> = ({
 		caption => currentTimeMs >= caption.startMs && currentTimeMs < caption.endMs
 	) : null;
 
+	// Calculate animation for current caption (gather effect)
+	let scale = 1;
+	let opacity = 1;
+	let translateX = 0;
+	let letterSpacing = 0;
+
+	if (currentCaption) {
+		const captionStartMs = currentCaption.startMs;
+		const captionDurationMs = currentCaption.endMs - captionStartMs;
+		const animationDurationMs = Math.min(500, captionDurationMs * 0.3); // Animation takes 500ms or 30% of caption duration
+		const timeSinceStart = currentTimeMs - captionStartMs;
+		
+		if (timeSinceStart >= 0 && timeSinceStart < animationDurationMs) {
+			// Calculate relative frame for this caption's animation
+			const relativeFrame = Math.floor((timeSinceStart / 1000) * fps);
+			const animationDurationFrames = Math.ceil((animationDurationMs / 1000) * fps);
+
+			// Spring animation for smooth gather effect
+			const springProgress = spring({
+				fps,
+				frame: relativeFrame,
+				config: {
+					damping: 200,
+				},
+				durationInFrames: animationDurationFrames,
+			});
+
+			// Scale: start from 1.2, end at 1.0 (zoom in effect)
+			// Keep container width fixed, only scale visually
+			scale = interpolate(springProgress, [0, 1], [1.2, 1], {
+				extrapolateLeft: 'clamp',
+				extrapolateRight: 'clamp',
+			});
+
+			// Opacity: start from 0, end at 1
+			opacity = interpolate(springProgress, [0, 1], [0, 1], {
+				extrapolateLeft: 'clamp',
+				extrapolateRight: 'clamp',
+			});
+
+			// Horizontal gather: start from spread out, end at center
+			// Create a gather effect where text comes from both sides to center
+			translateX = interpolate(springProgress, [0, 1], [100, 0], {
+				extrapolateLeft: 'clamp',
+				extrapolateRight: 'clamp',
+			});
+
+			// Letter spacing: start from spread out, end at normal (gather effect)
+			letterSpacing = interpolate(springProgress, [0, 1], [8, 0], {
+				extrapolateLeft: 'clamp',
+				extrapolateRight: 'clamp',
+			});
+		}
+	}
+
 	return (
 		<AbsoluteFill style={{ backgroundColor: '#FFFFFF' }}>
 			{/* Audio track */}
@@ -141,7 +198,8 @@ export const Content: React.FC<ContentProps> = ({
 						position: 'absolute',
 						top: '50%',
 						left: '50%',
-						transform: 'translate(-50%, -50%)',
+						transform: `translate(calc(-50% + ${translateX}px), -50%) scale(${scale})`,
+						transformOrigin: 'center center',
 						color: '#000000',
 						fontSize: 48,
 						fontWeight: 'bold',
@@ -152,13 +210,19 @@ export const Content: React.FC<ContentProps> = ({
 						borderRadius: '8px',
 						whiteSpace: 'pre-line',
 						width: '80%',
-						maxWidth: '80%',
+						maxWidth: '80vw',
 						zIndex: 10,
-						border: '1px solid rgba(0, 0, 0, 0.1)',
+						opacity,
 					}}
 				>
-					{/* Caption text */}
-					<div>{currentCaption.text}</div>
+					{/* Caption text with letter spacing animation for gather effect */}
+					<div
+						style={{
+							letterSpacing: `${letterSpacing}px`,
+						}}
+					>
+						{currentCaption.text}
+					</div>
 				</div>
 			)}
 		</AbsoluteFill>

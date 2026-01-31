@@ -19,7 +19,7 @@ export const TextFade: React.FC<{
     config: {
       damping: 200,
     },
-    durationInFrames: 80,
+    durationInFrames: 30,
   });
 
   const rightStop = interpolate(progress, [0, 1], [200, 0]);

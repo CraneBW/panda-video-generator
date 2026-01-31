@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender } from 'remotion';
-import { IntroSequence } from './IntroSequence';
-import { TitleSequence } from './TitleSequence';
+import { Intro } from './Intro';
 import { Content } from './Content';
 
 // Parse VTT file to get duration
@@ -81,13 +80,10 @@ export const Video: React.FC<{
 			}
 		}, [loaded, continueRender, handle]);
 
-		// Sequence 1: Intro with Logo and Company Name (1.5 seconds)
-		const seq1Duration = Math.ceil(1.5 * fps);
-		// Sequence 2: Third Title from title.json (3 seconds)
-		const seq2Duration = Math.ceil(3 * fps);
-		const seq2Start = seq1Duration;
+		// Intro duration: sequenceDuration (1.5s) + thirdTitleDuration (3s) = 4.5 seconds
+		const introDuration = Math.ceil(4.5 * fps);
 		// Sequence 3: Content (audio duration)
-		const seq3Start = seq1Duration + seq2Duration;
+		const seq3Start = introDuration;
 		const contentDurationFrames = Math.ceil(contentDuration * fps);
 
 		if (!loaded || contentDurationFrames === 0) {
@@ -96,17 +92,10 @@ export const Video: React.FC<{
 
 		return (
 			<AbsoluteFill>
-				{/* Sequence 1: Intro with Logo and Company Name */}
-				<Sequence durationInFrames={seq1Duration}>
-					<IntroSequence title={title} />
+				{/* Intro sequence - includes logo, title, third title, and watermark */}
+				<Sequence durationInFrames={introDuration}>
+					<Intro title={title} />
 				</Sequence>
-
-				{/* Sequence 2: Third Title from title.json */}
-				{jsonTitle && (
-					<Sequence from={seq2Start} durationInFrames={seq2Duration}>
-						<TitleSequence title={jsonTitle} />
-					</Sequence>
-				)}
 
 				{/* Sequence 3: Content */}
 				<Sequence from={seq3Start} durationInFrames={contentDurationFrames}>

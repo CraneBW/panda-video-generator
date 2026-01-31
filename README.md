@@ -268,5 +268,5 @@ pnpm test:upload:all
 ---
 
 <div align="center">
-  Made with ❤️ by 熊猫智研社
+  Made with ❤️ by szhshp x 熊猫智研社
 </div>

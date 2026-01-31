@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { staticFile, useVideoConfig } from 'remotion';
+import { staticFile, useVideoConfig, Img } from 'remotion';
 
 export const Logo: React.FC<{
 	outProgress: number;
@@ -14,11 +14,12 @@ export const Logo: React.FC<{
 			objectFit: 'contain',
 			transform: `scale(${1 - outProgress})`,
 			transformOrigin: 'center center',
+			willChange: 'transform',
 		};
 	}, [outProgress, width, height]);
 
 	return (
-		<img
+		<Img
 			src={staticFile('logo/logo.png')}
 			alt="Logo"
 			style={style}

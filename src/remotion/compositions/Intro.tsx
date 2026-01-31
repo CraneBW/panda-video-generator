@@ -65,48 +65,89 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
   const thirdTitleStart = sequenceDuration; // Third title starts at 1.5s
   const thirdTitleDuration = 3 * fps; // Third title displays for 3 seconds
 
-  const logoOut = spring({
-    fps,
-    frame,
-    config: {
-      damping: 200,
-    },
-    durationInFrames: transitionDuration,
-    delay: transitionStart,
-  });
+  // Watermark component
+  const WatermarkText: React.FC = () => {
+    const sequenceFrame = useCurrentFrame();
+    const { fps } = useVideoConfig();
 
-  // Title fade out and move up animation
-  const titleOpacity = interpolate(
-    frame,
-    [titleFadeOutStart, titleFadeOutStart + titleFadeOutDuration],
-    [1, 0],
-    {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    }
-  );
+    // Simple fade in animation
+    const opacity = interpolate(
+      sequenceFrame,
+      [0, 30],
+      [0, 1],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
 
-  const titleTranslateY = interpolate(
-    frame,
-    [titleFadeOutStart, titleFadeOutStart + titleFadeOutDuration],
-    [0, -100],
-    {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    }
-  );
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '40px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontFamily,
+          fontSize: '30px',
+          color: 'rgba(23, 23, 23, 0.8)',
+          textAlign: 'center',
+          whiteSpace: 'nowrap',
+          opacity,
+        }}
+      >
+        Powered By 熊猫视频自动化引擎 |
+        Github: Panda-Video-Generator
+      </div>
+    );
+  };
 
-  return (
-    <AbsoluteFill className="bg-white">
-      <Sequence durationInFrames={sequenceDuration}>
+  // Inner component for Sequence to use relative frame
+  const TitleSequence: React.FC<{ title: string }> = ({ title }) => {
+    const sequenceFrame = useCurrentFrame(); // Relative frame within Sequence
+    const { fps } = useVideoConfig();
+
+    // Use sequenceFrame instead of global frame
+    // Ensure opacity reaches 0 at the end of sequence (sequenceDuration - 1 is the last frame)
+    const titleOpacity = interpolate(
+      sequenceFrame,
+      [titleFadeOutStart, sequenceDuration - 1],
+      [1, 0],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    const titleTranslateY = interpolate(
+      sequenceFrame,
+      [titleFadeOutStart, sequenceDuration - 1],
+      [0, -100],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    const logoOut = spring({
+      fps,
+      frame: sequenceFrame,
+      config: {
+        damping: 200,
+      },
+      durationInFrames: transitionDuration,
+      delay: transitionStart,
+    });
+
+    return (
+      <>
         <Rings outProgress={logoOut}></Rings>
-        <AbsoluteFill className="justify-center items-center" style={{ flexDirection: 'column', gap: '40px' }}>
+        <AbsoluteFill className="justify-center items-center" style={{ flexDirection: 'column' }}>
           <Logo outProgress={logoOut}></Logo>
           <div
             style={{
-              opacity: frame >= titleFadeOutStart ? titleOpacity : 1,
-              transform: `translateY(${frame >= titleFadeOutStart ? titleTranslateY : 0}px)`,
-              transition: 'opacity 0.3s, transform 0.3s',
+              opacity: sequenceFrame >= titleFadeOutStart ? titleOpacity : 1,
+              transform: `translateY(${sequenceFrame >= titleFadeOutStart ? titleTranslateY : 0}px)`,
             }}
           >
             <TextFade>
@@ -119,6 +160,7 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
                   whiteSpace: 'nowrap',
                   textAlign: 'center',
                   padding: '0 40px',
+                  marginTop: '160px',
                 }}
               >
                 {title}
@@ -126,6 +168,14 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
             </TextFade>
           </div>
         </AbsoluteFill>
+      </>
+    );
+  };
+
+  return (
+    <AbsoluteFill className="bg-white">
+      <Sequence durationInFrames={sequenceDuration}>
+        <TitleSequence title={title} />
       </Sequence>
       <Sequence from={thirdTitleStart} durationInFrames={thirdTitleDuration}>
         <AbsoluteFill className="justify-center items-center">
@@ -146,6 +196,12 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
               </h1>
             </TextFade>
           )}
+        </AbsoluteFill>
+      </Sequence>
+      {/* Watermark sequence */}
+      <Sequence from={thirdTitleStart} durationInFrames={thirdTitleDuration}>
+        <AbsoluteFill>
+          <WatermarkText />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

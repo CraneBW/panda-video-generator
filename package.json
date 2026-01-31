@@ -59,6 +59,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "postinstall": "bash scripts/setup-python.sh",
     "remotion": "remotion studio",
     "render": "remotion render",
     "render:video": "sh scripts/render-video.sh",
@@ -69,9 +70,11 @@
     "test:login:bilibili": "playwright test automations/Bilibili/login-bilibili.spec.ts --project=chromium --headed",
     "test:login:douyin": "playwright test automations/Douyin/login-douyin.spec.ts --project=chromium --headed",
     "test:login:weixin": "playwright test automations/Weixin/login-weixin.spec.ts --project=chromium --headed",
+    "test:login:rednote": "playwright test automations/RedNote/login-rednote.spec.ts --project=chromium --headed",
     "test:upload:bilibili": "playwright test automations/Bilibili/upload-video.spec.ts --project=chromium --headed",
     "test:upload:douyin": "playwright test automations/Douyin/upload-video.spec.ts --project=chromium --headed",
     "test:upload:weixin": "playwright test automations/Weixin/upload-video.spec.ts --project=chromium --headed",
+    "test:upload:rednote": "playwright test automations/RedNote/upload-video.spec.ts --project=chromium --headed",
     "test:upload:all": "playwright test automations/**/upload-video.spec.ts --project=chromium"
   }
 }

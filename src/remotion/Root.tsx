@@ -9,7 +9,6 @@ import {
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
 } from "../../types/constants";
-import { TerminalWindow } from "./compositions/TerminalWindow";
 import { Content } from "./compositions/Content";
 import { Video } from "./compositions/Video";
 import { staticFile } from "remotion";
@@ -53,15 +52,6 @@ export const RemotionRoot: React.FC = () => {
         height={VIDEO_HEIGHT}
         defaultProps={defaultMyCompProps}
       />
-
-      <Composition
-        id="TerminalWindow"
-        component={TerminalWindow}
-        durationInFrames={340}
-        fps={30}
-        width={VIDEO_WIDTH}
-        height={VIDEO_HEIGHT}
-      />
       <Composition
         id="Video"
         component={Video}
@@ -69,8 +59,8 @@ export const RemotionRoot: React.FC = () => {
           // Get audio duration automatically from VTT file
           const vttFile = props.vttFile || "audio/audio.vtt";
           const audioDurationInSeconds = await getAudioDurationFromVtt(vttFile);
-          // Sequence 1: Intro (1.5 seconds) + Sequence 2: Third Title (3 seconds) + Sequence 3: Content (audio duration)
-          const SEQ1_DURATION_SECONDS = 1.5;
+          // Sequence 1: Intro (2.5 seconds) + Sequence 2: Third Title (3 seconds) + Sequence 3: Content (audio duration)
+          const SEQ1_DURATION_SECONDS = 2.5;
           const SEQ2_DURATION_SECONDS = 3;
           const totalDurationInSeconds = SEQ1_DURATION_SECONDS + SEQ2_DURATION_SECONDS + audioDurationInSeconds;
           const durationInFrames = Math.ceil(totalDurationInSeconds * VIDEO_FPS);
