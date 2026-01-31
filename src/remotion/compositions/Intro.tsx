@@ -8,12 +8,12 @@ import {
   interpolate,
   staticFile,
   useDelayRender,
+  Html5Audio,
 } from "remotion";
 import { CompositionProps } from "../../../types/constants";
 import { Logo } from "./Logo";
 import { loadFont, fontFamily } from "@remotion/google-fonts/Inter";
 import { Rings } from "./Rings";
-import { TextFade } from "./TextFade";
 import { useState, useEffect, useCallback } from "react";
 
 loadFont("normal", {
@@ -59,41 +59,26 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
 
   const transitionStart = 1 * fps; // Start transition after 1 second
   const transitionDuration = 0.5 * fps; // Transition duration 0.5 seconds
-  const sequenceDuration = transitionStart + transitionDuration; // Total: 1.5 seconds
+  const sequenceDuration = 2.5 * fps; // Total: 2.5 seconds (extended from 1.5s)
   const titleFadeOutDuration = 0.5 * fps; // Title fades out in 0.5 seconds
-  const titleFadeOutStart = sequenceDuration - titleFadeOutDuration; // Start fade out 0.5s before sequence ends (at 1.0s)
-  const thirdTitleStart = sequenceDuration; // Third title starts at 1.5s
-  const thirdTitleDuration = 3 * fps; // Third title displays for 3 seconds
+  const titleFadeOutStart = sequenceDuration - titleFadeOutDuration; // Start fade out 0.5s before sequence ends
+  const thirdTitleStart = sequenceDuration; // Third title starts after logo sequence
+  const thirdTitleDuration = 2 * fps; // First title displays for 2 seconds (reduced from 3s)
 
   // Watermark component
   const WatermarkText: React.FC = () => {
-    const sequenceFrame = useCurrentFrame();
-    const { fps } = useVideoConfig();
-
-    // Simple fade in animation
-    const opacity = interpolate(
-      sequenceFrame,
-      [0, 30],
-      [0, 1],
-      {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      }
-    );
-
     return (
       <div
         style={{
           position: 'absolute',
-          bottom: '40px',
+          bottom: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
           fontFamily,
           fontSize: '30px',
-          color: 'rgba(23, 23, 23, 0.8)',
+          color: 'rgba(23, 23, 23, 0.4)',
           textAlign: 'center',
           whiteSpace: 'nowrap',
-          opacity,
         }}
       >
         Powered By 熊猫视频自动化引擎 |
@@ -107,11 +92,51 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
     const sequenceFrame = useCurrentFrame(); // Relative frame within Sequence
     const { fps } = useVideoConfig();
 
-    // Use sequenceFrame instead of global frame
-    // Ensure opacity reaches 0 at the end of sequence (sequenceDuration - 1 is the last frame)
-    const titleOpacity = interpolate(
+    // Logo scale animation: from small (0.2) to normal size (1.0)
+    // Animation duration: first 0.8 seconds, then stay at normal size
+    const logoScaleDuration = 0.8 * fps;
+    const logoScale = interpolate(
       sequenceFrame,
-      [titleFadeOutStart, sequenceDuration - 1],
+      [0, logoScaleDuration],
+      [0.2, 1.0],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    // Title animation: fade in and move from top to bottom
+    const titleFadeInDuration = 0.5 * fps;
+    const titleStartDelay = logoScaleDuration; // Start after logo finishes scaling
+    const titleFadeInStart = titleStartDelay;
+    const titleFadeInEnd = titleStartDelay + titleFadeInDuration;
+
+    const titleFadeInOpacity = interpolate(
+      sequenceFrame,
+      [titleFadeInStart, titleFadeInEnd],
+      [0, 1],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    const titleMoveY = interpolate(
+      sequenceFrame,
+      [titleFadeInStart, titleFadeInEnd],
+      [-50, 0], // Move from -50px (above) to 0 (final position)
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    // Fade out all content at the end
+    const fadeOutDuration = 0.5 * fps;
+    const fadeOutStart = sequenceDuration - fadeOutDuration;
+    const overallOpacity = interpolate(
+      sequenceFrame,
+      [fadeOutStart, sequenceDuration - 1],
       [1, 0],
       {
         extrapolateLeft: 'clamp',
@@ -119,16 +144,7 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
       }
     );
 
-    const titleTranslateY = interpolate(
-      sequenceFrame,
-      [titleFadeOutStart, sequenceDuration - 1],
-      [0, -100],
-      {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      }
-    );
-
+    // Rings animation (keep the original outProgress for rings)
     const logoOut = spring({
       fps,
       frame: sequenceFrame,
@@ -140,69 +156,95 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
     });
 
     return (
-      <>
+      <div style={{ opacity: overallOpacity }}>
         <Rings outProgress={logoOut}></Rings>
         <AbsoluteFill className="justify-center items-center" style={{ flexDirection: 'column' }}>
-          <Logo outProgress={logoOut}></Logo>
+          <Logo scale={logoScale}></Logo>
           <div
             style={{
-              opacity: sequenceFrame >= titleFadeOutStart ? titleOpacity : 1,
-              transform: `translateY(${sequenceFrame >= titleFadeOutStart ? titleTranslateY : 0}px)`,
+              opacity: titleFadeInOpacity,
+              transform: `translateY(${titleMoveY}px)`,
             }}
           >
-            <TextFade>
-              <h1
-                className="text-[70px] font-bold"
-                style={{
-                  fontFamily,
-                  width: '100%',
-                  maxWidth: '100%',
-                  whiteSpace: 'nowrap',
-                  textAlign: 'center',
-                  padding: '0 40px',
-                  marginTop: '160px',
-                }}
-              >
-                {title}
-              </h1>
-            </TextFade>
+            <h1
+              className="text-[70px] font-bold"
+              style={{
+                fontFamily,
+                width: '80%',
+                maxWidth: '80%',
+                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                padding: '0 40px',
+                marginTop: '120px',
+                color: '#000000',
+              }}
+            >
+              {title}
+            </h1>
           </div>
         </AbsoluteFill>
-      </>
+        <WatermarkText />
+      </div>
+    );
+  };
+
+  // First title component with fade out only
+  const FirstTitle: React.FC<{ title: string }> = ({ title }) => {
+    const sequenceFrame = useCurrentFrame();
+    const { fps } = useVideoConfig();
+
+    // Fade out in the last 0.5 seconds
+    const fadeOutDuration = 0.5 * fps;
+    const fadeOutStart = thirdTitleDuration - fadeOutDuration;
+
+    const opacity = interpolate(
+      sequenceFrame,
+      [fadeOutStart, thirdTitleDuration - 1],
+      [1, 0],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    return (
+      <AbsoluteFill className="justify-center items-center">
+        <h1
+          className="text-[70px] font-bold"
+          style={{
+            fontFamily,
+            width: '80%',
+            maxWidth: '80%',
+            textAlign: 'center',
+            padding: '0 40px',
+            opacity,
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+          }}
+        >
+          {title}
+        </h1>
+      </AbsoluteFill>
     );
   };
 
   return (
     <AbsoluteFill className="bg-white">
-      <Sequence durationInFrames={sequenceDuration}>
+      {/* Logo sound effect - plays when logo sequence starts (at thirdTitleDuration) */}
+      <Sequence from={thirdTitleDuration} durationInFrames={sequenceDuration}>
+        <Html5Audio
+          src={staticFile('audio/intro.mp3')}
+          volume={0.6}
+          name="Logo Sound"
+        />
+      </Sequence>
+      {/* Third title sequence - now first */}
+      <Sequence durationInFrames={thirdTitleDuration}>
+        {(title || jsonTitle) && <FirstTitle title={title || jsonTitle || ''} />}
+      </Sequence>
+      {/* Title sequence with logo - now third */}
+      <Sequence from={thirdTitleDuration} durationInFrames={sequenceDuration}>
         <TitleSequence title={title} />
-      </Sequence>
-      <Sequence from={thirdTitleStart} durationInFrames={thirdTitleDuration}>
-        <AbsoluteFill className="justify-center items-center">
-          {jsonTitle && (
-            <TextFade>
-              <h1
-                className="text-[70px] font-bold"
-                style={{
-                  fontFamily,
-                  width: '100%',
-                  maxWidth: '100%',
-                  whiteSpace: 'nowrap',
-                  textAlign: 'center',
-                  padding: '0 40px',
-                }}
-              >
-                {jsonTitle}
-              </h1>
-            </TextFade>
-          )}
-        </AbsoluteFill>
-      </Sequence>
-      {/* Watermark sequence */}
-      <Sequence from={thirdTitleStart} durationInFrames={thirdTitleDuration}>
-        <AbsoluteFill>
-          <WatermarkText />
-        </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>
   );

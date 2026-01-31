@@ -113,9 +113,42 @@ OUTPUT_FILE="out/video.mp4"
 # Ensure out directory exists
 mkdir -p out
 
-if ! pnpm exec remotion render Video "$OUTPUT_FILE"; then
-    echo -e "${RED}❌ Failed to render video${NC}"
-    exit 1
+# Copy title.json to public/out/ if it exists, so Remotion can access it
+if [ -f "out/title.json" ]; then
+    mkdir -p public/out
+    cp "out/title.json" "public/out/title.json"
+    echo -e "${BLUE}📋 Title JSON copied to public/out/title.json${NC}"
+fi
+
+# Read title from title.json if it exists and pass it as prop
+TITLE_PROP=""
+if [ -f "out/title.json" ]; then
+    # Use Node.js to safely read JSON and create props string
+    TITLE_PROP=$(node -e "
+        const fs = require('fs');
+        try {
+            const data = JSON.parse(fs.readFileSync('out/title.json', 'utf8'));
+            if (data.title) {
+                const props = JSON.stringify({ title: data.title });
+                console.log('--props=' + props);
+            }
+        } catch (e) {
+            // Silently fail if JSON is invalid
+        }
+    ")
+fi
+
+if [ -n "$TITLE_PROP" ]; then
+    echo -e "${BLUE}📝 Using title from out/title.json${NC}"
+    if ! pnpm exec remotion render Video "$OUTPUT_FILE" $TITLE_PROP; then
+        echo -e "${RED}❌ Failed to render video${NC}"
+        exit 1
+    fi
+else
+    if ! pnpm exec remotion render Video "$OUTPUT_FILE"; then
+        echo -e "${RED}❌ Failed to render video${NC}"
+        exit 1
+    fi
 fi
 
 echo ""
