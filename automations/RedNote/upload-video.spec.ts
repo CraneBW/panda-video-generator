@@ -83,9 +83,9 @@ function getUploadConfig(): UploadConfig {
 const rednoteAuthFile = getAuthFilePath('rednote');
 if (existsSync(rednoteAuthFile)) {
   test.use({ storageState: rednoteAuthFile });
-  console.log(`🔐 Using saved authentication state from: ${rednoteAuthFile}`);
+  console.log('Auth: RedNote');
 } else {
-  console.log('⚠️  No saved authentication file found. You may need to login first: pnpm test:login:rednote');
+  console.log('Auth: RedNote (not found, run: pnpm test:login:rednote)');
 }
 
 // Configure test suite: 5 minute timeout
@@ -97,15 +97,9 @@ test('upload video to rednote', async ({ page }) => {
   
   const config = getUploadConfig();
   
-  console.log('📹 Video Upload Configuration:');
-  console.log(`   Video: ${config.videoPath}`);
-  console.log(`   Title: ${config.title}`);
-  console.log(`   Description: ${config.description || '(empty)'}`);
-  console.log(`   Tags: ${config.tags?.join(', ') || '(none)'}`);
-  console.log('');
+  console.log(`Upload: RedNote - ${config.title}`);
   
   // Step 1: Navigate to RedNote (Xiaohongshu Creator Platform) upload page
-  console.log('🌐 Navigating to RedNote (Xiaohongshu Creator Platform)...');
   await page.goto('https://creator.xiaohongshu.com/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
   
@@ -483,9 +477,9 @@ test('upload video to rednote', async ({ page }) => {
     }
     
     if (!publicationSuccess) {
-      console.log('💡 Publication initiated. Please check the page for confirmation.');
+      console.log('Success: RedNote (check manually)');
+    } else {
+      console.log('Success: RedNote');
     }
   }
-  
-  console.log('✅ Upload process completed!');
 });

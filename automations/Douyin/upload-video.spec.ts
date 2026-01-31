@@ -84,9 +84,9 @@ function getUploadConfig(): UploadConfig {
 const douyinAuthFile = getAuthFilePath('douyin');
 if (existsSync(douyinAuthFile)) {
   test.use({ storageState: douyinAuthFile });
-  console.log(`🔐 Using saved authentication state from: ${douyinAuthFile}`);
+  console.log('Auth: Douyin');
 } else {
-  console.log('⚠️  No saved authentication file found. You may need to login first: pnpm test:login:douyin');
+  console.log('Auth: Douyin (not found, run: pnpm test:login:douyin)');
 }
 
 test.describe.configure({ timeout: 10 * 60 * 1000 });
@@ -97,15 +97,9 @@ test('upload video to douyin', async ({ page }) => {
   
   const config = getUploadConfig();
   
-  console.log('📹 Video Upload Configuration:');
-  console.log(`   Video: ${config.videoPath}`);
-  console.log(`   Title: ${config.title}`);
-  console.log(`   Description: ${config.description || '(empty)'}`);
-  console.log(`   Tags: ${config.tags?.join(', ') || '(none)'}`);
-  console.log('');
+  console.log(`Upload: Douyin - ${config.title}`);
   
   // Step 1: Navigate to Douyin creator upload page
-  console.log('🌐 Navigating to Douyin creator upload page...');
   await page.goto('https://creator.douyin.com/creator-micro/content/upload');
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(3000); // Wait for page to fully load
@@ -570,9 +564,9 @@ test('upload video to douyin', async ({ page }) => {
     }
     
     if (!submissionSuccess) {
-      console.log('💡 Submission initiated. Please check the page for confirmation.');
+      console.log('Success: Douyin (check manually)');
+    } else {
+      console.log('Success: Douyin');
     }
   }
-  
-  console.log('✅ Upload process completed!');
 });

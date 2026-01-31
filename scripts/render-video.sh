@@ -114,10 +114,16 @@ OUTPUT_FILE="out/video.mp4"
 mkdir -p out
 
 # Copy title.json to public/out/ if it exists, so Remotion can access it
+# Always overwrite to ensure latest title is used
 if [ -f "out/title.json" ]; then
     mkdir -p public/out
+    # Remove old file first to avoid any caching issues
+    rm -f "public/out/title.json"
     cp "out/title.json" "public/out/title.json"
     echo -e "${BLUE}📋 Title JSON copied to public/out/title.json${NC}"
+    echo -e "${BLUE}   Title: $(node -e "const fs=require('fs'); const d=JSON.parse(fs.readFileSync('out/title.json','utf8')); console.log(d.title)")${NC}"
+else
+    echo -e "${YELLOW}⚠️  out/title.json not found, component will use default title${NC}"
 fi
 
 # Read title from title.json if it exists and pass it as prop

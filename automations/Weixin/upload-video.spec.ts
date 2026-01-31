@@ -148,9 +148,9 @@ function getUploadConfig(): UploadConfig {
 const weixinAuthFile = getAuthFilePath('weixin');
 if (existsSync(weixinAuthFile)) {
   test.use({ storageState: weixinAuthFile });
-  console.log(`🔐 Using saved authentication state from: ${weixinAuthFile}`);
+  console.log('Auth: Weixin');
 } else {
-  console.log('⚠️  No saved authentication file found. You may need to login first: pnpm test:login:weixin');
+  console.log('Auth: Weixin (not found, run: pnpm test:login:weixin)');
 }
 
 // Configure test suite: 10 minute timeout
@@ -162,15 +162,9 @@ test('upload video to weixin channel', async ({ page }) => {
   
   const config = getUploadConfig();
   
-  console.log('📹 Video Upload Configuration:');
-  console.log(`   Video: ${config.videoPath}`);
-  console.log(`   Title: ${config.title}`);
-  console.log(`   Description: ${config.description || '(empty)'}`);
-  console.log(`   Tags: ${config.tags?.join(', ') || '(none)'}`);
-  console.log('');
+  console.log(`Upload: Weixin - ${config.title}`);
   
   // Step 1: Navigate to Weixin Channel upload page
-  console.log('🌐 Navigating to Weixin Channel upload page...');
   await page.goto('https://channels.weixin.qq.com/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
   
@@ -667,62 +661,17 @@ test('upload video to weixin channel', async ({ page }) => {
   }
   
   if (!submitClicked) {
-    console.log('⚠️  Submit button not found automatically.');
-    console.log('💡 Pausing for manual review - please click submit button manually');
     await page.pause();
   } else {
     // Wait for submission to complete
-    console.log('⏳ Waiting for submission to complete...');
     await page.waitForTimeout(5000);
     
-    // Check for success indicators
-    let submissionSuccess = false;
+    // Assert that '已发表' text appears after clicking submit
+    const successMessage = page.getByText('已发表').first();
+    await successMessage.waitFor({ state: 'visible', timeout: 30000 });
+    await test.expect(successMessage).toBeVisible({ timeout: 30000 });
     
-    // First, check for success messages using getByText
-    const successMessages = ['发布成功', '投稿成功', '上传成功', '提交成功'];
-    for (const successText of successMessages) {
-      try {
-        const successMessage = page.getByText(successText).first();
-        if (await successMessage.isVisible({ timeout: 10000 })) {
-          submissionSuccess = true;
-          console.log(`✅ Submission successful! Found: ${successText}`);
-          break;
-        }
-      } catch (e) {
-        // Continue to next message
-      }
-    }
-    
-    // Fallback to other success indicators if not found
-    if (!submissionSuccess) {
-      const successSelectors = [
-        'text=发布成功',
-        'text=投稿成功',
-        'text=上传成功',
-        'text=提交成功',
-        '[class*="success"]',
-        '[class*="Success"]',
-      ];
-      
-      for (const selector of successSelectors) {
-        try {
-          const element = page.locator(selector).first();
-          if (await element.isVisible({ timeout: 5000 })) {
-            submissionSuccess = true;
-            console.log(`✅ Submission successful! Found: ${selector}`);
-            break;
-          }
-        } catch (e) {
-          // Continue
-        }
-      }
-    }
-    
-    if (!submissionSuccess) {
-      console.log('💡 Submission initiated. Please check the page for confirmation.');
-    }
+    console.log('Success: Weixin');
   }
-  
-  console.log('✅ Upload process completed!');
 
 });

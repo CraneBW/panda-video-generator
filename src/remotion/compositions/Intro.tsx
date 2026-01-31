@@ -21,25 +21,30 @@ loadFont("normal", {
   weights: ["400", "700"],
 });
 export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
-  const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const [jsonTitle, setJsonTitle] = useState<string | null>(null);
   const [titleLoaded, setTitleLoaded] = useState(false);
   const { delayRender, continueRender } = useDelayRender();
   const [handle] = useState(() => delayRender());
 
-  // Load title from title.json (must be in public/out/title.json)
+  // Always load title from title.json (must be in public/out/title.json)
+  // This ensures we always use the latest title from the file system
   const fetchTitleFromJson = useCallback(async () => {
     try {
       // Use staticFile to access files in public directory
       const response = await fetch(staticFile('out/title.json'));
       if (!response.ok) {
-        console.warn('title.json not found in public/out/, skipping third title');
+        console.warn('title.json not found in public/out/, using prop title as fallback');
         setTitleLoaded(true);
         return;
       }
       const data = await response.json();
-      setJsonTitle(data.title || null);
+      if (data.title) {
+        setJsonTitle(data.title);
+        console.log('Loaded title from title.json:', data.title);
+      } else {
+        console.warn('title.json exists but has no title field, using prop title as fallback');
+      }
       setTitleLoaded(true);
     } catch (e) {
       console.error('Failed to load title.json:', e);
@@ -60,9 +65,6 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
   const transitionStart = 1 * fps; // Start transition after 1 second
   const transitionDuration = 0.5 * fps; // Transition duration 0.5 seconds
   const sequenceDuration = 2.5 * fps; // Total: 2.5 seconds (extended from 1.5s)
-  const titleFadeOutDuration = 0.5 * fps; // Title fades out in 0.5 seconds
-  const titleFadeOutStart = sequenceDuration - titleFadeOutDuration; // Start fade out 0.5s before sequence ends
-  const thirdTitleStart = sequenceDuration; // Third title starts after logo sequence
   const thirdTitleDuration = 2 * fps; // First title displays for 2 seconds (reduced from 3s)
 
   // Watermark component
@@ -239,10 +241,12 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
         />
       </Sequence>
       {/* Third title sequence - now first */}
+      {/* Use jsonTitle from file for first title, fallback to prop title */}
       <Sequence durationInFrames={thirdTitleDuration}>
-        {(title || jsonTitle) && <FirstTitle title={title || jsonTitle || ''} />}
+        {(jsonTitle || title) && <FirstTitle title={jsonTitle || title || ''} />}
       </Sequence>
       {/* Title sequence with logo - now third */}
+      {/* Always use prop title for second title (do not change) */}
       <Sequence from={thirdTitleDuration} durationInFrames={sequenceDuration}>
         <TitleSequence title={title} />
       </Sequence>

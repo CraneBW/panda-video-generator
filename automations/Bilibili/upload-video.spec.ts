@@ -83,9 +83,9 @@ function getUploadConfig(): UploadConfig {
 const bilibiliAuthFile = getAuthFilePath('bilibili');
 if (existsSync(bilibiliAuthFile)) {
   test.use({ storageState: bilibiliAuthFile });
-  console.log(`🔐 Using saved authentication state from: ${bilibiliAuthFile}`);
+  console.log('Auth: Bilibili');
 } else {
-  console.log('⚠️  No saved authentication file found. You may need to login first: pnpm test:login:bilibili');
+  console.log('Auth: Bilibili (not found, run: pnpm test:login:bilibili)');
 }
 
 // Configure test suite: 5 minute timeout
@@ -97,15 +97,9 @@ test('upload video to bilibili', async ({ page }) => {
   
   const config = getUploadConfig();
   
-  console.log('📹 Video Upload Configuration:');
-  console.log(`   Video: ${config.videoPath}`);
-  console.log(`   Title: ${config.title}`);
-  console.log(`   Description: ${config.description || '(empty)'}`);
-  console.log(`   Tags: ${config.tags?.join(', ') || '(none)'}`);
-  console.log('');
+  console.log(`Upload: Bilibili - ${config.title}`);
   
   // Step 1: Navigate to Bilibili upload page
-  console.log('🌐 Navigating to Bilibili upload page...');
   await page.goto('https://member.bilibili.com/platform/upload/video/frame');
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(2000);
@@ -119,10 +113,7 @@ test('upload video to bilibili', async ({ page }) => {
     );
   }
   
-  console.log('✅ Logged in successfully (using saved session)');
-  
   // Step 2: Find the actual file input element
-  console.log('📤 Looking for upload file input...');
   await page.waitForTimeout(2000);
   
   const fileInputSelectors = [
@@ -141,7 +132,6 @@ test('upload video to bilibili', async ({ page }) => {
         const tagName = await input.evaluate((el: any) => el?.tagName?.toLowerCase());
         if (tagName === 'input') {
           uploadInput = input;
-          console.log(`✅ Found file input: ${selector}`);
           break;
         }
       }
@@ -151,7 +141,6 @@ test('upload video to bilibili', async ({ page }) => {
   }
   
   if (!uploadInput) {
-    console.log('⚠️  File input not found. Trying to click upload area...');
     const uploadArea = page.locator('.upload-area').first();
     if (await uploadArea.isVisible({ timeout: 3000 })) {
       await uploadArea.click();
@@ -163,7 +152,6 @@ test('upload video to bilibili', async ({ page }) => {
           const count = await input.count();
           if (count > 0) {
             uploadInput = input;
-            console.log(`✅ Found file input after click: ${selector}`);
             break;
           }
         } catch (e) {
@@ -174,7 +162,6 @@ test('upload video to bilibili', async ({ page }) => {
   }
   
   if (!uploadInput) {
-    console.log('⚠️  Creating file input programmatically...');
     await page.evaluate(() => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -187,14 +174,9 @@ test('upload video to bilibili', async ({ page }) => {
   }
   
   // Step 3: Upload video file
-  console.log(`📁 Uploading video: ${config.videoPath}`);
   try {
     await uploadInput.setInputFiles(config.videoPath);
-    console.log('✅ Video file selected');
   } catch (error: any) {
-    console.log(`❌ Error uploading file: ${error.message}`);
-    console.log('💡 Trying alternative method: using file chooser...');
-    
     const uploadArea = page.locator('.upload-area').first();
     if (await uploadArea.isVisible({ timeout: 3000 })) {
       const [fileChooser] = await Promise.all([
@@ -202,7 +184,6 @@ test('upload video to bilibili', async ({ page }) => {
         uploadArea.click(),
       ]);
       await fileChooser.setFiles(config.videoPath);
-      console.log('✅ Video file selected via file chooser');
     } else {
       throw new Error('Could not find upload area or file input');
     }
@@ -211,12 +192,9 @@ test('upload video to bilibili', async ({ page }) => {
   await page.waitForTimeout(3000);
   
   // Step 4: Fill in video information
-  console.log('✏️  Waiting for form to appear...');
   await page.waitForTimeout(5000);
   await page.evaluate(() => window.scrollTo(0, 500));
   await page.waitForTimeout(1000);
-  
-  console.log('✏️  Filling in video information...');
   
   // Fill title
   const titleSelectors = [
@@ -240,7 +218,6 @@ test('upload video to bilibili', async ({ page }) => {
         if (visible) {
           await titleInput.click({ timeout: 1000 });
           await titleInput.fill(config.title);
-          console.log(`✅ Title filled using selector: ${selector}`);
           titleFilled = true;
           await page.waitForTimeout(500);
           break;
@@ -249,10 +226,6 @@ test('upload video to bilibili', async ({ page }) => {
     } catch (e) {
       // Continue
     }
-  }
-  
-  if (!titleFilled) {
-    console.log('⚠️  Title input not found automatically. Please fill manually.');
   }
   
   // Fill description if provided
@@ -279,7 +252,6 @@ test('upload video to bilibili', async ({ page }) => {
           if (visible) {
             await descInput.click({ timeout: 1000 });
             await descInput.fill(config.description);
-            console.log(`✅ Description filled using selector: ${selector}`);
             descFilled = true;
             await page.waitForTimeout(500);
             break;
@@ -290,9 +262,6 @@ test('upload video to bilibili', async ({ page }) => {
       }
     }
     
-    if (!descFilled) {
-      console.log('⚠️  Description input not found automatically. Please fill manually.');
-    }
   }
   
   // Fill tags if provided
@@ -316,7 +285,6 @@ test('upload video to bilibili', async ({ page }) => {
           if (visible) {
             await tagInput.click({ timeout: 1000 });
             await tagInput.fill(config.tags.join(','));
-            console.log(`✅ Tags filled using selector: ${selector}`);
             tagsFilled = true;
             await page.waitForTimeout(500);
             break;
@@ -327,14 +295,10 @@ test('upload video to bilibili', async ({ page }) => {
       }
     }
     
-    if (!tagsFilled) {
-      console.log('⚠️  Tags input not found automatically. Please fill manually.');
-    }
   }
   
   // Step 5: Upload cover if provided
   if (config.coverPath && existsSync(config.coverPath)) {
-    console.log(`🖼️  Uploading cover: ${config.coverPath}`);
     const coverSelectors = [
       'input[type="file"][accept*="image"]',
       '.cover-upload input',
@@ -346,7 +310,6 @@ test('upload video to bilibili', async ({ page }) => {
         const coverInput = page.locator(selector).first();
         if (await coverInput.isVisible({ timeout: 2000 })) {
           await coverInput.setInputFiles(config.coverPath);
-          console.log('✅ Cover uploaded');
           await page.waitForTimeout(2000);
           break;
         }
@@ -357,13 +320,9 @@ test('upload video to bilibili', async ({ page }) => {
   }
   
   // Step 6: Wait for video processing
-  console.log('⏳ Waiting for video to finish uploading/processing...');
   await page.waitForTimeout(10000);
   
   // Step 7: Click submit button
-  console.log('');
-  console.log('📝 Video upload/form filling completed!');
-  console.log('🚀 Looking for submit button...');
   await page.waitForTimeout(2000);
   
   // Scroll to bottom to ensure submit button is visible
@@ -380,13 +339,9 @@ test('upload video to bilibili', async ({ page }) => {
     if (visible) {
       const isEnabled = await submitButton.isEnabled().catch(() => false);
       if (isEnabled) {
-        console.log(`✅ Found submit button: getByText('立即投稿')`);
         await submitButton.click();
-        console.log('✅ Submit button clicked!');
         submitClicked = true;
         await page.waitForTimeout(2000);
-      } else {
-        console.log(`⚠️  Submit button found but disabled: getByText('立即投稿')`);
       }
     }
   } catch (e) {
@@ -416,14 +371,10 @@ test('upload video to bilibili', async ({ page }) => {
         if (visible) {
           const isEnabled = await submitButton.isEnabled().catch(() => false);
           if (isEnabled) {
-            console.log(`✅ Found submit button: ${selector}`);
             await submitButton.click();
-            console.log('✅ Submit button clicked!');
             submitClicked = true;
             await page.waitForTimeout(2000);
             break;
-          } else {
-            console.log(`⚠️  Submit button found but disabled: ${selector}`);
           }
         }
       } catch (e) {
@@ -433,57 +384,16 @@ test('upload video to bilibili', async ({ page }) => {
   }
   
   if (!submitClicked) {
-    console.log('⚠️  Submit button not found automatically.');
-    console.log('💡 Pausing for manual review - please click submit button manually');
     await page.pause();
   } else {
     // Wait for submission to complete
-    console.log('⏳ Waiting for submission to complete...');
     await page.waitForTimeout(5000);
     
-    // Check for success indicators
-    let submissionSuccess = false;
+    // Assert that '稿件投递成功' text appears
+    const successMessage = page.getByText('稿件投递成功').first();
+    await successMessage.waitFor({ state: 'visible', timeout: 30000 });
+    await test.expect(successMessage).toBeVisible({ timeout: 30000 });
     
-    // First, check for '稿件投递成功' using getByText
-    try {
-      const successMessage = page.getByText('稿件投递成功').first();
-      if (await successMessage.isVisible({ timeout: 10000 })) {
-        submissionSuccess = true;
-        console.log('✅ Submission successful! Found: 稿件投递成功');
-      }
-    } catch (e) {
-      // Continue to fallback selectors
-    }
-    
-    // Fallback to other success indicators if not found
-    if (!submissionSuccess) {
-      const successSelectors = [
-        'text=提交成功',
-        'text=发布成功',
-        'text=上传成功',
-        'text=投稿成功',
-        '[class*="success"]',
-        '[class*="Success"]',
-      ];
-      
-      for (const selector of successSelectors) {
-        try {
-          const element = page.locator(selector).first();
-          if (await element.isVisible({ timeout: 5000 })) {
-            submissionSuccess = true;
-            console.log(`✅ Submission successful! Found: ${selector}`);
-            break;
-          }
-        } catch (e) {
-          // Continue
-        }
-      }
-    }
-    
-    if (!submissionSuccess) {
-      console.log('💡 Submission initiated. Please check the page for confirmation.');
-    }
+    console.log('Success: Bilibili');
   }
-  
-  console.log('✅ Upload process completed!');
 });
