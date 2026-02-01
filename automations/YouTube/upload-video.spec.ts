@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import path from 'path';
 import { existsSync } from 'fs';
 import { getAuthFilePath } from '../utils/login-helper';
@@ -171,17 +171,25 @@ test('upload video to youtube', async ({ page }) => {
   console.log('⏳ Waiting for upload page to load...');
   await page.waitForTimeout(3000);
   
-  // Step 3: Find and use file input for video upload
-  console.log('📤 Looking for upload file input...');
+  // Step 3: Click "创建" button to open upload dialog
+  console.log('📤 Opening upload dialog...');
   await page.waitForTimeout(2000);
+  await page.getByRole('button', { name: '创建' }).click();
+  await page.waitForTimeout(1000);
   
+  // Step 4: Click "上传视频" to open file picker
+  await page.getByText('上传视频').click();
+  await page.waitForTimeout(2000);
+
+  // Step 5: Select video file
+  console.log(`📁 Uploading video: ${config.videoPath}`);
+  
+  // Try to find the actual file input element first
   const fileInputSelectors = [
+    '#ytcp-uploads-dialog-file-picker input[type="file"]',
+    '#ytcp-uploads-dialog-file-picker input[accept*="video"]',
+    'input[type="file"][accept*="video"]',
     'input[type="file"]',
-    'input[accept*="video"]',
-    'input[accept*="mp4"]',
-    '#select-files-button input',
-    '[id*="file"] input[type="file"]',
-    '[class*="upload"] input[type="file"]',
   ];
   
   let uploadInput = null;
@@ -199,9 +207,7 @@ test('upload video to youtube', async ({ page }) => {
     }
   }
   
-  // Step 4: Upload video file
-  console.log(`📁 Uploading video: ${config.videoPath}`);
-  
+  // Method 1: Try direct file input if found
   if (uploadInput) {
     try {
       await uploadInput.setInputFiles(config.videoPath);
@@ -213,51 +219,31 @@ test('upload video to youtube', async ({ page }) => {
     }
   }
   
-  // If no file input found or failed, try clicking upload area
+  // Method 2: If input not found or failed, use file chooser event
   if (!uploadInput) {
-    console.log('💡 Trying file chooser method...');
-    const uploadAreaSelectors = [
-      '#select-files-button',
-      'button:has-text("Select files")',
-      'button:has-text("选择文件")',
-      '[aria-label*="Select files"]',
-      '[aria-label*="选择文件"]',
-      '[class*="upload"] button',
-      'yt-button-shape:has-text("Select files")',
-      'yt-button-shape:has-text("选择文件")',
-      '[id*="select"] button',
-      'button[class*="select"]',
-    ];
-    
-    for (const selector of uploadAreaSelectors) {
-      try {
-        const uploadArea = page.locator(selector).first();
-        const visible = await uploadArea.isVisible({ timeout: 5000 });
-        if (visible) {
-          console.log(`✅ Found upload area: ${selector}`);
-          const [fileChooser] = await Promise.all([
-            page.waitForEvent('filechooser', { timeout: 10000 }),
-            uploadArea.click(),
-          ]);
-          await fileChooser.setFiles(config.videoPath);
-          console.log('✅ Video file selected via file chooser');
-          await page.waitForTimeout(3000);
-          break;
-        }
-      } catch (e) {
-        // Continue
-      }
+    try {
+      console.log('💡 Trying file chooser method...');
+      const uploadButton = page.locator('#ytcp-uploads-dialog-file-picker').first();
+      const [fileChooser] = await Promise.all([
+        page.waitForEvent('filechooser', { timeout: 10000 }),
+        uploadButton.click(),
+      ]);
+      await fileChooser.setFiles(config.videoPath);
+      console.log('✅ Video file selected via file chooser');
+      await page.waitForTimeout(3000);
+    } catch (error: any) {
+      console.log(`❌ File chooser method failed: ${error.message}`);
+      throw new Error(`Failed to upload video file: ${error.message}`);
     }
   }
-  
-  // Step 5: Wait for video to start uploading/processing
-  console.log('⏳ Waiting for video upload form to appear...');
+
+  // Step 6: Wait for upload form to appear after video selection
+  console.log('⏳ Waiting for upload form to appear...');
   await page.waitForTimeout(5000);
+
+  // Step 7: Fill in video information (title, description, tags, privacy)
+  console.log('✏️  Filling in video information...');
   
-  // Step 6: Fill in video details (title, description, tags)
-  console.log('✏️  Filling in video details...');
-  
-  // Fill title (support both English and Chinese)
   const titleSelectors = [
     'input[aria-label*="Title"]',
     'input[aria-label*="title"]',
@@ -360,7 +346,7 @@ test('upload video to youtube', async ({ page }) => {
     }
   }
   
-  // Step 7: Set privacy/visibility (default to unlisted)
+  // Step 8: Set privacy/visibility (default to unlisted)
   console.log(`🔒 Setting privacy to: ${config.privacy}`);
   await page.waitForTimeout(2000);
   
@@ -420,129 +406,14 @@ test('upload video to youtube', async ({ page }) => {
       // Continue
     }
   }
-  
-  // Step 8: Wait for video processing (if needed)
-  console.log('⏳ Waiting for video processing...');
-  await page.waitForTimeout(5000);
-  
-  // Step 9: Click "Publish" or "Save" button
-  console.log('📤 Looking for publish/save button...');
-  await page.waitForTimeout(2000);
-  
-  // Scroll to ensure buttons are visible
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForTimeout(1000);
-  
-  const publishButtonSelectors = [
-    'button:has-text("Publish")',
-    'button:has-text("发布")',
-    'yt-button-shape:has-text("Publish")',
-    'yt-button-shape:has-text("发布")',
-    '[aria-label*="Publish"]',
-    '[aria-label*="发布"]',
-    'button:has-text("Save")',
-    'button:has-text("保存")',
-    'yt-button-shape:has-text("Save")',
-    'yt-button-shape:has-text("保存")',
-    '[aria-label*="Save"]',
-    '[aria-label*="保存"]',
-    'button[id*="publish"]',
-    'button[id*="save"]',
-  ];
-  
-  let publishClicked = false;
-  for (const selector of publishButtonSelectors) {
-    try {
-      const publishButton = page.locator(selector).first();
-      const visible = await publishButton.isVisible({ timeout: 10000 });
-      if (visible) {
-        const isEnabled = await publishButton.isEnabled().catch(() => false);
-        if (isEnabled) {
-          console.log(`✅ Found publish button: ${selector}`);
-          await publishButton.click();
-          publishClicked = true;
-          console.log('✅ Publish button clicked');
-          await page.waitForTimeout(3000);
-          break;
-        } else {
-          console.log(`⚠️  Publish button found but disabled: ${selector}`);
-        }
-      }
-    } catch (e) {
-      // Continue
-    }
-  }
-  
-  if (!publishClicked) {
-    console.log('❌ Could not find or click publish button');
-    await page.pause();
-  } else {
-    // Wait for upload to complete - check for "上传完毕" in #expand-button
-    console.log('⏳ Waiting for upload to complete (checking for 上传完毕)...');
-    
-    try {
-      // Wait for the expand button to contain "上传完毕" text
-      const expandButton = page.locator('#expand-button').first();
-      await expandButton.waitFor({ state: 'visible', timeout: 60000 });
-      await test.expect(expandButton).toContainText('上传完毕', { timeout: 60000 });
-      console.log('✅ Upload completed: 上传完毕 found in #expand-button');
-      console.log('Success: YouTube');
-    } catch (e) {
-      // Fallback: Check for other success indicators (support both English and Chinese)
-      console.log('⚠️  Could not find 上传完毕, checking alternative success indicators...');
-      await page.waitForTimeout(5000);
-      
-      const successSelectors = [
-        'text=Video published',
-        'text=Published',
-        'text=视频已发布',
-        'text=已发布',
-        'text=Video saved',
-        'text=Saved',
-        'text=视频已保存',
-        'text=已保存',
-        '[aria-label*="published"]',
-        '[aria-label*="saved"]',
-        '[aria-label*="已发布"]',
-        '[aria-label*="已保存"]',
-      ];
-      
-      let successFound = false;
-      for (const selector of successSelectors) {
-        try {
-          const successMessage = page.locator(selector).first();
-          const visible = await successMessage.isVisible({ timeout: 30000 });
-          if (visible) {
-            successFound = true;
-            await test.expect(successMessage).toBeVisible({ timeout: 30000 });
-            console.log(`✅ Success message found: ${selector}`);
-            break;
-          }
-        } catch (e) {
-          // Continue
-        }
-      }
-      
-      // Also check if we're redirected to videos list (another success indicator)
-      if (!successFound) {
-        await page.waitForTimeout(5000);
-        const currentUrl = page.url();
-        console.log(`📍 Current URL: ${currentUrl}`);
-        if (currentUrl.includes('/videos') || currentUrl.includes('/studio')) {
-          successFound = true;
-          console.log('✅ Redirected to videos list - upload likely successful');
-        }
-      }
-      
-      if (successFound) {
-        console.log('Success: YouTube');
-      } else {
-        console.log('⚠️  Success: YouTube (upload completed, but verification pending)');
-      }
-    }
-  }
+  await page.getByRole('radio', { name: '不，内容不是面向儿童的' }).click();
+  await page.getByRole('button', { name: '继续' }).click();
+  await page.getByRole('button', { name: '继续' }).click();
+  await page.getByRole('button', { name: '继续' }).click();
+  await page.getByRole('radio', { name: '公开', exact: true }).click();
+  await page.getByRole('button', { name: '发布' }).click();
+  await page.waitForTimeout(3000);
+  await page.getByRole('button', { name: '关闭', exact: true }).click();
+  await expect(page.getByLabel(config.title, { exact: true })).toBeVisible();
 
-
-await page.locator('ytcp-animatable').filter({ hasText: '频道内容 视频 Shorts' }).click();
-await page.locator('div').filter({ hasText: '创建 账号' }).nth(1).click();
-await page.locator('div').filter({ hasText: '创建 账号' }).nth(1).click();});
+});

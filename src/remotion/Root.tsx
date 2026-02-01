@@ -63,9 +63,11 @@ export const RemotionRoot: React.FC = () => {
           // Get audio duration automatically from VTT file
           const vttFile = props.vttFile || "audio/audio.vtt";
           const audioDurationInSeconds = await getAudioDurationFromVtt(vttFile);
-          // Sequence 1: Intro (thirdTitleDuration 3.5s + sequenceDuration 4s = 7.5 seconds) + Sequence 3: Content (audio duration)
+          // Sequence 0: Cover (0.5 seconds) + Sequence 1: Intro (thirdTitleDuration 3.5s + sequenceDuration 4s = 7.5 seconds) + Sequence 3: Content (audio duration + 2 seconds tail extension)
+          const COVER_DURATION_SECONDS = 0.5;
           const SEQ1_DURATION_SECONDS = 7.5;
-          const totalDurationInSeconds = SEQ1_DURATION_SECONDS + audioDurationInSeconds;
+          const CONTENT_TAIL_EXTENSION_SECONDS = 2;
+          const totalDurationInSeconds = COVER_DURATION_SECONDS + SEQ1_DURATION_SECONDS + audioDurationInSeconds + CONTENT_TAIL_EXTENSION_SECONDS;
           const durationInFrames = Math.ceil(totalDurationInSeconds * VIDEO_FPS);
 
           return {
@@ -134,9 +136,11 @@ export const RemotionRoot: React.FC = () => {
           // Get audio duration automatically from VTT file
           const vttFile = props.vttFile || "audio/audio.vtt";
           const audioDurationInSeconds = await getAudioDurationFromVtt(vttFile);
-          // Sequence 1: Intro (thirdTitleDuration 3.5s + sequenceDuration 4s = 7.5 seconds) + Sequence 3: Content (audio duration)
+          // Sequence 0: Cover (0.5 seconds) + Sequence 1: Intro (thirdTitleDuration 3.5s + sequenceDuration 4s = 7.5 seconds) + Sequence 3: Content (audio duration + 2 seconds tail extension)
+          const COVER_DURATION_SECONDS = 0.5;
           const SEQ1_DURATION_SECONDS = 7.5;
-          const totalDurationInSeconds = SEQ1_DURATION_SECONDS + audioDurationInSeconds;
+          const CONTENT_TAIL_EXTENSION_SECONDS = 2;
+          const totalDurationInSeconds = COVER_DURATION_SECONDS + SEQ1_DURATION_SECONDS + audioDurationInSeconds + CONTENT_TAIL_EXTENSION_SECONDS;
           const durationInFrames = Math.ceil(totalDurationInSeconds * VIDEO_FPS);
 
           return {

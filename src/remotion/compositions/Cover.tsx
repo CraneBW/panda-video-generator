@@ -86,6 +86,7 @@ export const Cover: React.FC<CoverProps> = ({ title, contentTitle }) => {
 						width: logoSize / 2,
 						height: logoSize / 2,
 						objectFit: 'contain',
+						filter: 'invert(1)', // Invert logo to cancel parent's invert filter
 					}}
 				/>
 				{/* Title next to logo */}

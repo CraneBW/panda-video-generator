@@ -3,6 +3,7 @@ import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender } fr
 import { IntroVertical } from './IntroVertical';
 import { ContentVertical } from './ContentVertical';
 import { Watermark } from './Watermark';
+import { Cover } from './Cover';
 
 // Parse VTT file to get duration
 async function getAudioDurationFromVtt(vttFile: string): Promise<number> {
@@ -68,20 +69,36 @@ export const VideoVertical: React.FC<{
 			}
 		}, [loaded, continueRender, handle]);
 
+		// Cover duration: 0.5 seconds
+		const coverDuration = Math.ceil(0.5 * fps);
 		// Intro duration: thirdTitleDuration (3.5s) + sequenceDuration (4s) = 7.5 seconds
 		const introDuration = Math.ceil(7.5 * fps);
-		// Sequence 3: Content (audio duration)
-		const seq3Start = introDuration;
-		const contentDurationFrames = Math.ceil(contentDuration * fps);
+		// Cover starts at the beginning
+		const coverStart = 0;
+		// Intro starts after cover
+		const introStart = coverDuration;
+		// Sequence 3: Content (audio duration + 2 seconds tail extension) starts after cover + intro
+		const seq3Start = coverDuration + introDuration;
+		const contentTailExtension = 2; // 2 seconds extension at the tail
+		const contentDurationFrames = Math.ceil((contentDuration + contentTailExtension) * fps);
 
-		if (!loaded || contentDurationFrames === 0) {
+		if (!loaded || contentDuration === 0) {
 			return null;
 		}
 
 		return (
-			<AbsoluteFill>
+			<AbsoluteFill
+				style={{
+					filter: 'invert(1)',
+				}}
+			>
+				{/* Cover sequence - displayed first */}
+				<Sequence from={coverStart} durationInFrames={coverDuration}>
+					<Cover title={title} />
+				</Sequence>
+
 				{/* Intro sequence - includes logo, title, third title */}
-				<Sequence durationInFrames={introDuration}>
+				<Sequence from={introStart} durationInFrames={introDuration}>
 					<IntroVertical title={title} />
 				</Sequence>
 

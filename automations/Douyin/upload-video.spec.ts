@@ -68,6 +68,13 @@ function getUploadConfig(): UploadConfig {
     );
   }
   
+  // Douyin title limit: 30 characters
+  const DOUYIN_TITLE_MAX_LENGTH = 30;
+  if (title.length > DOUYIN_TITLE_MAX_LENGTH) {
+    title = title.substring(0, DOUYIN_TITLE_MAX_LENGTH);
+    console.log(`⚠️  Title truncated to ${DOUYIN_TITLE_MAX_LENGTH} characters for Douyin`);
+  }
+  
   const config: UploadConfig = {
     videoPath: path.resolve(videoPath),
     title,

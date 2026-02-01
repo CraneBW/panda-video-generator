@@ -18,6 +18,7 @@ export const Logo: React.FC<{
 			transform: `scale(${finalScale})`,
 			transformOrigin: 'center center',
 			willChange: 'transform',
+			filter: 'invert(1)', // Invert logo to cancel parent's invert filter
 		};
 	}, [scale, outProgress, width, height]);
 
