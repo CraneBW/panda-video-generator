@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AbsoluteFill, useVideoConfig, staticFile, Img, useDelayRender } from 'remotion';
 import { loadFont } from '@remotion/fonts';
+import { defaultMyCompProps } from '../../../types/constants';
 
 // Load custom font
 loadFont({
@@ -90,20 +91,18 @@ export const Cover: React.FC<CoverProps> = ({ title, contentTitle }) => {
 					}}
 				/>
 				{/* Title next to logo */}
-				{title && (
-					<h2
-						style={{
-							fontFamily: 'dingliesongtypeface',
-							fontSize: Math.min(width * 0.04, 48) / 2,
-							fontWeight: 'bold',
-							color: '#000000',
-							margin: 0,
-							lineHeight: 1.2,
-						}}
-					>
-						{title}
-					</h2>
-				)}
+				<h2
+					style={{
+						fontFamily: 'dingliesongtypeface',
+						fontSize: Math.min(width * 0.04, 48) / 2,
+						fontWeight: 'bold',
+						color: '#000000',
+						margin: 0,
+						lineHeight: 1.2,
+					}}
+				>
+					{defaultMyCompProps.title}
+				</h2>
 			</div>
 
 			{/* Main content title in center */}

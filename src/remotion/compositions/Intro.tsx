@@ -10,7 +10,7 @@ import {
   useDelayRender,
   Html5Audio,
 } from "remotion";
-import { CompositionProps, defaultMyCompProps } from "../../../types/constants";
+import { CompositionProps } from "../../../types/constants";
 import { Logo } from "./Logo";
 import { loadFont as loadInterFont, fontFamily } from "@remotion/google-fonts/Inter";
 import { loadFont } from "@remotion/fonts";
@@ -98,9 +98,12 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
   };
 
   // Inner component for Sequence to use relative frame
-  const TitleSequence: React.FC<{ title: string }> = ({ title }) => {
+  const TitleSequence: React.FC = () => {
     const sequenceFrame = useCurrentFrame(); // Relative frame within Sequence
     const { fps } = useVideoConfig();
+
+    // Fixed text for h2 between logo
+    const fixedTitle = "熊猫智研社";
 
     // Logo scale animation: from small (0.2) to normal size (1.0)
     // Animation duration: first 0.8 seconds, then stay at normal size
@@ -176,7 +179,7 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
               transform: `translateY(${titleMoveY}px)`,
             }}
           >
-            <h1
+            <h2
               className="text-[70px] font-bold"
               style={{
                 fontFamily,
@@ -189,8 +192,8 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
                 color: '#000000',
               }}
             >
-              {title}
-            </h1>
+              {fixedTitle}
+            </h2>
           </div>
         </AbsoluteFill>
         <WatermarkText />
@@ -296,9 +299,9 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
         {(jsonTitle || title) && <FirstTitle title={jsonTitle || title || ''} />}
       </Sequence>
       {/* Title sequence with logo - now third */}
-      {/* Always use prop title for second title (do not change) */}
+      {/* Always use fixed text for h2 between logo */}
       <Sequence from={thirdTitleDuration} durationInFrames={sequenceDuration}>
-        <TitleSequence title={defaultMyCompProps.title} />
+        <TitleSequence />
       </Sequence>
     </AbsoluteFill>
   );
