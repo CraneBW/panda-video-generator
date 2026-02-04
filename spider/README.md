@@ -74,9 +74,9 @@ The tool extracts:
 - Question content/description
 - Answers (author, content, vote count)
 
-Output files are saved in the `spider/` directory with timestamps:
-- JSON format: `spider/output-{timestamp}.json`
-- Markdown format: `spider/output-{timestamp}.md`
+Output files are saved in the `output/spider/` directory with timestamps:
+- JSON format: `output/spider/output-{timestamp}.json`
+- Markdown format: `output/spider/output-{timestamp}.md`
 
 ## Video Script Generation
 
@@ -98,7 +98,7 @@ const scriptPath = await generateVideoScript(zhihuData);
 const scriptPath = await generateVideoScript(zhihuData, 'custom/dir');
 
 // Generate script from JSON file
-const scriptPath = await generateVideoScriptFromFile('spider/output-2026-01-28T15-35-48.json');
+const scriptPath = await generateVideoScriptFromFile('output/spider/output-2026-01-28T15-35-48.json');
 ```
 
 ### Requirements

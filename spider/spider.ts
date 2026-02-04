@@ -124,11 +124,13 @@ export class ZhihuSpider {
 
       // Debug: Save screenshot and HTML for inspection
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-      await page.screenshot({ path: `spider/debug-${timestamp}.png`, fullPage: true });
-      const html = await page.content();
       const fs = await import('fs/promises');
-      await fs.writeFile(`spider/debug-${timestamp}.html`, html, 'utf-8');
-      console.log(`Debug files saved: debug-${timestamp}.png, debug-${timestamp}.html`);
+      const debugDir = 'output/spider';
+      await fs.mkdir(debugDir, { recursive: true });
+      await page.screenshot({ path: `${debugDir}/debug-${timestamp}.png`, fullPage: true });
+      const html = await page.content();
+      await fs.writeFile(`${debugDir}/debug-${timestamp}.html`, html, 'utf-8');
+      console.log(`Debug files saved: ${debugDir}/debug-${timestamp}.png, ${debugDir}/debug-${timestamp}.html`);
 
       // Extract question title - try more selectors
       const title = await page.evaluate(() => {

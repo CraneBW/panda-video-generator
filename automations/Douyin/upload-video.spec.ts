@@ -6,7 +6,7 @@ import { getAuthFilePath } from '../utils/login-helper';
 /**
  * Auto upload video to Douyin (抖音 - TikTok China)
  * Uses Playwright's default setup with saved login state
- * Automatically reads video from out/video.mp4 and title from out/title.json
+ * Automatically reads video from output/video/video.mp4 and title from output/video/title.json
  * 
  * Usage: 
  *   pnpm test:upload:douyin
@@ -25,13 +25,13 @@ interface UploadConfig {
 
 // Get video file path (default to fixed filename)
 function getVideoPath(): string {
-  const defaultVideoPath = path.join(process.cwd(), 'out', 'video.mp4');
+  const defaultVideoPath = path.join(process.cwd(), 'output', 'video', 'video.mp4');
   return process.env.VIDEO_PATH || defaultVideoPath;
 }
 
 // Get title from JSON file or environment
 function getTitleFromJson(): string | null {
-  const titleJsonPath = path.join(process.cwd(), 'out', 'title.json');
+  const titleJsonPath = path.join(process.cwd(), 'output', 'video', 'title.json');
   
   if (!existsSync(titleJsonPath)) {
     return null;
@@ -53,7 +53,7 @@ function getUploadConfig(): UploadConfig {
   if (!videoPath || !existsSync(videoPath)) {
     throw new Error(
       `Video file not found: ${videoPath}\n` +
-      'Please ensure out/video.mp4 exists or set VIDEO_PATH environment variable.'
+      'Please ensure output/video/video.mp4 exists or set VIDEO_PATH environment variable.'
     );
   }
   
@@ -64,7 +64,7 @@ function getUploadConfig(): UploadConfig {
     throw new Error(
       'VIDEO_TITLE is required. Please set it:\n' +
       '  export VIDEO_TITLE="Your Video Title"\n' +
-      'Or ensure out/title.json exists with a title field.'
+      'Or ensure output/video/title.json exists with a title field.'
     );
   }
   

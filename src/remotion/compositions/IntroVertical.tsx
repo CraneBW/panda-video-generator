@@ -37,14 +37,14 @@ export const IntroVertical = ({ title }: z.infer<typeof CompositionProps>) => {
   const { delayRender, continueRender } = useDelayRender();
   const [handle] = useState(() => delayRender());
 
-  // Always load title from title.json (must be in public/out/title.json)
+  // Always load title from title.json (must be in public/video/title.json)
   // This ensures we always use the latest title from the file system
   const fetchTitleFromJson = useCallback(async () => {
     try {
       // Use staticFile to access files in public directory
-      const response = await fetch(staticFile('out/title.json'));
+      const response = await fetch(staticFile('video/title.json'));
       if (!response.ok) {
-        console.warn('title.json not found in public/out/, using prop title as fallback');
+        console.warn('title.json not found in public/video/, using prop title as fallback');
         setTitleLoaded(true);
         return;
       }

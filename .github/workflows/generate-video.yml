@@ -67,7 +67,7 @@ jobs:
 
       - name: Create necessary directories
         run: |
-          mkdir -p output/tts public/tts out
+          mkdir -p output/tts output/video public/tts public/video
 
       - name: Set up display server for headless browser
         run: |
@@ -87,10 +87,10 @@ jobs:
       - name: Find generated video file
         id: find-video
         run: |
-          VIDEO_FILE=$(find out -name "video_*.mp4" -type f | head -n 1)
-          if [ -z "$VIDEO_FILE" ]; then
-            echo "No video file found in out directory"
-            ls -la out/ || echo "out directory does not exist"
+          VIDEO_FILE="output/video/video.mp4"
+          if [ ! -f "$VIDEO_FILE" ]; then
+            echo "No video file found at $VIDEO_FILE"
+            ls -la output/video/ || echo "output/video directory does not exist"
             exit 1
           fi
           echo "video_path=$VIDEO_FILE" >> $GITHUB_OUTPUT

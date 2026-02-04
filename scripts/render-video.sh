@@ -116,32 +116,32 @@ echo -e "${YELLOW}🎬 Step 2/2: Rendering video with Remotion...${NC}"
 echo ""
 
 # Use fixed output filename
-OUTPUT_FILE="out/video.mp4"
+OUTPUT_FILE="output/video/video.mp4"
 
-# Ensure out directory exists
-mkdir -p out
+# Ensure output directory exists
+mkdir -p output/video
 
-# Copy title.json to public/out/ if it exists, so Remotion can access it
+# Copy title.json to public/video/ if it exists, so Remotion can access it
 # Always overwrite to ensure latest title is used
-if [ -f "out/title.json" ]; then
-    mkdir -p public/out
+if [ -f "output/video/title.json" ]; then
+    mkdir -p public/video
     # Remove old file first to avoid any caching issues
-    rm -f "public/out/title.json"
-    cp "out/title.json" "public/out/title.json"
-    echo -e "${BLUE}📋 Title JSON copied to public/out/title.json${NC}"
-    echo -e "${BLUE}   Title: $(node -e "const fs=require('fs'); const d=JSON.parse(fs.readFileSync('out/title.json','utf8')); console.log(d.title)")${NC}"
+    rm -f "public/video/title.json"
+    cp "output/video/title.json" "public/video/title.json"
+    echo -e "${BLUE}📋 Title JSON copied to public/video/title.json${NC}"
+    echo -e "${BLUE}   Title: $(node -e "const fs=require('fs'); const d=JSON.parse(fs.readFileSync('output/video/title.json','utf8')); console.log(d.title)")${NC}"
 else
-    echo -e "${YELLOW}⚠️  out/title.json not found, component will use default title${NC}"
+    echo -e "${YELLOW}⚠️  output/video/title.json not found, component will use default title${NC}"
 fi
 
 # Read title from title.json if it exists and pass it as prop
 TITLE_PROP=""
-if [ -f "out/title.json" ]; then
+if [ -f "output/video/title.json" ]; then
     # Use Node.js to safely read JSON and create props string
     TITLE_PROP=$(node -e "
         const fs = require('fs');
         try {
-            const data = JSON.parse(fs.readFileSync('out/title.json', 'utf8'));
+            const data = JSON.parse(fs.readFileSync('output/video/title.json', 'utf8'));
             if (data.title) {
                 const props = JSON.stringify({ title: data.title });
                 console.log('--props=' + props);
@@ -153,7 +153,7 @@ if [ -f "out/title.json" ]; then
 fi
 
 if [ -n "$TITLE_PROP" ]; then
-    echo -e "${BLUE}📝 Using title from out/title.json${NC}"
+    echo -e "${BLUE}📝 Using title from output/video/title.json${NC}"
     if ! pnpm exec remotion render Video "$OUTPUT_FILE" $TITLE_PROP; then
         echo -e "${RED}❌ Failed to render video${NC}"
         exit 1

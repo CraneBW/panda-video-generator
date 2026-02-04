@@ -45,7 +45,9 @@ async function main() {
 
     // Save to JSON file
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const outputPath = `spider/output-${timestamp}.json`;
+    const outputDir = 'output/spider';
+    await fs.mkdir(outputDir, { recursive: true });
+    const outputPath = `${outputDir}/output-${timestamp}.json`;
     await spider.saveToFile(data, outputPath);
 
     console.log('\n✅ Extraction completed successfully!');
@@ -62,9 +64,10 @@ async function main() {
 
     // Generate title.json
     if (data.title) {
-      const titleJsonPath = resolve(process.cwd(), 'out/title.json');
+      const titleJsonPath = resolve(process.cwd(), 'output/video/title.json');
+      const publicTitleJsonPath = resolve(process.cwd(), 'public/video/title.json');
       try {
-        await fs.mkdir(resolve(process.cwd(), 'out'), { recursive: true });
+        await fs.mkdir(resolve(process.cwd(), 'output/video'), { recursive: true });
         await fs.writeFile(
           titleJsonPath,
           JSON.stringify({ title: data.title }, null, 2),
@@ -72,6 +75,11 @@ async function main() {
         );
         console.log(`\n📄 Title JSON exported: ${titleJsonPath}`);
         console.log(`   Title: ${data.title}`);
+        
+        // Also copy to public/video/ for Remotion Studio access
+        await fs.mkdir(resolve(process.cwd(), 'public/video'), { recursive: true });
+        await fs.copyFile(titleJsonPath, publicTitleJsonPath);
+        console.log(`📋 Title JSON also copied to: ${publicTitleJsonPath}`);
       } catch (error) {
         console.error('⚠️  Failed to generate title.json:', error);
       }
@@ -81,7 +89,7 @@ async function main() {
     console.log(`  - Caption: output/tts/input.txt`);
     console.log(`  - Raw data: ${outputPath}`);
     if (data.title) {
-      console.log(`  - Title JSON: out/title.json`);
+      console.log(`  - Title JSON: output/video/title.json`);
     }
     console.log('\n💡 Next step: Run \'pnpm render:video\' to generate video from the extracted content');
   } catch (error) {

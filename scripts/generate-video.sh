@@ -79,11 +79,11 @@ echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━
 echo ""
 
 echo -e "${BLUE}📁 Final output files:${NC}"
-echo "  - Video: out/video.mp4"
+echo "  - Video: output/video/video.mp4"
 echo "  - Audio: output/tts/audio.mp3"
 echo "  - Subtitles: output/tts/audio.vtt"
 echo "  - Caption: output/tts/input.txt"
-if [ -f "out/title.json" ]; then
-    echo "  - Title JSON: out/title.json"
+if [ -f "output/video/title.json" ]; then
+    echo "  - Title JSON: output/video/title.json"
 fi
 echo ""

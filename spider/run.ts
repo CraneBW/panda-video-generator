@@ -33,9 +33,12 @@ async function main() {
     
     // Save to file
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const outputDir = 'output/spider';
+    const fs = await import('fs/promises');
+    await fs.mkdir(outputDir, { recursive: true });
     const outputPath = outputFormat === 'markdown' 
-      ? `spider/output-${timestamp}.md`
-      : `spider/output-${timestamp}.json`;
+      ? `${outputDir}/output-${timestamp}.md`
+      : `${outputDir}/output-${timestamp}.json`;
     
     if (outputFormat === 'markdown') {
       await spider.saveToMarkdown(data, outputPath);

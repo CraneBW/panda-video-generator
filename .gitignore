@@ -38,6 +38,10 @@ out/
 .env
 build
 
+# video output files
+output/video/
+public/video/
+
 # cursor
 .cursor/skills
 
@@ -54,12 +58,8 @@ public/audio/*
 public/image/*
 
 # spider output files
+output/spider/
 spider/tmp/
-spider/output-*.json
-spider/output-*.md
-spider/debug-*.png
-spider/debug-*.html
-spider/script-*.txt
 
 # playwright
 /test-results/

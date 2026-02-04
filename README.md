@@ -140,12 +140,12 @@ pnpm video:zhihu https://www.zhihu.com/question/316150890
 4. ✅ 使用 Remotion 渲染最终视频
 
 **输出文件：**
-- `out/video.mp4` - 最终渲染的视频
+- `output/video/video.mp4` - 最终渲染的视频
+- `output/video/title.json` - 标题 JSON
 - `output/tts/audio.mp3` - 生成的语音文件
 - `output/tts/audio.vtt` - 字幕文件
 - `output/tts/input.txt` - 视频脚本
-- `out/title.json` - 标题 JSON
-- `spider/output-*.json` - 原始爬取数据
+- `output/spider/output-*.json` - 原始爬取数据
 
 > **注意**：需要在 `.env.local` 文件中配置 `DEEPSEEK_API_KEY`，用于智能整理和优化提取的文稿。
 
@@ -196,15 +196,16 @@ pnpm render:video
 4. 输出最终视频文件
 
 **输出：**
-- `out/video.mp4` - 最终渲染的视频
+- `output/video/video.mp4` - 最终渲染的视频
+- `output/video/title.json` - 标题 JSON
 - `output/tts/audio.mp3` - 生成的语音文件
 - `output/tts/audio.vtt` - 字幕文件
 
 #### 3. 多平台发布
 
 **输入：**
-- `out/video.mp4` - 待上传的视频文件
-- `out/title.json` - 视频标题（可选，可通过环境变量覆盖）
+- `output/video/video.mp4` - 待上传的视频文件
+- `output/video/title.json` - 视频标题（可选，可通过环境变量覆盖）
 - 环境变量（可选）：`VIDEO_TITLE`、`VIDEO_DESC`、`VIDEO_TAGS`
 
 ##### 首次使用：平台登录
@@ -256,7 +257,7 @@ pnpm test:upload:douyin
 ```
 
 **配置说明：**
-- `VIDEO_TITLE` - 视频标题（可选，默认使用 `out/title.json`）
+- `VIDEO_TITLE` - 视频标题（可选，默认使用 `output/video/title.json`）
 - `VIDEO_DESC` - 视频描述
 - `VIDEO_TAGS` - 视频标签（逗号分隔）
 
