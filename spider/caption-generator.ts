@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { promises as fs } from 'fs';
+import { OUTPUT_DIRS, TTS_PATHS } from '../types/paths';
 
 interface ZhihuQuestion {
   title: string;
@@ -27,7 +28,7 @@ function loadApiKey(): void {
         process.env.DEEPSEEK_API_KEY = line.split('=')[1].trim();
       }
     }
-  } catch (error) {
+  } catch {
     // Use system env if .env.local not found
   }
 }
@@ -35,12 +36,12 @@ function loadApiKey(): void {
 /**
  * Generate video script from Zhihu question data using DeepSeek
  * @param data - The extracted Zhihu question data
- * @param outputDir - Output directory for the script file (default: 'output/tts')
+ * @param outputDir - Output directory for the script file (default: OUTPUT_DIRS.TTS)
  * @returns Path to the generated script file
  */
 export async function generateVideoScript(
   data: ZhihuQuestion,
-  outputDir: string = 'output/tts'
+  outputDir: string = OUTPUT_DIRS.TTS
 ): Promise<string | null> {
   // Load API key
   loadApiKey();
@@ -97,7 +98,9 @@ ${contentForDeepSeek}
     }
 
     // Use fixed filename for TTS compatibility
-    const scriptPath = `${outputDir}/input.txt`;
+    const scriptPath = outputDir === OUTPUT_DIRS.TTS 
+      ? TTS_PATHS.INPUT 
+      : `${outputDir}/input.txt`;
 
     // Ensure output directory exists
     try {
@@ -125,12 +128,12 @@ ${contentForDeepSeek}
 /**
  * Generate video script from JSON file
  * @param jsonFilePath - Path to the JSON file containing Zhihu question data
- * @param outputDir - Output directory for the script file (default: 'output/tts')
+ * @param outputDir - Output directory for the script file (default: OUTPUT_DIRS.TTS)
  * @returns Path to the generated script file
  */
 export async function generateVideoScriptFromFile(
   jsonFilePath: string,
-  outputDir: string = 'output/tts'
+  outputDir: string = OUTPUT_DIRS.TTS
 ): Promise<string | null> {
   try {
     const fileContent = await fs.readFile(jsonFilePath, 'utf-8');

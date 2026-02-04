@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AbsoluteFill, useVideoConfig, staticFile, Img, useDelayRender } from 'remotion';
 import { loadFont } from '@remotion/fonts';
 import { defaultMyCompProps } from '../../../types/constants';
+import { REMOTION_PATHS } from '../../../types/paths';
 
 // Load custom font
 loadFont({
@@ -16,7 +17,7 @@ export interface CoverProps {
 	contentTitle?: string;
 }
 
-export const Cover: React.FC<CoverProps> = ({ title, contentTitle }) => {
+export const Cover: React.FC<CoverProps> = ({ title: _title, contentTitle }) => {
 	const { width, height } = useVideoConfig();
 	const [jsonTitle, setJsonTitle] = useState<string | null>(null);
 	const [titleLoaded, setTitleLoaded] = useState(false);
@@ -28,9 +29,9 @@ export const Cover: React.FC<CoverProps> = ({ title, contentTitle }) => {
 	const fetchTitleFromJson = useCallback(async () => {
 		try {
 			// Use staticFile to access files in public directory
-			const response = await fetch(staticFile('video/title.json'));
+			const response = await fetch(staticFile(REMOTION_PATHS.VIDEO_TITLE_JSON));
 			if (!response.ok) {
-				console.warn('title.json not found in public/video/, using prop contentTitle as fallback');
+				console.warn(`title.json not found at ${REMOTION_PATHS.VIDEO_TITLE_JSON}, using prop contentTitle as fallback`);
 				setTitleLoaded(true);
 				return;
 			}

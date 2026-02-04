@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender } from 'remotion';
+import { REMOTION_PATHS } from '../../../types/paths';
 import { Intro } from './Intro';
 import { Content } from './Content';
 import { Watermark } from './Watermark';
@@ -38,8 +39,8 @@ export const Video: React.FC<{
 	vttFile?: string;
 }> = ({
 	title = 'Default Title',
-	audioFile = 'tts/audio.mp3',
-	vttFile = 'tts/audio.vtt',
+	audioFile = REMOTION_PATHS.TTS_AUDIO,
+	vttFile = REMOTION_PATHS.TTS_VTT,
 }) => {
 		const { fps } = useVideoConfig();
 		const [contentDuration, setContentDuration] = useState<number>(0);

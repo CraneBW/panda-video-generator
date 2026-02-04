@@ -10,6 +10,7 @@ import { ZhihuSpider } from './spider';
 import { generateVideoScript } from './caption-generator';
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
+import { OUTPUT_DIRS, TTS_PATHS, VIDEO_PATHS, SPIDER_PATHS, PUBLIC_DIRS } from '../types/paths';
 
 async function main() {
   const url = process.argv[2];
@@ -45,9 +46,8 @@ async function main() {
 
     // Save to JSON file
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const outputDir = 'output/spider';
-    await fs.mkdir(outputDir, { recursive: true });
-    const outputPath = `${outputDir}/output-${timestamp}.json`;
+    await fs.mkdir(SPIDER_PATHS.OUTPUT_DIR, { recursive: true });
+    const outputPath = `${SPIDER_PATHS.OUTPUT_DIR}/output-${timestamp}.json`;
     await spider.saveToFile(data, outputPath);
 
     console.log('\n✅ Extraction completed successfully!');
@@ -55,7 +55,7 @@ async function main() {
     // Generate video script
     if (data.title && (data.content || data.answers.length > 0)) {
       try {
-        await generateVideoScript(data, 'output/tts');
+        await generateVideoScript(data, OUTPUT_DIRS.TTS);
       } catch (error) {
         console.error('⚠️  Failed to generate video script, but extraction was successful');
         console.error(error);
@@ -64,10 +64,10 @@ async function main() {
 
     // Generate title.json
     if (data.title) {
-      const titleJsonPath = resolve(process.cwd(), 'output/video/title.json');
-      const publicTitleJsonPath = resolve(process.cwd(), 'public/video/title.json');
+      const titleJsonPath = resolve(process.cwd(), VIDEO_PATHS.TITLE_JSON);
+      const publicTitleJsonPath = resolve(process.cwd(), VIDEO_PATHS.PUBLIC_TITLE_JSON);
       try {
-        await fs.mkdir(resolve(process.cwd(), 'output/video'), { recursive: true });
+        await fs.mkdir(resolve(process.cwd(), OUTPUT_DIRS.VIDEO), { recursive: true });
         await fs.writeFile(
           titleJsonPath,
           JSON.stringify({ title: data.title }, null, 2),
@@ -77,7 +77,7 @@ async function main() {
         console.log(`   Title: ${data.title}`);
         
         // Also copy to public/video/ for Remotion Studio access
-        await fs.mkdir(resolve(process.cwd(), 'public/video'), { recursive: true });
+        await fs.mkdir(resolve(process.cwd(), PUBLIC_DIRS.VIDEO), { recursive: true });
         await fs.copyFile(titleJsonPath, publicTitleJsonPath);
         console.log(`📋 Title JSON also copied to: ${publicTitleJsonPath}`);
       } catch (error) {
@@ -86,10 +86,10 @@ async function main() {
     }
 
     console.log('\n📁 Output files:');
-    console.log(`  - Caption: output/tts/input.txt`);
+    console.log(`  - Caption: ${TTS_PATHS.INPUT}`);
     console.log(`  - Raw data: ${outputPath}`);
     if (data.title) {
-      console.log(`  - Title JSON: output/video/title.json`);
+      console.log(`  - Title JSON: ${VIDEO_PATHS.TITLE_JSON}`);
     }
     console.log('\n💡 Next step: Run \'pnpm render:video\' to generate video from the extracted content');
   } catch (error) {

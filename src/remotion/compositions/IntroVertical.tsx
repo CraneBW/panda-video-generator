@@ -11,6 +11,7 @@ import {
   Html5Audio,
 } from "remotion";
 import { CompositionProps, defaultMyCompProps } from "../../../types/constants";
+import { REMOTION_PATHS } from "../../../types/paths";
 import { Logo } from "./Logo";
 import { loadFont as loadInterFont, fontFamily } from "@remotion/google-fonts/Inter";
 import { loadFont } from "@remotion/fonts";
@@ -42,9 +43,9 @@ export const IntroVertical = ({ title }: z.infer<typeof CompositionProps>) => {
   const fetchTitleFromJson = useCallback(async () => {
     try {
       // Use staticFile to access files in public directory
-      const response = await fetch(staticFile('video/title.json'));
+      const response = await fetch(staticFile(REMOTION_PATHS.VIDEO_TITLE_JSON));
       if (!response.ok) {
-        console.warn('title.json not found in public/video/, using prop title as fallback');
+        console.warn(`title.json not found at ${REMOTION_PATHS.VIDEO_TITLE_JSON}, using prop title as fallback`);
         setTitleLoaded(true);
         return;
       }
@@ -282,7 +283,7 @@ export const IntroVertical = ({ title }: z.infer<typeof CompositionProps>) => {
       {/* Logo sound effect - plays when logo sequence starts (at thirdTitleDuration) */}
       <Sequence from={thirdTitleDuration} durationInFrames={sequenceDuration}>
         <Html5Audio
-          src={staticFile('audio/intro.mp3')}
+          src={staticFile(REMOTION_PATHS.AUDIO_INTRO)}
           volume={0.6}
           name="Logo Sound"
         />
@@ -292,7 +293,7 @@ export const IntroVertical = ({ title }: z.infer<typeof CompositionProps>) => {
       <Sequence durationInFrames={thirdTitleDuration}>
         {/* Typewriter sound effect */}
         <Html5Audio
-          src={staticFile('audio/intro_typewriter.mp3')}
+          src={staticFile(REMOTION_PATHS.AUDIO_INTRO_TYPEWRITER)}
           volume={0.6}
           name="Typewriter Sound"
         />

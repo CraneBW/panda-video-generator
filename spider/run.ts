@@ -7,6 +7,7 @@
 
 import { ZhihuSpider } from './spider';
 import { generateVideoScript } from './caption-generator';
+import { OUTPUT_DIRS, SPIDER_PATHS } from '../types/paths';
 
 async function main() {
   const url = process.argv[2] || 'https://www.zhihu.com/question/1999774552750778199';
@@ -33,12 +34,11 @@ async function main() {
     
     // Save to file
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const outputDir = 'output/spider';
     const fs = await import('fs/promises');
-    await fs.mkdir(outputDir, { recursive: true });
+    await fs.mkdir(SPIDER_PATHS.OUTPUT_DIR, { recursive: true });
     const outputPath = outputFormat === 'markdown' 
-      ? `${outputDir}/output-${timestamp}.md`
-      : `${outputDir}/output-${timestamp}.json`;
+      ? `${SPIDER_PATHS.OUTPUT_DIR}/output-${timestamp}.md`
+      : `${SPIDER_PATHS.OUTPUT_DIR}/output-${timestamp}.json`;
     
     if (outputFormat === 'markdown') {
       await spider.saveToMarkdown(data, outputPath);
@@ -51,8 +51,8 @@ async function main() {
     // Send to Gemini for video script generation
     if (data.title && (data.content || data.answers.length > 0)) {
       try {
-        await generateVideoScript(data, 'output/tts');
-      } catch (error) {
+        await generateVideoScript(data, OUTPUT_DIRS.TTS);
+      } catch {
         // Don't exit on Gemini error, just log it
         console.error('Failed to generate video script, but extraction was successful');
       }

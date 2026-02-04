@@ -2,11 +2,13 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 import { existsSync } from 'fs';
 import { getAuthFilePath } from '../utils/login-helper';
+import { UPLOAD_PATHS } from '../../types/paths';
+import { UPLOAD_PATHS } from '../../types/paths';
 
 /**
  * Auto upload video to Kuaishou (快手)
  * Uses Playwright's default setup with saved login state
- * Automatically reads video from output/video/video.mp4 and title from output/video/title.json
+ * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
  *   pnpm test:upload:kuaishou
@@ -25,13 +27,13 @@ interface UploadConfig {
 
 // Get video file path (default to fixed filename)
 function getVideoPath(): string {
-  const defaultVideoPath = path.join(process.cwd(), 'output', 'video', 'video.mp4');
+  const defaultVideoPath = path.join(process.cwd(), UPLOAD_PATHS.DEFAULT_VIDEO);
   return process.env.VIDEO_PATH || defaultVideoPath;
 }
 
 // Get title from JSON file or environment
 function getTitleFromJson(): string | null {
-  const titleJsonPath = path.join(process.cwd(), 'output', 'video', 'title.json');
+  const titleJsonPath = path.join(process.cwd(), UPLOAD_PATHS.DEFAULT_TITLE_JSON);
   
   if (!existsSync(titleJsonPath)) {
     return null;
@@ -53,7 +55,7 @@ function getUploadConfig(): UploadConfig {
   if (!videoPath || !existsSync(videoPath)) {
     throw new Error(
       `Video file not found: ${videoPath}\n` +
-      'Please ensure output/video/video.mp4 exists or set VIDEO_PATH environment variable.'
+      `Please ensure ${UPLOAD_PATHS.DEFAULT_VIDEO} exists or set VIDEO_PATH environment variable.`
     );
   }
   
@@ -64,7 +66,7 @@ function getUploadConfig(): UploadConfig {
     throw new Error(
       'VIDEO_TITLE is required. Please set it:\n' +
       '  export VIDEO_TITLE="Your Video Title"\n' +
-      'Or ensure output/video/title.json exists with a title field.'
+      `Or ensure ${UPLOAD_PATHS.DEFAULT_TITLE_JSON} exists with a title field.`
     );
   }
   

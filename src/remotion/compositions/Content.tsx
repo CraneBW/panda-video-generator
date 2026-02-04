@@ -10,6 +10,7 @@ import {
 	spring,
 } from 'remotion';
 import { loadFont } from '@remotion/fonts';
+import { REMOTION_PATHS } from '../../../types/paths';
 import { Watermark } from './Watermark';
 
 // Load custom font for captions
@@ -90,8 +91,8 @@ interface ContentProps {
 }
 
 export const Content: React.FC<ContentProps> = ({
-	audioFile = 'tts/audio.mp3',
-	vttFile = 'tts/audio.vtt',
+	audioFile = REMOTION_PATHS.TTS_AUDIO,
+	vttFile = REMOTION_PATHS.TTS_VTT,
 }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();

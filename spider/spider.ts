@@ -118,19 +118,19 @@ export class ZhihuSpider {
       // Try to wait for any content to appear
       try {
         await page.waitForSelector('body', { timeout: 5000 });
-      } catch (e) {
+      } catch {
         console.warn('Page may not have loaded properly');
       }
 
       // Debug: Save screenshot and HTML for inspection
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
       const fs = await import('fs/promises');
-      const debugDir = 'output/spider';
-      await fs.mkdir(debugDir, { recursive: true });
-      await page.screenshot({ path: `${debugDir}/debug-${timestamp}.png`, fullPage: true });
+      const { SPIDER_PATHS } = await import('../types/paths');
+      await fs.mkdir(SPIDER_PATHS.DEBUG_DIR, { recursive: true });
+      await page.screenshot({ path: `${SPIDER_PATHS.DEBUG_DIR}/debug-${timestamp}.png`, fullPage: true });
       const html = await page.content();
-      await fs.writeFile(`${debugDir}/debug-${timestamp}.html`, html, 'utf-8');
-      console.log(`Debug files saved: ${debugDir}/debug-${timestamp}.png, ${debugDir}/debug-${timestamp}.html`);
+      await fs.writeFile(`${SPIDER_PATHS.DEBUG_DIR}/debug-${timestamp}.html`, html, 'utf-8');
+      console.log(`Debug files saved: ${SPIDER_PATHS.DEBUG_DIR}/debug-${timestamp}.png, ${SPIDER_PATHS.DEBUG_DIR}/debug-${timestamp}.html`);
 
       // Extract question title - try more selectors
       const title = await page.evaluate(() => {
@@ -294,7 +294,7 @@ export class ZhihuSpider {
                 voteCount,
               });
             }
-          } catch (error) {
+          } catch {
             // Silently skip errors
           }
         });
