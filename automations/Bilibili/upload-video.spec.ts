@@ -383,7 +383,7 @@ test('upload video to bilibili', async ({ page }) => {
     }
     
     if (coverUploaded) {
-      console.log('✅ Cover image uploaded successfully');
+
       
       // Wait for cover to be processed and selected
       // Check for cover preview or processing indicators
@@ -394,8 +394,19 @@ test('upload video to bilibili', async ({ page }) => {
         }).catch(() => {
           console.log('Cover preview not found, but continuing...');
         });
-        
+       
+        page.once('dialog', dialog => {
+          console.log(`Dialog message: ${dialog.message()}`);
+          dialog.dismiss().catch(() => {});
+        });
+        await page.getByText('封面制作').click();
+        page.once('dialog', dialog => {
+          console.log(`Dialog message: ${dialog.message()}`);
+          dialog.dismiss().catch(() => {});
+        });
+        await page.getByText('封面制作').click(); 
         // Wait a bit for cover processing to complete
+        await page.locator('.bcc-checkbox-checkbox').first().click();
         await page.waitForTimeout(3000);
         
         // Click "完成" button to confirm cover selection (only after cover is uploaded)

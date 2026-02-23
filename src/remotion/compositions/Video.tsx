@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender, Html5Audio } from 'remotion';
 import { REMOTION_PATHS } from '../../../types/paths';
-import { Intro } from './Intro';
+import { Intro, TitleSequence } from './Intro';
 import { Content } from './Content';
 import { Watermark } from './Watermark';
 import { Cover } from './Cover';
@@ -72,8 +72,8 @@ export const Video: React.FC<{
 
 		// Cover duration: 0.5 seconds
 		const coverDuration = Math.ceil(0.5 * fps);
-		// Intro duration: thirdTitleDuration (3.5s) + sequenceDuration (4s) = 7.5 seconds
-		const introDuration = Math.ceil(7.5 * fps);
+		// Intro duration: only thirdTitleDuration (3.5s) - logo sequence moved to end
+		const introDuration = Math.ceil(3.5 * fps);
 		// Cover starts at the beginning
 		const coverStart = 0;
 		// Intro starts after cover
@@ -82,6 +82,9 @@ export const Video: React.FC<{
 		const seq3Start = coverDuration + introDuration;
 		const contentTailExtension = 2; // 2 seconds extension at the tail
 		const contentDurationFrames = Math.ceil((contentDuration + contentTailExtension) * fps);
+		// Logo sequence duration: 4 seconds
+		const logoSequenceDuration = Math.ceil(4 * fps);
+		const logoSequenceStart = seq3Start + contentDurationFrames;
 
 		if (!loaded || contentDuration === 0) {
 			return null;
@@ -98,7 +101,7 @@ export const Video: React.FC<{
 					<Cover title={title} />
 				</Sequence>
 
-				{/* Intro sequence - includes logo, title, third title */}
+				{/* Intro sequence - only includes first title (logo moved to end) */}
 				<Sequence from={introStart} durationInFrames={introDuration}>
 					<Intro title={title} />
 				</Sequence>
@@ -111,6 +114,19 @@ export const Video: React.FC<{
 				{/* Watermark sequence - starts from content sequence, overlays content only */}
 				<Sequence from={seq3Start} durationInFrames={contentDurationFrames}>
 					<Watermark />
+				</Sequence>
+
+				{/* Logo sequence - moved to the end */}
+				<Sequence from={logoSequenceStart} durationInFrames={logoSequenceDuration}>
+					<AbsoluteFill className="bg-white">
+						{/* Logo sound effect */}
+						<Html5Audio
+							src={staticFile(REMOTION_PATHS.AUDIO_INTRO)}
+							volume={0.6}
+							name="Logo Sound"
+						/>
+						<TitleSequence />
+					</AbsoluteFill>
 				</Sequence>
 			</AbsoluteFill>
 		);

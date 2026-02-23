@@ -30,6 +30,136 @@ loadFont({
 }).catch((err) => {
   console.error('Failed to load font:', err);
 });
+
+// Watermark component
+const WatermarkText: React.FC = () => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        fontFamily,
+        fontSize: '30px',
+        color: 'rgba(23, 23, 23, 0.4)',
+        textAlign: 'center',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      Powered By 熊猫视频自动化引擎
+    </div>
+  );
+};
+
+// TitleSequence component with logo - exported for use at the end of video
+export const TitleSequence: React.FC = () => {
+  const sequenceFrame = useCurrentFrame(); // Relative frame within Sequence
+  const { fps } = useVideoConfig();
+
+  const transitionStart = 1 * fps; // Start transition after 1 second
+  const transitionDuration = 0.5 * fps; // Transition duration 0.5 seconds
+  const sequenceDuration = 4 * fps; // Total: 4 seconds (extended for longer logo display)
+
+  // Fixed text for h2 between logo
+  const fixedTitle = "熊猫智研社";
+
+  // Logo scale animation: from small (0.2) to normal size (1.0)
+  // Animation duration: first 0.8 seconds, then stay at normal size
+  const logoScaleDuration = 0.8 * fps;
+  const logoScale = interpolate(
+    sequenceFrame,
+    [0, logoScaleDuration],
+    [0.2, 1.0],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
+
+  // Title animation: fade in and move from top to bottom
+  const titleFadeInDuration = 0.5 * fps;
+  const titleStartDelay = logoScaleDuration; // Start after logo finishes scaling
+  const titleFadeInStart = titleStartDelay;
+  const titleFadeInEnd = titleStartDelay + titleFadeInDuration;
+
+  const titleFadeInOpacity = interpolate(
+    sequenceFrame,
+    [titleFadeInStart, titleFadeInEnd],
+    [0, 1],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
+
+  const titleMoveY = interpolate(
+    sequenceFrame,
+    [titleFadeInStart, titleFadeInEnd],
+    [-50, 0], // Move from -50px (above) to 0 (final position)
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
+
+  // Fade out all content at the end
+  const fadeOutDuration = 0.5 * fps;
+  const fadeOutStart = sequenceDuration - fadeOutDuration;
+  const overallOpacity = interpolate(
+    sequenceFrame,
+    [fadeOutStart, sequenceDuration - 1],
+    [1, 0],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
+
+  // Rings animation (keep the original outProgress for rings)
+  const logoOut = spring({
+    fps,
+    frame: sequenceFrame,
+    config: {
+      damping: 200,
+    },
+    durationInFrames: transitionDuration,
+    delay: transitionStart,
+  });
+
+  return (
+    <div style={{ opacity: overallOpacity }}>
+      <Rings outProgress={logoOut}></Rings>
+      <AbsoluteFill className="justify-center items-center" style={{ flexDirection: 'column' }}>
+        <Logo scale={logoScale}></Logo>
+        <div
+          style={{
+            opacity: titleFadeInOpacity,
+            transform: `translateY(${titleMoveY}px)`,
+          }}
+        >
+          <h2
+            className="text-[70px] font-bold"
+            style={{
+              fontFamily,
+              width: '80%',
+              maxWidth: '80%',
+              whiteSpace: 'nowrap',
+              textAlign: 'center',
+              padding: '0 40px',
+              marginTop: '120px',
+              color: '#000000',
+            }}
+          >
+            {fixedTitle}
+          </h2>
+        </div>
+      </AbsoluteFill>
+      <WatermarkText />
+    </div>
+  );
+};
+
 export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
   const { fps } = useVideoConfig();
   const [jsonTitle, setJsonTitle] = useState<string | null>(null);
@@ -72,135 +202,7 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
     }
   }, [titleLoaded, continueRender, handle]);
 
-  const transitionStart = 1 * fps; // Start transition after 1 second
-  const transitionDuration = 0.5 * fps; // Transition duration 0.5 seconds
-  const sequenceDuration = 4 * fps; // Total: 4 seconds (extended for longer logo display)
   const thirdTitleDuration = 3.5 * fps; // First title: 2s typewriter + 1s hold + 0.5s fade = 3.5s total
-
-  // Watermark component
-  const WatermarkText: React.FC = () => {
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          fontFamily,
-          fontSize: '30px',
-          color: 'rgba(23, 23, 23, 0.4)',
-          textAlign: 'center',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        Powered By 熊猫视频自动化引擎
-      </div>
-    );
-  };
-
-  // Inner component for Sequence to use relative frame
-  const TitleSequence: React.FC = () => {
-    const sequenceFrame = useCurrentFrame(); // Relative frame within Sequence
-    const { fps } = useVideoConfig();
-
-    // Fixed text for h2 between logo
-    const fixedTitle = "熊猫智研社";
-
-    // Logo scale animation: from small (0.2) to normal size (1.0)
-    // Animation duration: first 0.8 seconds, then stay at normal size
-    const logoScaleDuration = 0.8 * fps;
-    const logoScale = interpolate(
-      sequenceFrame,
-      [0, logoScaleDuration],
-      [0.2, 1.0],
-      {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      }
-    );
-
-    // Title animation: fade in and move from top to bottom
-    const titleFadeInDuration = 0.5 * fps;
-    const titleStartDelay = logoScaleDuration; // Start after logo finishes scaling
-    const titleFadeInStart = titleStartDelay;
-    const titleFadeInEnd = titleStartDelay + titleFadeInDuration;
-
-    const titleFadeInOpacity = interpolate(
-      sequenceFrame,
-      [titleFadeInStart, titleFadeInEnd],
-      [0, 1],
-      {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      }
-    );
-
-    const titleMoveY = interpolate(
-      sequenceFrame,
-      [titleFadeInStart, titleFadeInEnd],
-      [-50, 0], // Move from -50px (above) to 0 (final position)
-      {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      }
-    );
-
-    // Fade out all content at the end
-    const fadeOutDuration = 0.5 * fps;
-    const fadeOutStart = sequenceDuration - fadeOutDuration;
-    const overallOpacity = interpolate(
-      sequenceFrame,
-      [fadeOutStart, sequenceDuration - 1],
-      [1, 0],
-      {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      }
-    );
-
-    // Rings animation (keep the original outProgress for rings)
-    const logoOut = spring({
-      fps,
-      frame: sequenceFrame,
-      config: {
-        damping: 200,
-      },
-      durationInFrames: transitionDuration,
-      delay: transitionStart,
-    });
-
-    return (
-      <div style={{ opacity: overallOpacity }}>
-        <Rings outProgress={logoOut}></Rings>
-        <AbsoluteFill className="justify-center items-center" style={{ flexDirection: 'column' }}>
-          <Logo scale={logoScale}></Logo>
-          <div
-            style={{
-              opacity: titleFadeInOpacity,
-              transform: `translateY(${titleMoveY}px)`,
-            }}
-          >
-            <h2
-              className="text-[70px] font-bold"
-              style={{
-                fontFamily,
-                width: '80%',
-                maxWidth: '80%',
-                whiteSpace: 'nowrap',
-                textAlign: 'center',
-                padding: '0 40px',
-                marginTop: '120px',
-                color: '#000000',
-              }}
-            >
-              {fixedTitle}
-            </h2>
-          </div>
-        </AbsoluteFill>
-        <WatermarkText />
-      </div>
-    );
-  };
 
   // First title component with typewriter effect
   const FirstTitle: React.FC<{ title: string }> = ({ title }) => {
@@ -281,14 +283,6 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
 
   return (
     <AbsoluteFill className="bg-white">
-      {/* Logo sound effect - plays when logo sequence starts (at thirdTitleDuration) */}
-      <Sequence from={thirdTitleDuration} durationInFrames={sequenceDuration}>
-        <Html5Audio
-          src={staticFile(REMOTION_PATHS.AUDIO_INTRO)}
-          volume={0.6}
-          name="Logo Sound"
-        />
-      </Sequence>
       {/* Third title sequence - now first */}
       {/* Use jsonTitle from file for first title, fallback to prop title */}
       <Sequence durationInFrames={thirdTitleDuration}>
@@ -299,11 +293,6 @@ export const Intro = ({ title }: z.infer<typeof CompositionProps>) => {
           name="Typewriter Sound"
         />
         {(jsonTitle || title) && <FirstTitle title={jsonTitle || title || ''} />}
-      </Sequence>
-      {/* Title sequence with logo - now third */}
-      {/* Always use fixed text for h2 between logo */}
-      <Sequence from={thirdTitleDuration} durationInFrames={sequenceDuration}>
-        <TitleSequence />
       </Sequence>
     </AbsoluteFill>
   );
