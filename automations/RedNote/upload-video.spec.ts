@@ -408,8 +408,10 @@ test('upload video to rednote', async ({ page }) => {
   
   // Try to find publish button
   let publishClicked = false;
+
   
   const publishSelectors = [
+    'role=button[name="发布"]',
     'button:has-text("发布")',
     'button:has-text("发布笔记")',
     'button:has-text("确认发布")',

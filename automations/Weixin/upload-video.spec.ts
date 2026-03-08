@@ -560,23 +560,31 @@ test('upload video to weixin channel', async ({ page }) => {
     console.log('⚠️  Location field not found or "不显示位置" option not available. Skipping...');
   }
   
-  // Wait for video to finish uploading/processing
-  console.log('⏳ Waiting for video to finish uploading/processing...');
-  await page.waitForTimeout(10000);
-  
+  // Wait for "取消上传" to appear (upload started), then wait for it to disappear (upload done)
+  console.log('⏳ Waiting for "取消上传" to appear (upload in progress)...');
+  try {
+    await page.getByText('取消上传').first().waitFor({ state: 'visible', timeout: 15000 });
+    console.log('✅ "取消上传" visible, waiting for it to disappear (upload to finish)...');
+    await page.getByText('取消上传').first().waitFor({ state: 'hidden', timeout: 120000 });
+    console.log('✅ "取消上传" disappeared, upload finished.');
+  } catch (e) {
+    console.log('⚠️  "取消上传" not found or timeout, continuing after short wait...');
+    await page.waitForTimeout(5000);
+  }
+
   // Step 6: Click submit button
   console.log('');
   console.log('📝 Video upload/form filling completed!');
   console.log('🚀 Looking for submit button...');
   await page.waitForTimeout(2000);
-  
+
   // Scroll to bottom to ensure submit button is visible
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(1000);
-  
+
   // Try to find submit button
   let submitClicked = false;
-  
+
   // First, try using getByRole for '发表' button (most reliable)
   try {
     const submitButton = page.getByRole('button', { name: '发表' });
@@ -619,45 +627,6 @@ test('upload video to weixin channel', async ({ page }) => {
         }
       } catch (e) {
         // Continue to next text
-      }
-    }
-  }
-  
-  // Fallback to other selectors if not found
-  if (!submitClicked) {
-    const submitSelectors = [
-      'button:has-text("发布")',
-      'button:has-text("立即发布")',
-      'button:has-text("确认发布")',
-      'button:has-text("提交")',
-      '[class*="submit-button"]',
-      '[class*="publish-button"]',
-      '[class*="SubmitButton"]',
-      '[class*="PublishButton"]',
-      'button[type="submit"]',
-      '[class*="submit"]',
-      '[class*="publish"]',
-    ];
-    
-    for (const selector of submitSelectors) {
-      try {
-        const submitButton = page.locator(selector).first();
-        const visible = await submitButton.isVisible({ timeout: 3000 });
-        if (visible) {
-          const isEnabled = await submitButton.isEnabled().catch(() => false);
-          if (isEnabled) {
-            console.log(`✅ Found submit button: ${selector}`);
-            await submitButton.click();
-            console.log('✅ Submit button clicked!');
-            submitClicked = true;
-            await page.waitForTimeout(2000);
-            break;
-          } else {
-            console.log(`⚠️  Submit button found but disabled: ${selector}`);
-          }
-        }
-      } catch (e) {
-        // Continue checking other selectors
       }
     }
   }

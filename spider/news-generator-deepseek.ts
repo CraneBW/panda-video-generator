@@ -167,7 +167,7 @@ export async function generateDailyNews(
 
     // Generate title.json with date
     const simpleDateFormat = formatDateSimple(date);
-    const videoTitle = `${simpleDateFormat}熊猫快闻`;
+    const videoTitle = `${simpleDateFormat}\n熊猫快闻`;
     const titleJsonPath = resolve(process.cwd(), VIDEO_PATHS.TITLE_JSON);
     const publicTitleJsonPath = resolve(process.cwd(), VIDEO_PATHS.PUBLIC_TITLE_JSON);
     
@@ -221,6 +221,11 @@ export async function generateDailyNews(
  * Main function - CLI entry point
  */
 async function main() {
+  console.error('⚠️  提示：DeepSeek 当前不支持联网检索新闻。请暂时使用 Kimi 版本（命令：pnpm generate:news:kimi）');
+  process.exit(1);
+
+
+
   // Parse date argument (format: YYYY-MM-DD)
   const dateArg = process.argv[2];
   let targetDate: Date | undefined;
