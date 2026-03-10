@@ -71,3 +71,4 @@ spider/tmp/
 /input
 output/tts/*.mp3
 output/tts/*.vtt
+spider/rss-seen-guids.json

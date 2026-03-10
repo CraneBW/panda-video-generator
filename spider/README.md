@@ -79,6 +79,51 @@ Hello everyone, today is Monday, March 2, 2026, bringing you today's top news.
 That's all for today's news. Thank you for watching.
 ```
 
+### 3. RSS Title Spider & Translator (rss-title-translator.ts)
+
+根据提供的 RSS 地址列表批量抓取条目的**标题**和 **guid**，并用 DeepSeek 将标题翻译为中文，仅输出标题（含 guid 映射）。
+
+**用法：**
+
+```bash
+# 使用默认 RSS 源（脚本内 DEFAULT_RSS_FEEDS）
+pnpm spider:rss
+
+# 指定一个或多个 RSS 地址
+pnpm spider:rss -- https://feeds.bbci.co.uk/news/rss.xml https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+
+# 或直接运行
+tsx spider/rss-title-translator.ts [rss_url1] [rss_url2] ...
+```
+
+**功能：**
+- 从多个 RSS 源批量获取条目的 `title` 和 `guid`（无正文）
+- 调用 DeepSeek 将标题翻译成中文
+- 输出：每条 `guid` 与翻译后的标题；最后单独输出「仅标题」列表便于复制
+- **去重**：使用静态 JSON 文件 `spider/rss-seen-guids.json` 记录已处理过的 guid，每次只抓取并翻译**新条目**，已存在记录会被忽略
+
+**依赖：** 需在 `.env.local` 中配置 `DEEPSEEK_API_KEY`。
+
+### 4. 单页文章爬取并生成视频文稿 + VTT（article-summary-vtt.ts）
+
+抓取指定文章页正文，用 DeepSeek 生成与 `caption-generator` 同风格的视频台词（开场白 + 正文 + 结尾语），并写入 TTS 目录供后续 TTS 与视频生成使用。
+
+**用法：**
+
+```bash
+pnpm spider:article-vtt -- "https://thehackernews.com/2026/03/transparent-tribe-uses-ai-to-mass.html"
+# 或不带 URL（使用脚本内默认链接）
+pnpm spider:article-vtt
+```
+
+**功能：**
+- 使用 Puppeteer 打开文章 URL，提取正文（通用新闻/博客选择器）
+- 调用 DeepSeek 生成完整视频文稿：开场白、正文（贴近原文、分段友好）、结尾语，总字数不超过 1200 字，每段不超过 50 字，无额外符号
+- 文稿保存到 **`output/tts/input.txt`**（与 caption-generator 一致，供 TTS 使用）
+- 根据文稿分段生成 WebVTT 并保存到 **`output/tts/audio.vtt`**（预估时间轴，与 TTS 输出同目录，供后续视频生成）
+
+**依赖：** `DEEPSEEK_API_KEY`、Puppeteer。
+
 ## Configuration Requirements
 
 ### Environment Variables

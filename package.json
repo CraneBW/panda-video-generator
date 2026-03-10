@@ -30,6 +30,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.409",
+    "rss-parser": "^3.13.0",
     "tailwind-merge": "3.0.1",
     "zod": "3.22.3"
   },
@@ -69,6 +70,8 @@
     "render:album": "sh scripts/render-audio-concat.sh",
     "deploy": "node deploy.mjs",
     "spider:zhihu": "sh scripts/spider-zhihu.sh",
+    "spider:rss": "tsx spider/rss-title-translator.ts",
+    "spider:article-vtt": "tsx spider/article-summary-vtt.ts",
     "generate:news:kimi": "tsx spider/news-generator-kimi.ts",
     "news:generate": "tsx spider/news-generator-deepseek.ts",
     "video:zhihu": "sh scripts/generate-video.sh",
