@@ -85,6 +85,19 @@ function parseVtt(vttText: string): Caption[] {
 	return captions;
 }
 
+// THIS IS FALLBACK BGM COUNT FOR VIDEO COMPOSITION
+const BGM_COUNT_FALLBACK = 14;
+
+// BGM index from env (0..BGM_COUNT-1), or random when not set. No state - stable per process.
+const BGM_INDEX = (() => {
+	const fromEnv = process.env.REMOTION_BGM_INDEX;
+	if (fromEnv !== undefined && fromEnv !== '') {
+		const n = parseInt(fromEnv, 10);
+		if (!Number.isNaN(n) && n >= 0 && n < BGM_COUNT_FALLBACK) return n;
+	}
+	return Math.floor(Math.random() * BGM_COUNT_FALLBACK);
+})();
+
 interface ContentProps {
 	audioFile?: string;
 	vttFile?: string;
@@ -147,7 +160,7 @@ export const Content: React.FC<ContentProps> = ({
 	// Fade out starts 2 seconds before audio ends
 	const fadeOutDurationMs = 2000; // 2 seconds fade out
 	const fadeOutStartMs = audioEndMs - fadeOutDurationMs;
-	const bgmBaseVolume = 0.2;
+	const bgmBaseVolume = 0.1;
 
 	let bgmVolume = bgmBaseVolume;
 	if (audioEndMs > 0 && currentTimeMs >= fadeOutStartMs) {
@@ -268,7 +281,7 @@ export const Content: React.FC<ContentProps> = ({
 
 			{/* Background music - loops throughout content with fade out at audio end */}
 			<Html5Audio
-				src={staticFile('bgm/01.mp3')}
+				src={staticFile(`bgm/${BGM_INDEX}.mp3`)}
 				volume={bgmVolume}
 				loop
 				name="Background Music"

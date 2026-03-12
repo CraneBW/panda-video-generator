@@ -218,7 +218,7 @@ export const RemotionRoot: React.FC = () => {
         } as CoverProps}
       />
       {/* Audio concat: all audio files from a folder, each with solid bg + track name */}
-      <Composition
+      {/* <Composition
         id="AudioConcat"
         component={AudioConcat}
         calculateMetadata={async ({
@@ -273,9 +273,9 @@ export const RemotionRoot: React.FC = () => {
           audioFolder: "album",
           tracks: [],
         }}
-      />
+      /> */}
       {/* Single track: one video per track, path from env → sh passes via --props */}
-      <Composition
+      {/* <Composition
         id="SingleTrack"
         component={SingleTrack as React.FC<Record<string, unknown>>}
         calculateMetadata={async ({
@@ -314,7 +314,7 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{
           audioPath: "",
         }}
-      />
+      /> */}
     </>
   );
 };

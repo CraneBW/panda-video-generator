@@ -34,6 +34,18 @@ async function getAudioDurationFromVtt(vttFile: string): Promise<number> {
 	}
 }
 
+// Background video file count (public/video/0.mp4..3.mp4) - hardcoded
+const BG_VIDEO_COUNT = 4;
+// Background video index from env (0..BG_VIDEO_COUNT-1), or random when not set. No state - stable per process.
+const BG_VIDEO_INDEX = (() => {
+	const fromEnv = process.env.REMOTION_BG_VIDEO_INDEX;
+	if (fromEnv !== undefined && fromEnv !== '') {
+		const n = parseInt(fromEnv, 10);
+		if (!Number.isNaN(n) && n >= 0 && n < BG_VIDEO_COUNT) return n;
+	}
+	return Math.floor(Math.random() * BG_VIDEO_COUNT);
+})();
+
 export const Video: React.FC<{
 	title?: string;
 	audioFile?: string;
@@ -91,32 +103,32 @@ export const Video: React.FC<{
 			return null;
 		}
 
-	return (
-		<AbsoluteFill
+		return (
+			<AbsoluteFill
 			// style={{
 			// 	filter: 'invert(1)',
 			// }}
-		>
-		{/* Background video layer */}
-		<RemotionVideo
-			src={staticFile('video/bg.mp4')}
-			style={{
-				position: 'absolute',
-				top: 0,
-				left: 0,
-				width: '100%',
-				height: '100%',
-				objectFit: 'cover',
-				filter: 'brightness(0.8)',
-			}}
-			muted
-			loop
-		/>
-			
-			{/* Cover sequence - displayed first */}
-			<Sequence from={coverStart} durationInFrames={coverDuration}>
-				<Cover title={title} />
-			</Sequence>
+			>
+				{/* Background video layer */}
+				<RemotionVideo
+					src={staticFile(`video/${BG_VIDEO_INDEX}.mp4`)}
+					style={{
+						position: 'absolute',
+						top: 0,
+						left: 0,
+						width: '100%',
+						height: '100%',
+						objectFit: 'cover',
+						filter: 'brightness(0.8)',
+					}}
+					muted
+					loop
+				/>
+
+				{/* Cover sequence - displayed first */}
+				<Sequence from={coverStart} durationInFrames={coverDuration}>
+					<Cover title={title} />
+				</Sequence>
 
 				{/* Intro sequence - only includes first title (logo moved to end) */}
 				<Sequence from={introStart} durationInFrames={introDuration}>
