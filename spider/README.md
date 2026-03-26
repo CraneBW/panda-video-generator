@@ -106,7 +106,8 @@ Key dependencies:
 
 2. **Generate Video**
    ```bash
-   pnpm render:video
+   pnpm render:all
+   # or: pnpm tts && pnpm render:video
    ```
 
 3. **Upload to Platforms** (Optional)

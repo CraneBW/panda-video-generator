@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Auto Video Generator Script
-# Combines spider-zhihu.sh and render-video.sh
+# Combines spider-zhihu.sh and full render pipeline (tts + render-video-only via render-video.sh)
 # Usage: ./generate-video.sh <zhihu_url>
 # Example: ./generate-video.sh https://www.zhihu.com/question/316150890
 

@@ -18,7 +18,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 # Check if Python is available
 if ! command -v python3 &> /dev/null; then
     echo -e "${YELLOW}⚠️  Warning: python3 is not installed${NC}"
-    echo "Python dependencies will be installed when you run render-video.sh"
+    echo "Python dependencies will be installed when you run pnpm tts or pnpm render:all"
     exit 0  # Don't fail the npm install
 fi
 
@@ -32,7 +32,7 @@ if [ ! -d "$VENV_DIR" ]; then
     python3 -m venv "$VENV_DIR"
     if [ $? -ne 0 ]; then
         echo -e "${YELLOW}⚠️  Failed to create virtual environment${NC}"
-        echo "Python dependencies will be installed when you run render-video.sh"
+        echo "Python dependencies will be installed when you run pnpm tts or pnpm render:all"
         exit 0  # Don't fail the npm install
     fi
     echo -e "${GREEN}✅ Virtual environment created${NC}"
@@ -53,7 +53,7 @@ if [ -f "tts/requirements.txt" ]; then
         echo -e "${GREEN}✅ Python dependencies installed successfully${NC}"
     else
         echo -e "${YELLOW}⚠️  Warning: Failed to install Python dependencies${NC}"
-        echo "You can install them manually later or they will be installed when you run render-video.sh"
+        echo "You can install them manually later or they will be installed when you run pnpm tts"
         exit 0  # Don't fail the npm install
     fi
 else

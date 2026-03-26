@@ -4,7 +4,8 @@ import { resolve } from 'path';
 import { promises as fs } from 'fs';
 import { OUTPUT_DIRS, TTS_PATHS } from '../types/paths';
 
-interface ZhihuQuestion {
+/** Crawled or structured content for video script (Zhihu, generic article, etc.). */
+export type VideoScriptSourcePayload = {
   title: string;
   content: string;
   answers: Array<{
@@ -12,6 +13,16 @@ interface ZhihuQuestion {
     content: string;
     voteCount: number;
   }>;
+};
+
+function normalizePayload(
+  data: VideoScriptSourcePayload & { sourceUrl?: string;[key: string]: unknown },
+): VideoScriptSourcePayload {
+  return {
+    title: data.title,
+    content: data.content,
+    answers: Array.isArray(data.answers) ? data.answers : [],
+  };
 }
 
 /**
@@ -34,19 +45,19 @@ function loadApiKey(): void {
 }
 
 /**
- * Generate video script from Zhihu question data using DeepSeek
- * @param data - The extracted Zhihu question data
- * @param outputDir - Output directory for the script file (default: OUTPUT_DIRS.TTS)
- * @returns Path to the generated script file
+ * Generate video script from crawled content using DeepSeek (any source that matches the payload shape).
+ * @param data - Title, body in `content`, optional `answers` (e.g. Zhihu). Extra fields like `sourceUrl` are ignored for the prompt.
  */
 export async function generateVideoScript(
-  data: ZhihuQuestion,
+  data: VideoScriptSourcePayload & { sourceUrl?: string;[key: string]: unknown },
   outputDir: string = OUTPUT_DIRS.TTS
 ): Promise<string | null> {
   // Load API key
   loadApiKey();
 
-  if (!data.title || (!data.content && data.answers.length === 0)) {
+  const payload = normalizePayload(data);
+
+  if (!payload.title || (!payload.content && payload.answers.length === 0)) {
     throw new Error('Invalid data: title and content/answers are required');
   }
 
@@ -60,11 +71,10 @@ export async function generateVideoScript(
       apiKey: process.env.DEEPSEEK_API_KEY,
     });
 
-    // Prepare content for DeepSeek
-    const contentForDeepSeek = JSON.stringify(data, null, 2);
+    const contentForDeepSeek = JSON.stringify(payload, null, 2);
     const userPrompt = `内容进行整理，并且生成一段视频完整的视频台词, 是平台要尽可能贴近原文, 并且要有Intro和ending的话语
 
-以下是爬取的知乎问题内容（JSON格式）：
+以下是爬取/提供的正文与结构化内容（JSON 格式，可能含标题、问题描述、多条回答等）：
 ${contentForDeepSeek}
 
 请根据以上内容，在内容前加入一段开场白, 并且在内容后加入一段结尾语, 并且生成一段完整的视频台词.
@@ -83,7 +93,8 @@ ${contentForDeepSeek}
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that generates video scripts based on content from Zhihu questions.',
+          content:
+            'You are a helpful assistant that generates video scripts from user-provided article or Q&A content (any source).',
         },
         {
           role: 'user',
@@ -100,8 +111,8 @@ ${contentForDeepSeek}
     }
 
     // Use fixed filename for TTS compatibility
-    const scriptPath = outputDir === OUTPUT_DIRS.TTS 
-      ? TTS_PATHS.INPUT 
+    const scriptPath = outputDir === OUTPUT_DIRS.TTS
+      ? TTS_PATHS.INPUT
       : `${outputDir}/input.txt`;
 
     // Ensure output directory exists
@@ -128,10 +139,7 @@ ${contentForDeepSeek}
 }
 
 /**
- * Generate video script from JSON file
- * @param jsonFilePath - Path to the JSON file containing Zhihu question data
- * @param outputDir - Output directory for the script file (default: OUTPUT_DIRS.TTS)
- * @returns Path to the generated script file
+ * Generate video script from JSON file (e.g. spider output; extra keys like sourceUrl are ignored for the model).
  */
 export async function generateVideoScriptFromFile(
   jsonFilePath: string,
@@ -139,8 +147,11 @@ export async function generateVideoScriptFromFile(
 ): Promise<string | null> {
   try {
     const fileContent = await fs.readFile(jsonFilePath, 'utf-8');
-    const data: ZhihuQuestion = JSON.parse(fileContent);
-    return await generateVideoScript(data, outputDir);
+    const raw = JSON.parse(fileContent) as VideoScriptSourcePayload & {
+      sourceUrl?: string;
+      [key: string]: unknown;
+    };
+    return await generateVideoScript(raw, outputDir);
   } catch (error) {
     console.error(`\n❌ Error reading JSON file: ${jsonFilePath}`, error);
     throw error;

@@ -186,13 +186,18 @@ echo "你的视频脚本内容..." > output/tts/input.txt
 - `output/tts/input.txt` - 视频脚本文本文件
 
 ```bash
-pnpm render:video
+# One-shot: TTS + Remotion + cover
+pnpm render:all
+
+# Or step by step:
+pnpm tts              # input.txt → audio.mp3 / audio.vtt → public/tts/
+pnpm render:video     # Remotion → output/video/video.mp4 (+ cover)
 ```
 
 **工作流程：**
 1. 读取 `output/tts/input.txt` 文本文件
-2. 调用 Python TTS 脚本生成语音和字幕
-3. 使用 Remotion 渲染视频模板
+2. `pnpm tts`：调用 Python TTS 生成语音和字幕
+3. `pnpm render:video`：使用 Remotion 渲染视频模板并生成封面
 4. 输出最终视频文件
 
 **输出：**
@@ -317,8 +322,8 @@ pnpm test:upload:all
 # 1. 提取知乎内容
 pnpm spider:zhihu https://www.zhihu.com/question/316150890
 
-# 2. 生成视频
-pnpm render:video
+# 2. 生成视频（TTS + 渲染）
+pnpm render:all
 
 # 3. 首次使用需要登录（只需一次）
 pnpm test:login:bilibili
