@@ -33,11 +33,11 @@ function getVideoPath(): string {
 // Get title from JSON file or environment
 function getTitleFromJson(): string | null {
   const titleJsonPath = path.join(process.cwd(), UPLOAD_PATHS.DEFAULT_TITLE_JSON);
-  
+
   if (!existsSync(titleJsonPath)) {
     return null;
   }
-  
+
   try {
     const fs = require('fs');
     const titleData = JSON.parse(fs.readFileSync(titleJsonPath, 'utf-8'));
@@ -50,17 +50,17 @@ function getTitleFromJson(): string | null {
 // Get upload configuration from environment or defaults
 function getUploadConfig(): UploadConfig {
   const videoPath = getVideoPath();
-  
+
   if (!videoPath || !existsSync(videoPath)) {
     throw new Error(
       `Video file not found: ${videoPath}\n` +
       `Please ensure ${UPLOAD_PATHS.DEFAULT_VIDEO} exists or set VIDEO_PATH environment variable.`
     );
   }
-  
+
   // Try to get title from JSON file first, then environment variable
   let title = process.env.VIDEO_TITLE || getTitleFromJson();
-  
+
   if (!title) {
     throw new Error(
       'VIDEO_TITLE is required. Please set it:\n' +
@@ -68,7 +68,7 @@ function getUploadConfig(): UploadConfig {
       `Or ensure ${UPLOAD_PATHS.DEFAULT_TITLE_JSON} exists with a title field.`
     );
   }
-  
+
   const config: UploadConfig = {
     videoPath: path.resolve(videoPath),
     title,
@@ -76,7 +76,7 @@ function getUploadConfig(): UploadConfig {
     tags: process.env.VIDEO_TAGS ? process.env.VIDEO_TAGS.split(',').map(t => t.trim()) : [],
     coverPath: process.env.VIDEO_COVER ? path.resolve(process.env.VIDEO_COVER) : undefined,
   };
-  
+
   return config;
 }
 
@@ -95,32 +95,32 @@ test.describe.configure({ timeout: 5 * 60 * 1000 });
 test('upload video to rednote', async ({ page }) => {
   // Set timeout for this specific test (5 minutes)
   test.setTimeout(5 * 60 * 1000);
-  
+
   const config = getUploadConfig();
-  
+
   console.log(`Upload: RedNote - ${config.title}`);
-  
+
   // Step 1: Navigate to RedNote (Xiaohongshu Creator Platform) upload page
   await page.goto('https://creator.xiaohongshu.com/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
-  
+
   // Check if logged in
   const loginRequired = await page.locator('text=登录').first().isVisible().catch(() => false) ||
-                        await page.locator('text=Login').first().isVisible().catch(() => false) ||
-                        await page.locator('button:has-text("登录")').first().isVisible().catch(() => false);
+    await page.locator('text=Login').first().isVisible().catch(() => false) ||
+    await page.locator('button:has-text("登录")').first().isVisible().catch(() => false);
   if (loginRequired) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
       '  pnpm test:login:rednote'
     );
   }
-  
+
   console.log('✅ Logged in successfully (using saved session)');
-  
+
   // Step 2: Navigate to content management or upload page
   console.log('🔍 Looking for content management or upload option...');
   await page.waitForTimeout(2000);
-  
+
   // Try to find and click "发布笔记" or "内容管理" or upload button
   const uploadPageSelectors = [
     'text=发布',
@@ -134,7 +134,7 @@ test('upload video to rednote', async ({ page }) => {
     '[class*="upload"]',
     '[class*="content-manage"]',
   ];
-  
+
   let uploadPageNavigated = false;
   for (const selector of uploadPageSelectors) {
     try {
@@ -150,7 +150,7 @@ test('upload video to rednote', async ({ page }) => {
       // Continue
     }
   }
-  
+
   // If no button found, try navigating directly to upload URL
   if (!uploadPageNavigated) {
     console.log('💡 Trying to navigate directly to upload page...');
@@ -162,12 +162,12 @@ test('upload video to rednote', async ({ page }) => {
       console.log('⚠️  Could not navigate to upload page directly, continuing with current page...');
     }
   }
-  
+
   await page.waitForTimeout(2000);
-  
+
   // Step 3: Find the file input element for video upload
   console.log('📤 Looking for upload file input...');
-  
+
   const fileInputSelectors = [
     'input[type="file"]',
     'input[type="file"][accept*="video"]',
@@ -175,7 +175,7 @@ test('upload video to rednote', async ({ page }) => {
     '[class*="upload"] input[type="file"]',
     'input[accept*="video"]',
   ];
-  
+
   let uploadInput = null;
   for (const selector of fileInputSelectors) {
     try {
@@ -193,7 +193,7 @@ test('upload video to rednote', async ({ page }) => {
       // Continue
     }
   }
-  
+
   if (!uploadInput) {
     console.log('⚠️  File input not found. Trying to click upload area...');
     const uploadAreaSelectors = [
@@ -202,7 +202,7 @@ test('upload video to rednote', async ({ page }) => {
       '[class*="drop"]',
       '[class*="video-upload"]',
     ];
-    
+
     for (const selector of uploadAreaSelectors) {
       try {
         const area = page.locator(selector).first();
@@ -230,7 +230,7 @@ test('upload video to rednote', async ({ page }) => {
     } catch (error: any) {
       console.log(`❌ Error uploading file: ${error.message}`);
       console.log('💡 Trying alternative method: using file chooser...');
-      
+
       const uploadArea = page.locator('.upload-area').first();
       if (await uploadArea.isVisible({ timeout: 3000 })) {
         const [fileChooser] = await Promise.all([
@@ -245,28 +245,28 @@ test('upload video to rednote', async ({ page }) => {
       }
     }
   }
-  
+
   // Step 5: Wait for video to process/upload
   console.log('⏳ Waiting for video to finish uploading/processing...');
   await page.waitForTimeout(5000);
-  
+
   // Step 6: Fill in video information
   console.log('✏️  Filling in video information...');
   await page.waitForTimeout(2000);
-  
+
   // Fill title/caption (Xiaohongshu uses "标题" for title)
   // RedNote/Xiaohongshu has a 20 character limit for titles
   const maxTitleLength = 20;
-  const truncatedTitle = config.title.length > maxTitleLength 
-    ? config.title.substring(0, maxTitleLength) 
+  const truncatedTitle = config.title.length > maxTitleLength
+    ? config.title.substring(0, maxTitleLength)
     : config.title;
-  
+
   if (config.title.length > maxTitleLength) {
     console.log(`⚠️  Title truncated from ${config.title.length} to ${maxTitleLength} characters (RedNote limit)`);
     console.log(`   Original: ${config.title}`);
     console.log(`   Truncated: ${truncatedTitle}`);
   }
-  
+
   const titleSelectors = [
     'input[placeholder*="标题"]',
     'input[placeholder*="笔记标题"]',
@@ -283,7 +283,7 @@ test('upload video to rednote', async ({ page }) => {
     '[class*="title"] textarea',
     '[class*="caption"] textarea',
   ];
-  
+
   let titleFilled = false;
   for (const selector of titleSelectors) {
     try {
@@ -304,11 +304,11 @@ test('upload video to rednote', async ({ page }) => {
       // Continue
     }
   }
-  
+
   if (!titleFilled) {
     console.log('⚠️  Title input not found automatically. Please fill manually.');
   }
-  
+
   // Fill description if provided (Xiaohongshu uses "描述" or "笔记描述")
   if (config.description) {
     const descSelectors = [
@@ -321,7 +321,7 @@ test('upload video to rednote', async ({ page }) => {
       '[class*="desc"] textarea',
       '[class*="description"] textarea',
     ];
-    
+
     let descFilled = false;
     for (const selector of descSelectors) {
       try {
@@ -342,12 +342,12 @@ test('upload video to rednote', async ({ page }) => {
         // Continue
       }
     }
-    
+
     if (!descFilled) {
       console.log('⚠️  Description input not found automatically. Please fill manually.');
     }
   }
-  
+
   // Fill tags if provided (Xiaohongshu supports hashtags/topics)
   if (config.tags && config.tags.length > 0) {
     const tagSelectors = [
@@ -363,7 +363,7 @@ test('upload video to rednote', async ({ page }) => {
       'input[type="text"][placeholder*="标签"]',
       'input[type="text"][placeholder*="话题"]',
     ];
-    
+
     let tagsFilled = false;
     for (const selector of tagSelectors) {
       try {
@@ -386,30 +386,30 @@ test('upload video to rednote', async ({ page }) => {
         // Continue
       }
     }
-    
+
     if (!tagsFilled) {
       console.log('⚠️  Tags input not found automatically. Please fill manually.');
     }
   }
-  
+
   // Step 7: Wait for video processing to complete
   console.log('⏳ Waiting for video processing to complete...');
   await page.waitForTimeout(10000);
-  
+
   // Step 8: Click publish button
   console.log('');
   console.log('📝 Video upload/form filling completed!');
   console.log('🚀 Looking for publish button...');
   await page.waitForTimeout(2000);
-  
+
   // Scroll to bottom to ensure publish button is visible
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(1000);
-  
+
   // Try to find publish button
   let publishClicked = false;
 
-  
+
   const publishSelectors = [
     'role=button[name="发布"]',
     'button:has-text("发布")',
@@ -422,7 +422,7 @@ test('upload video to rednote', async ({ page }) => {
     'button[type="submit"]',
     '[data-testid*="publish"]',
   ];
-  
+
   for (const selector of publishSelectors) {
     try {
       const publishButton = page.locator(selector).first();
@@ -444,7 +444,7 @@ test('upload video to rednote', async ({ page }) => {
       // Continue checking other selectors
     }
   }
-  
+
   if (!publishClicked) {
     console.log('⚠️  Publish button not found automatically.');
     console.log('💡 Pausing for manual review - please click publish button manually');
@@ -453,19 +453,14 @@ test('upload video to rednote', async ({ page }) => {
     // Wait for publication to complete
     console.log('⏳ Waiting for publication to complete...');
     await page.waitForTimeout(5000);
-    
+
     // Check for success indicators
     let publicationSuccess = false;
-    
+
     const successSelectors = [
-      'text=发布成功',
-      'text=Published',
-      'text=上传成功',
-      'text=Upload successful',
-      '[class*="success"]',
-      '[class*="Success"]',
+      'text=立即返回',
     ];
-    
+
     for (const selector of successSelectors) {
       try {
         const element = page.locator(selector).first();
@@ -478,7 +473,7 @@ test('upload video to rednote', async ({ page }) => {
         // Continue
       }
     }
-    
+
     if (!publicationSuccess) {
       console.log('Success: RedNote (check manually)');
     } else {

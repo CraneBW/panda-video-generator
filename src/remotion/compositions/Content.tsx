@@ -160,7 +160,8 @@ export const Content: React.FC<ContentProps> = ({
 	// Fade out starts 2 seconds before audio ends
 	const fadeOutDurationMs = 2000; // 2 seconds fade out
 	const fadeOutStartMs = audioEndMs - fadeOutDurationMs;
-	const bgmBaseVolume = 0.3;
+	// Duck BGM under TTS (0–1). Lower = quieter bed; fade-out still scales from this base.
+	const bgmBaseVolume = 0.15;
 
 	let bgmVolume = bgmBaseVolume;
 	if (audioEndMs > 0 && currentTimeMs >= fadeOutStartMs) {
