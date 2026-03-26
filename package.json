@@ -72,11 +72,11 @@
     "spider:zhihu": "sh scripts/spider-zhihu.sh",
     "spider:rss": "tsx spider/rss-title-translator.ts",
     "spider:article-vtt": "tsx spider/article-summary-vtt.ts",
-    "generate:news:kimi": "tsx spider/news-generator-kimi.ts",
-    "news:generate": "tsx spider/news-generator-deepseek.ts",
     "video:zhihu": "sh scripts/generate-video.sh",
-    "zhihu:weixin-mp": "tsx spider/zhihu-to-weixin-mp-article.ts",
-    "weixin-mp:from-zhihu": "sh scripts/weixin-mp-from-zhihu.sh",
+    "hn:weixin-mp": "tsx spider/hn-spider/hn.ts",
+    "hn:spider": "tsx spider/hn-spider/hn.ts --spider-only",
+    "hn:weixin-digest": "tsx spider/hn-spider/hn.ts --digest",
+    "hn:weixin-prep": "sh scripts/hn-weixin-prepare.sh",
     "test:upload:all": "playwright test automations/**/upload-video.spec.ts --project=chromium"
   }
 }

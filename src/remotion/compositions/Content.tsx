@@ -160,7 +160,7 @@ export const Content: React.FC<ContentProps> = ({
 	// Fade out starts 2 seconds before audio ends
 	const fadeOutDurationMs = 2000; // 2 seconds fade out
 	const fadeOutStartMs = audioEndMs - fadeOutDurationMs;
-	const bgmBaseVolume = 0.6;
+	const bgmBaseVolume = 0.3;
 
 	let bgmVolume = bgmBaseVolume;
 	if (audioEndMs > 0 && currentTimeMs >= fadeOutStartMs) {

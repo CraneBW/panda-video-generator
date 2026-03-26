@@ -27,59 +27,7 @@ tsx spider/spider-zhihu.ts https://www.zhihu.com/question/316150890
 - Automatically create TTS input files and title.json
 - Output files saved to `output/tts/` and `output/video/`
 
-### 2. Daily News Generator (news-generator.ts)
-
-Generate daily important news summaries and video scripts using DeepSeek AI.
-
-**Usage:**
-
-```bash
-# Generate today's news (recommended)
-pnpm generate:news
-
-# Or use direct command
-pnpm news:generate
-
-# Generate news for specific date
-pnpm generate:news -- 2026-03-02
-pnpm news:generate 2026-03-02
-
-# Run script directly
-sh scripts/generate-news.sh
-sh scripts/generate-news.sh 2026-03-02
-
-# Or use tsx
-tsx spider/news-generator.ts
-tsx spider/news-generator.ts 2026-03-02
-```
-
-**Features:**
-- Automatically fetch current date (or use specified date)
-- Generate 10 important news items using DeepSeek AI
-- Each news item includes 80-120 character description
-- Generate complete video narration script (1600-2000 characters)
-- Automatically create dated video titles
-- Output files:
-  - `output/tts/input.txt` - Video script
-  - `output/video/title.json` - Video title
-  - `output/tts/news-metadata.json` - Metadata
-
-**Output Example:**
-
-Generated script format:
-```
-Hello everyone, today is Monday, March 2, 2026, bringing you today's top news.
-
-1. China successfully launched a new-generation manned spacecraft test vehicle...
-
-2. The UN Security Council held an emergency meeting on the Middle East situation...
-
-...
-
-That's all for today's news. Thank you for watching.
-```
-
-### 3. RSS Title Spider & Translator (rss-title-translator.ts)
+### 2. RSS Title Spider & Translator (rss-title-translator.ts)
 
 根据提供的 RSS 地址列表批量抓取条目的**标题**和 **guid**，并用 DeepSeek 将标题翻译为中文，仅输出标题（含 guid 映射）。
 
@@ -104,7 +52,7 @@ tsx spider/rss-title-translator.ts [rss_url1] [rss_url2] ...
 
 **依赖：** 需在 `.env.local` 中配置 `DEEPSEEK_API_KEY`。
 
-### 4. 单页文章爬取并生成视频文稿 + VTT（article-summary-vtt.ts）
+### 3. 单页文章爬取并生成视频文稿 + VTT（article-summary-vtt.ts）
 
 抓取指定文章页正文，用 DeepSeek 生成与 `caption-generator` 同风格的视频台词（开场白 + 正文 + 结尾语），并写入 TTS 目录供后续 TTS 与视频生成使用。
 
@@ -152,8 +100,8 @@ Key dependencies:
 1. **Generate Content Script**
    ```bash
    # Choose one:
-   pnpm generate:news              # News
    pnpm spider:zhihu -- <url>      # Zhihu
+   pnpm spider:article-vtt -- <url> # Single-article page
    ```
 
 2. **Generate Video**
@@ -175,8 +123,7 @@ output/
 ├── tts/
 │   ├── input.txt              # Video script (for TTS)
 │   ├── audio.mp3              # Generated audio (TTS output)
-│   ├── audio.vtt              # Subtitle file (TTS output)
-│   └── news-metadata.json     # News metadata (news generator only)
+│   └── audio.vtt              # Subtitle file (TTS output)
 ├── video/
 │   ├── title.json             # Video title
 │   ├── video.mp4              # Final video (render output)
@@ -189,7 +136,6 @@ output/
 
 - `spider.ts` - ZhihuSpider class definition
 - `spider-zhihu.ts` - Zhihu spider main program
-- `news-generator.ts` - Daily news generator main program
 - `caption-generator.ts` - DeepSeek video script generator (used by Zhihu)
 
 ## Tech Stack
@@ -204,8 +150,7 @@ output/
 1. **API Key Security**: Do not commit `.env.local` to version control
 2. **Scraping Etiquette**: Zhihu spider includes random delays to simulate human behavior
 3. **Content Review**: Generated content may require manual review
-4. **Date Format**: News generator uses YYYY-MM-DD format (e.g., 2026-03-02)
-5. **Network Requirements**: Stable internet connection required for DeepSeek API
+4. **Network Requirements**: Stable internet connection required for DeepSeek API
 
 ## Troubleshooting
 
@@ -237,7 +182,7 @@ output/
 
 ### Adding New Content Sources
 
-Follow the implementation patterns in `spider-zhihu.ts` and `news-generator.ts`:
+Follow the implementation patterns in `spider-zhihu.ts` and `article-summary-vtt.ts`:
 
 1. Create new spider/generator file
 2. Use DeepSeek API to generate scripts
