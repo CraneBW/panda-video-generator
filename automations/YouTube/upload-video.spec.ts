@@ -10,10 +10,10 @@ import { UPLOAD_PATHS } from '../../types/paths';
  * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
- *   pnpm test:upload:youtube
+ *   pnpm upload:youtube
  * 
  * Or override with environment variables:
- *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm test:upload:youtube
+ *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm upload:youtube
  */
 
 interface UploadConfig {
@@ -88,7 +88,7 @@ if (existsSync(youtubeAuthFile)) {
   test.use({ storageState: youtubeAuthFile });
   console.log('Auth: YouTube');
 } else {
-  console.log('Auth: YouTube (not found, run: pnpm test:login:youtube)');
+  console.log('Auth: YouTube (not found, run: pnpm login:youtube)');
 }
 
 // Use a custom browser context for YouTube to bypass security detection
@@ -162,7 +162,7 @@ test('upload video to youtube', async ({ page }) => {
   if (loginRequired || loginRequiredCN) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
-      '  pnpm test:login:youtube'
+      '  pnpm login:youtube'
     );
   }
   

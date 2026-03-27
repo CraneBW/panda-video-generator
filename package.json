@@ -68,7 +68,7 @@
     "tts": "sh scripts/tts.sh",
     "render:video": "sh scripts/render-video-only.sh",
     "render:all": "sh scripts/render-video.sh",
-    "deploy": "node deploy.mjs",
+    "remotion:deploy": "node deploy.mjs",
     "spider:zhihu": "sh scripts/spider-zhihu.sh",
     "spider:generic": "tsx spider/generic-page-spider.ts",
     "spider:rss": "tsx spider/rss-title-translator.ts",
@@ -78,6 +78,6 @@
     "hn:spider": "tsx spider/hn-spider/hn.ts --spider-only",
     "hn:weixin-digest": "tsx spider/hn-spider/hn.ts --digest",
     "hn:weixin-prep": "sh scripts/hn-weixin-prepare.sh",
-    "test:upload:all": "playwright test automations/**/upload-video.spec.ts --project=chromium"
+    "upload-all": "playwright test automations/**/upload-video.spec.ts --project=chromium"
   }
 }

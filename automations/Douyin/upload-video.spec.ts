@@ -10,10 +10,10 @@ import { UPLOAD_PATHS } from '../../types/paths';
  * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
- *   pnpm test:upload:douyin
+ *   pnpm upload:douyin
  * 
  * Or override with environment variables:
- *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm test:upload:douyin
+ *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm upload:douyin
  */
 
 interface UploadConfig {
@@ -94,7 +94,7 @@ if (existsSync(douyinAuthFile)) {
   test.use({ storageState: douyinAuthFile });
   console.log('Auth: Douyin');
 } else {
-  console.log('Auth: Douyin (not found, run: pnpm test:login:douyin)');
+  console.log('Auth: Douyin (not found, run: pnpm login:douyin)');
 }
 
 test.describe.configure({ timeout: 10 * 60 * 1000 });
@@ -119,7 +119,7 @@ test('upload video to douyin', async ({ page }) => {
   if (loginRequired || loginButton) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
-      '  pnpm test:login:douyin'
+      '  pnpm login:douyin'
     );
   }
   

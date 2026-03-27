@@ -112,8 +112,8 @@ Key dependencies:
 
 3. **Upload to Platforms** (Optional)
    ```bash
-   pnpm test:upload:bilibili
-   pnpm test:upload:douyin
+   pnpm upload:bilibili
+   pnpm upload:douyin
    # etc...
    ```
 

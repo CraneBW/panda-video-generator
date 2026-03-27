@@ -10,10 +10,10 @@ import { UPLOAD_PATHS } from '../../types/paths';
  * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
- *   pnpm test:upload:weixin
+ *   pnpm upload:weixin-video
  * 
  * Or override with environment variables:
- *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm test:upload:weixin
+ *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm upload:weixin-video
  */
 
 interface UploadConfig {
@@ -151,7 +151,7 @@ if (existsSync(weixinAuthFile)) {
   test.use({ storageState: weixinAuthFile });
   console.log('Auth: Weixin');
 } else {
-  console.log('Auth: Weixin (not found, run: pnpm test:login:weixin)');
+  console.log('Auth: Weixin Video (not found, run: pnpm login:weixin-video)');
 }
 
 // Configure test suite: 10 minute timeout
@@ -176,7 +176,7 @@ test('upload video to weixin channel', async ({ page }) => {
   if (loginRequired || loginButton) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
-      '  pnpm test:login:weixin'
+      '  pnpm login:weixin-video'
     );
   }
   

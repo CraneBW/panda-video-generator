@@ -10,10 +10,10 @@ import { UPLOAD_PATHS } from '../../types/paths';
  * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
- *   pnpm test:upload:kuaishou
+ *   pnpm upload:kuaishou
  * 
  * Or override with environment variables:
- *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm test:upload:kuaishou
+ *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm upload:kuaishou
  */
 
 interface UploadConfig {
@@ -91,7 +91,7 @@ if (existsSync(kuaishouAuthFile)) {
   test.use({ storageState: kuaishouAuthFile });
   console.log('Auth: Kuaishou');
 } else {
-  console.log('Auth: Kuaishou (not found, run: pnpm test:login:kuaishou)');
+  console.log('Auth: Kuaishou (not found, run: pnpm login:kuaishou)');
 }
 
 test.describe.configure({ timeout: 10 * 60 * 1000 });
@@ -116,7 +116,7 @@ test('upload video to kuaishou', async ({ page }) => {
   if (loginRequired || loginButton) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
-      '  pnpm test:login:kuaishou'
+      '  pnpm login:kuaishou'
     );
   }
   

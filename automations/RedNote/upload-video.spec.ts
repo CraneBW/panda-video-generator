@@ -10,10 +10,10 @@ import { UPLOAD_PATHS } from '../../types/paths';
  * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
- *   pnpm test:upload:rednote
+ *   pnpm upload:rednote
  * 
  * Or override with environment variables:
- *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm test:upload:rednote
+ *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm upload:rednote
  */
 
 interface UploadConfig {
@@ -86,7 +86,7 @@ if (existsSync(rednoteAuthFile)) {
   test.use({ storageState: rednoteAuthFile });
   console.log('Auth: RedNote');
 } else {
-  console.log('Auth: RedNote (not found, run: pnpm test:login:rednote)');
+  console.log('Auth: RedNote (not found, run: pnpm login:rednote)');
 }
 
 // Configure test suite: 5 minute timeout
@@ -111,7 +111,7 @@ test('upload video to rednote', async ({ page }) => {
   if (loginRequired) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
-      '  pnpm test:login:rednote'
+      '  pnpm login:rednote'
     );
   }
 

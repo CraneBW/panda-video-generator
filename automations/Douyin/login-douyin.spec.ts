@@ -6,7 +6,7 @@ import { performLogin, getAuthFilePath } from '../utils/login-helper';
  * Run this ONCE to login and save your session
  * After login, your session will be saved and reused in other tests
  * 
- * Usage: pnpm test:login:douyin
+ * Usage: pnpm login:douyin
  * 
  * Note: This script has NO timeout limit - you can take as long as you need to login.
  * The script will pause and wait for you to complete the login process manually.

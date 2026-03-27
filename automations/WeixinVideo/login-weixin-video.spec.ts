@@ -8,7 +8,7 @@ import { mkdirSync, existsSync, unlinkSync, statSync } from 'fs';
  * Run this ONCE to login and save your session
  * After login, your session will be saved and reused in other tests
  * 
- * Usage: pnpm test:login:weixin
+ * Usage: pnpm login:weixin-video
  * 
  * Login page: https://channels.weixin.qq.com/login.html
  * 
@@ -90,7 +90,7 @@ test('login to weixin channel - run this once to save login state', async ({ pag
         
         if (fileSize > 0) {
           console.log(`📝 You can now run other Weixin tests and they will use this saved session.`);
-          console.log(`💡 Test with: pnpm test:upload:weixin`);
+          console.log(`💡 Test with: pnpm upload:weixin-video`);
         } else {
           console.log(`⚠️  Warning: Auth file is empty!`);
           throw new Error('Auth file is empty');
@@ -107,7 +107,7 @@ test('login to weixin channel - run this once to save login state', async ({ pag
   } catch (e) {
     console.log('❌ Timeout: "昨日数据" text did not appear within 15 minutes.');
     console.log('⚠️  Please ensure you have completed the login process.');
-    console.log('💡 You can run this script again: pnpm test:login:weixin');
+    console.log('💡 You can run this script again: pnpm login:weixin-video');
     throw e;
   }
 });

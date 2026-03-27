@@ -8,7 +8,7 @@ import { mkdirSync, existsSync, unlinkSync, statSync } from 'fs';
  * Run this ONCE to login and save your session
  * After login, your session will be saved and reused in other tests
  *
- * Usage: pnpm test:login:weixin-mp
+ * Usage: pnpm login:weixin-mp
  *
  * Login page: https://mp.weixin.qq.com/
  *
@@ -49,7 +49,7 @@ test('login to weixin mp (公众平台) - run this once to save login state', as
     console.log('✅ Login successful! Found heading "新的创作".');
   } catch {
     console.log('❌ Timeout: Heading "新的创作" did not appear within 15 minutes.');
-    console.log('💡 Run again: pnpm test:login:weixin-mp');
+    console.log('💡 Run again: pnpm login:weixin-mp');
     throw new Error('Login verification timeout');
   }
 

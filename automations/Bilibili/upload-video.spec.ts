@@ -10,10 +10,10 @@ import { UPLOAD_PATHS } from '../../types/paths';
  * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
- *   pnpm test:upload
+ *   pnpm upload:bilibili
  * 
  * Or override with environment variables:
- *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm test:upload
+ *   VIDEO_PATH=out/custom.mp4 VIDEO_TITLE="Custom Title" pnpm upload:bilibili
  */
 
 interface UploadConfig {
@@ -92,7 +92,7 @@ if (existsSync(bilibiliAuthFile)) {
   test.use({ storageState: bilibiliAuthFile });
   console.log('Auth: Bilibili');
 } else {
-  console.log('Auth: Bilibili (not found, run: pnpm test:login:bilibili)');
+  console.log('Auth: Bilibili (not found, run: pnpm login:bilibili)');
 }
 
 // Configure test suite: 5 minute timeout
@@ -116,7 +116,7 @@ test('upload video to bilibili', async ({ page }) => {
   if (loginRequired) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
-      '  pnpm test:login:bilibili'
+      '  pnpm login:bilibili'
     );
   }
   
