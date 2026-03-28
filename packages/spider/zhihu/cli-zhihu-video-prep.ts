@@ -7,7 +7,6 @@
 
 import { ZhihuSpider } from './zhihu-question-spider';
 import { generateVideoScript } from '@panda-video-generator/caption-generator';
-import { flattenCrawledToSpiderJson } from '../extract-json';
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
 import { OUTPUT_DIRS, TTS_PATHS, VIDEO_PATHS, SPIDER_PATHS, PUBLIC_DIRS } from '../../../types/paths';
@@ -48,12 +47,12 @@ async function main() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
     await fs.mkdir(SPIDER_PATHS.OUTPUT_DIR, { recursive: true });
     const outputPath = `${SPIDER_PATHS.OUTPUT_DIR}/output-${timestamp}.json`;
-    const spiderJson = flattenCrawledToSpiderJson({
+    const onDisk = {
       title: data.title,
       content: data.content,
       answers: data.answers,
-    });
-    await fs.writeFile(outputPath, JSON.stringify(spiderJson, null, 2), 'utf-8');
+    };
+    await fs.writeFile(outputPath, JSON.stringify(onDisk, null, 2), 'utf-8');
     console.log(`Content saved to: ${outputPath}`);
 
     console.log('\n✅ Extraction completed successfully!');

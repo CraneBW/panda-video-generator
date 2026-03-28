@@ -67,6 +67,7 @@
     "remotion:deploy": "node deploy.mjs",
     "spider:zhihu": "sh scripts/spider-zhihu.sh",
     "spider:extract": "tsx packages/spider/cli-extract-json.ts",
+    "caption:env": "tsx packages/caption-generator/cli-env.ts",
     "video:zhihu": "sh scripts/generate-video.sh",
     "login:bilibili": "playwright test automations/Bilibili/login-bilibili.spec.ts --project=chromium --headed",
     "login:douyin": "playwright test automations/Douyin/login-douyin.spec.ts --project=chromium --headed",

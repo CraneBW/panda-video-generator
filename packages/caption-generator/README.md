@@ -25,6 +25,34 @@
 
 Reads a JSON file (e.g. spider output with `title` / `content` / `answers` / optional `sourceUrl`), then calls `generateVideoScript`.
 
+### `runCaptionAndVttFromSpiderJson(jsonFilePath, outputDir, options?)`
+
+Reads spider JSON → **`generateVideoScriptText`** (DeepSeek) → writes **script** and **estimated WebVTT** in `outputDir` (same timing rule as `webvtt-estimate`). Options: `scriptFilename` (default `input.txt`), `vttFilename` (default `captions.vtt`), `secPerChar`.
+
+### `scriptToEstimatedWebVtt(scriptText, secPerChar?)`
+
+Turns plain script text into WebVTT with cue timing from character count (default ~`0.12` s/char).
+
+### Env-driven CLI (repo root)
+
+From monorepo root:
+
+```bash
+CAPTION_INPUT_JSON=output/spider/output-2026-03-28.json \
+CAPTION_OUTPUT_DIR=output/spider \
+pnpm run caption:env
+```
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `CAPTION_INPUT_JSON` | yes | Path to spider JSON (`title`, `content`, `answers`) |
+| `CAPTION_OUTPUT_DIR` | yes | Directory for `input.txt` (or custom name) and `.vtt` |
+| `CAPTION_SCRIPT_FILENAME` | no | Default `input.txt` |
+| `CAPTION_VTT_FILENAME` | no | Default `captions.vtt` |
+| `CAPTION_SEC_PER_CHAR` | no | Seconds per character for VTT estimate |
+
+Still requires `DEEPSEEK_API_KEY` (or `.env.local`).
+
 ### Type export
 
 - **`VideoScriptSourcePayload`** — shared shape for crawlers that feed this package.
@@ -42,6 +70,14 @@ await generateVideoScript(
   },
   'output/tts',
 );
+```
+
+Script + WebVTT from a spider JSON file:
+
+```ts
+import { runCaptionAndVttFromSpiderJson } from '@panda-video-generator/caption-generator/pipeline';
+
+await runCaptionAndVttFromSpiderJson('output/spider/output.json', 'output/spider');
 ```
 
 `pnpm exec tsx` resolves this package when your script lives under `packages/spider` with a workspace dependency; from other locations, depend on `@panda-video-generator/caption-generator` in `package.json`.

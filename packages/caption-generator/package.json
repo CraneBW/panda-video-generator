@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "exports": {
-    ".": "./caption-generator.ts"
+    ".": "./caption-generator.ts",
+    "./pipeline": "./pipeline-from-json.ts",
+    "./webvtt": "./webvtt-estimate.ts"
   },
   "dependencies": {
     "openai": "^4.104.0"
