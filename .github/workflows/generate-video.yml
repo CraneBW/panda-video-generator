@@ -64,8 +64,8 @@ jobs:
 
       - name: Generate video
         run: |
-          chmod +x scripts/generate-video.sh
-          ./scripts/generate-video.sh https://www.zhihu.com/question/1997750868066447778
+          chmod +x scripts/pipeline-zhihu-to-video.sh
+          ./scripts/pipeline-zhihu-to-video.sh https://www.zhihu.com/question/1997750868066447778
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'

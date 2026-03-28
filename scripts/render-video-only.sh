@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Remotion render + cover only. Requires TTS outputs (run scripts/tts.sh first).
-# Syncs output/* → public/* via scripts/sync-outputs-to-public.sh (--require-tts).
+# Single step: sync output/* → public/* (--require-tts), then Remotion render + cover.
+# Requires TTS artifacts under TTS_OUTPUT_DIR (run pnpm tts or use pipeline-tts-then-render.sh).
 # Usage: ./scripts/render-video-only.sh (from repo root)
 
 set -e

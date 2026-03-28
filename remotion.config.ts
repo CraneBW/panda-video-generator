@@ -7,5 +7,7 @@ import { Config } from "@remotion/cli/config";
 import { webpackOverride } from "./src/remotion/webpack-override.mjs";
 
 Config.setVideoImageFormat("jpeg");
+// First browser setup / heavy compositions can exceed the default 30s (see set-props-and-env).
+Config.setDelayRenderTimeoutInMilliseconds(600000);
 
 Config.overrideWebpackConfig(webpackOverride);

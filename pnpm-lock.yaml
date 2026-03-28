@@ -120,6 +120,9 @@ importers:
       eslint-config-next:
         specifier: 15.1.6
         version: 15.1.6(eslint@9.19.0(jiti@2.6.1))(typescript@5.9.3)
+      playwright:
+        specifier: 1.58.0
+        version: 1.58.0
       postcss:
         specifier: 8.4.47
         version: 8.4.47
