@@ -1,6 +1,6 @@
-# Windows 安装助手 (PowerShell 5+)。从仓库克隆根目录运行：
+# Windows Setup Assistant (PowerShell 5+). Run from repository root:
 #   powershell -ExecutionPolicy Bypass -File scripts/install.ps1
-# Requires ffmpeg on PATH. Use -InstallSystemFfmpeg to try winget/choco when missing.
+# Optional: -InstallSystemFfmpeg (attempts to auto-install ffmpeg, requires admin for choco)
 param(
   [switch]$InstallSystemFfmpeg
 )
@@ -18,10 +18,10 @@ function Write-Title {
   Write-Host ""
 }
 
-Write-Title "Panda Video Generator - Windows 设置"
+Write-Title "Panda Video Generator - Windows Setup"
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-  Write-Host "未找到 Node.js。请安装 Node.js 20 LTS：https://nodejs.org/" -ForegroundColor Red
+  Write-Host "Node.js not found. Please install Node.js 20 LTS: https://nodejs.org/" -ForegroundColor Red
   exit 1
 }
 
@@ -31,63 +31,87 @@ $major = [int]$parts[0]
 $minor = [int]$parts[1]
 
 if ($major -lt 20 -or ($major -eq 20 -and $minor -lt 9)) {
-  Write-Host "需要 Node.js >= 20.9（当前：$version）。请升级。" -ForegroundColor Red
+  Write-Host "Node.js >= 20.9 required (Current: $version). Please upgrade." -ForegroundColor Red
   exit 1
 }
 Write-Host "OK Node.js $version" -ForegroundColor Green
 
 if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
-  Write-Host "正在通过 Corepack 启用 pnpm..."
+  Write-Host "Enabling pnpm via Corepack..."
   corepack enable
   corepack prepare pnpm@latest --activate
 }
 Write-Host "OK pnpm $(pnpm -v)" -ForegroundColor Green
 
-Write-Host ""
-Write-Host "ffmpeg must be on PATH (TTS merge / atempo). Install: winget install Gyan.FFmpeg" -ForegroundColor Cyan
-Write-Host "Or re-run with -InstallSystemFfmpeg to attempt auto-install." -ForegroundColor Cyan
-Write-Host ""
-
-function Ensure-FfmpegOnPath {
-  if (Get-Command ffmpeg -ErrorAction SilentlyContinue) {
-    Write-Host "OK ffmpeg on PATH" -ForegroundColor Green
-    return
-  }
-
-  if (-not $InstallSystemFfmpeg) {
-    Write-Host "ffmpeg not found. Install on PATH or run with -InstallSystemFfmpeg." -ForegroundColor Red
-    exit 1
-  }
-
-  Write-Host "Installing system ffmpeg..."
+if ($InstallSystemFfmpeg) {
+  Write-Host ""
+  Write-Host "Attempting to auto-install ffmpeg..."
   $installed = $false
+  $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
+  # Try winget
   $winget = Get-Command winget -ErrorAction SilentlyContinue
   if ($winget) {
+    Write-Host "Trying installation via winget..."
     winget install -e --id Gyan.FFmpeg --accept-package-agreements --accept-source-agreements
     if ($LASTEXITCODE -eq 0) { $installed = $true }
   }
 
-  if (-not $installed) {
+  # Try Chocolatey if admin
+  if (-not $installed -and $isAdmin) {
     $choco = Get-Command choco -ErrorAction SilentlyContinue
     if ($choco) {
+      Write-Host "Trying installation via Chocolatey (requires admin privileges)..."
       choco install ffmpeg -y
       if ($LASTEXITCODE -eq 0) { $installed = $true }
     }
   }
 
-  if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-    Write-Host "ffmpeg still not on PATH after install attempt. Add ffmpeg manually and re-run." -ForegroundColor Red
-    exit 1
+  # Download static build if all else fails
+  if (-not $installed) {
+    Write-Host "Trying to download static build..."
+    try {
+      $ffmpegDir = "$env:USERPROFILE\bin\ffmpeg"
+      if (-not (Test-Path $ffmpegDir)) {
+        New-Item -ItemType Directory -Path $ffmpegDir -Force | Out-Null
+      }
+      $zipPath = "$env:TEMP\ffmpeg.zip"
+      Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile $zipPath
+      Expand-Archive -Path $zipPath -DestinationPath $env:TEMP\ffmpeg-temp -Force
+      $extractedDir = Get-ChildItem "$env:TEMP\ffmpeg-temp" | Where-Object { $_.PSIsContainer } | Select-Object -First 1
+      Copy-Item "$extractedDir\bin\*" $ffmpegDir -Force
+      Remove-Item $zipPath, "$env:TEMP\ffmpeg-temp" -Recurse -Force
+
+      # Add to user PATH
+      $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+      if ($userPath -notlike "*$ffmpegDir*") {
+        $newPath = "$userPath;$ffmpegDir"
+        [Environment]::SetEnvironmentVariable('Path', $newPath, [System.EnvironmentVariableTarget]::User)
+      }
+      $env:Path = "$env:Path;$ffmpegDir"
+      $installed = $true
+    } catch {
+      Write-Host 'Auto download failed. Please manually download from https://ffmpeg.org/download.html and add to PATH.' -ForegroundColor Yellow
+    }
   }
-  Write-Host "OK ffmpeg on PATH" -ForegroundColor Green
+
+  if ($installed) {
+    Write-Host "OK ffmpeg installed successfully" -ForegroundColor Green
+  } else {
+    Write-Host "ffmpeg installation failed (can be ignored if not using TTS)" -ForegroundColor Yellow
+  }
+} else {
+  if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+    Write-Host ""
+    Write-Host "ffmpeg not found. For TTS support, install manually: winget install Gyan.FFmpeg or choco install ffmpeg (admin privileges)" -ForegroundColor Yellow
+  } else {
+    Write-Host "OK ffmpeg available" -ForegroundColor Green
+  }
 }
 
-Ensure-FfmpegOnPath
-
 Write-Host ""
-Write-Host "Running pnpm install (workspace, Playwright Chromium)..."
+Write-Host "Running pnpm install (workspaces and Playwright Chromium)..."
 pnpm install
 
 Write-Host ""
-Write-Host "Done. Run: pnpm check:setup" -ForegroundColor Green
+Write-Host "Setup complete. You can now run: pnpm check:setup" -ForegroundColor Green
