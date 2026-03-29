@@ -1,0 +1,18 @@
+{
+  "name": "@panda-video-generator/hn-spider",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "hn:weixin-mp": "tsx src/hn.ts",
+    "hn:weixin-mp:dry": "tsx src/hn.ts --dry-run"
+  },
+  "dependencies": {
+    "openai": "^4.104.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.14",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
