@@ -33,23 +33,14 @@
 Panda Video Generator 是一个全自动化的视频内容生成与发布平台，支持从网页内容提取、文本转视频到多平台发布的完整工作流。通过 AI 驱动的文本转语音（TTS）技术和视频渲染引擎，帮助内容创作者快速生成高质量视频并一键发布到多个平台。
 
 
+## 📷 平台示例
 
 <table>
   <tr>
-    <td align="center">
-      <img src="./public/media/douyin.webp" width="200" alt="抖音">
-    </td>
-    <td align="center">
-      <img src="./public/media/weichat.webp" width="200" alt="微信视频号">
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="./public/media/kuaishou.webp" width="200" alt="快手 · 熊猫智研社">
-    </td>
-    <td align="center">
-      <img src="./public/media/rednote.webp" width="200" alt="小红书 · 熊猫智研社">
-    </td>
+    <td align="center"><img src="./public/media/douyin.webp" width="180" alt="抖音"></td>
+    <td align="center"><img src="./public/media/weichat.webp" width="180" alt="微信视频号"></td>
+    <td align="center"><img src="./public/media/kuaishou.webp" width="180" alt="快手 · 熊猫智研社"></td>
+    <td align="center"><img src="./public/media/rednote.webp" width="180" alt="小红书 · 熊猫智研社"></td>
   </tr>
 </table>
 

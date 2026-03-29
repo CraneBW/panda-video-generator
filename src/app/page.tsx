@@ -7,8 +7,10 @@ import { defaultMyCompProps } from "../../types/constants";
 
 // Media files in /public/media directory
 const mediaFiles = [
-  { filename: 'douyin', path: '/media/douyin.webp' },
-  { filename: 'weichat', path: '/media/weichat.webp' },
+  { id: "douyin", path: "/media/douyin.webp", label: "抖音" },
+  { id: "weichat", path: "/media/weichat.webp", label: "微信视频号" },
+  { id: "kuaishou", path: "/media/kuaishou.webp", label: "快手 · 熊猫智研社" },
+  { id: "rednote", path: "/media/rednote.webp", label: "小红书 · 熊猫智研社" },
 ];
 
 export default function Home() {
@@ -179,23 +181,23 @@ export default function Home() {
 
       {/* Platform Screenshots Section */}
       <section className="container mx-auto px-4 sm:px-6 py-8 sm:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {mediaFiles.map((file) => (
             <div
-              key={file.path}
+              key={file.id}
               className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100"
             >
-              <div className="relative w-full aspect-video overflow-hidden bg-gray-50">
+              <div className="relative w-full h-[280px] sm:h-[320px] overflow-hidden bg-gray-50">
                 <Image
                   src={file.path}
-                  alt={file.filename}
-                  width={800}
-                  height={450}
-                  className="w-full h-full object-contain"
+                  alt={file.label}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-contain p-2"
                 />
               </div>
               <div className="p-4 text-center">
-                <p className="text-lg font-semibold text-gray-900">{file.filename}</p>
+                <p className="text-lg font-semibold text-gray-900">{file.label}</p>
               </div>
             </div>
           ))}
