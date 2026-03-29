@@ -57,11 +57,17 @@ if (spawnSync(ffBin, ["-version"], { stdio: "pipe", shell: false }).status === 0
     encoding: "utf8",
     shell: false,
   }).stdout?.split("\n")[0];
-  const via = ffBin === "ffmpeg" ? "" : " (ffmpeg-static)";
-  console.log(`[OK] ffmpeg${via} ${line ?? ""}`.trim());
+  const via =
+    ffBin === "ffmpeg"
+      ? "（PATH 系统 ffmpeg，备用）"
+      : "（ffmpeg-static，随依赖安装）";
+  console.log(`[OK] ffmpeg ${via} ${line ?? ""}`.trim());
 } else {
   console.log(
-    "[--] ffmpeg 不可用 — 请确保已 pnpm install（含 ffmpeg-static），或在 PATH 中安装 ffmpeg",
+    "[--] ffmpeg 不可用 — 请先在本仓库根目录执行 pnpm install（需在 pnpm-workspace 中允许 ffmpeg-static 构建脚本）。",
+  );
+  console.log(
+    "    若捆绑二进制无法执行，可安装系统 ffmpeg 到 PATH，或运行: pnpm install:project -- --install-system-ffmpeg",
   );
 }
 
