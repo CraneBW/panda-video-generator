@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { projectRoot } from "./lib/project-root.mjs";
-import { hasFfmpeg, run } from "./lib/run-cmd.mjs";
+import { hasFfmpeg, run, runFfmpeg } from "./lib/run-cmd.mjs";
 import { writeRenderPropsFromTitle } from "./lib/render-props.mjs";
 
 const BLUE = "\x1b[0;34m";
@@ -107,7 +107,7 @@ if (!coverGenerated && tryStill()) {
 
 if (coverGenerated && hasFfmpeg()) {
   if (
-    run("ffmpeg", [
+    runFfmpeg([
       "-i",
       COVER_PNG,
       "-frames:v",
@@ -131,7 +131,7 @@ if (!coverGenerated && hasFfmpeg()) {
     `${YELLOW}⚠️  Remotion still failed, trying ffmpeg from first frame...${NC}`,
   );
   if (
-    run("ffmpeg", [
+    runFfmpeg([
       "-ss",
       "0",
       "-i",

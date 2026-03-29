@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { projectRoot } from "./lib/project-root.mjs";
+import { getFfmpegPath } from "./lib/resolve-ffmpeg.mjs";
 
 let fail = 0;
 
@@ -50,15 +51,17 @@ if (hasCmd("pnpm", ["-v"])) {
   fail = 1;
 }
 
-if (hasCmd("ffmpeg", ["-version"])) {
-  const line = spawnSync("ffmpeg", ["-version"], {
+const ffBin = getFfmpegPath();
+if (spawnSync(ffBin, ["-version"], { stdio: "pipe", shell: false }).status === 0) {
+  const line = spawnSync(ffBin, ["-version"], {
     encoding: "utf8",
-    shell: true,
+    shell: false,
   }).stdout?.split("\n")[0];
-  console.log(`[OK] ffmpeg ${line ?? ""}`.trim());
+  const via = ffBin === "ffmpeg" ? "" : " (ffmpeg-static)";
+  console.log(`[OK] ffmpeg${via} ${line ?? ""}`.trim());
 } else {
   console.log(
-    "[--] ffmpeg 不在 PATH 中 — pnpm tts / cover 需要；为您的操作系统安装 ffmpeg",
+    "[--] ffmpeg 不可用 — 请确保已 pnpm install（含 ffmpeg-static），或在 PATH 中安装 ffmpeg",
   );
 }
 

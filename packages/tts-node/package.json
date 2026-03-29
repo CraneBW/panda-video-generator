@@ -8,6 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "ffmpeg-static": "^5.2.0",
     "music-metadata": "^11.0.0",
     "node-edge-tts": "^1.2.10"
   }
