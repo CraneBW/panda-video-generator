@@ -1,6 +1,6 @@
-# Windows install helper (PowerShell 5+). Run from repo clone root:
+﻿# Windows 安装助手 (PowerShell 5+)。从仓库克隆根目录运行：
 #   powershell -ExecutionPolicy Bypass -File scripts/install.ps1
-# Optional: -SkipFfmpeg
+# 可选：-SkipFfmpeg
 param(
   [switch]$SkipFfmpeg
 )
@@ -18,22 +18,26 @@ function Write-Title {
   Write-Host ""
 }
 
-Write-Title "Panda Video Generator — Windows 安装"
+Write-Title "Panda Video Generator - Windows 设置"
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-  Write-Host "未检测到 Node.js。请安装 Node.js 20 LTS: https://nodejs.org/" -ForegroundColor Red
+  Write-Host "未找到 Node.js。请安装 Node.js 20 LTS：https://nodejs.org/" -ForegroundColor Red
   exit 1
 }
 
-node -e 'const p=process.version.slice(1).split(".").map(Number);process.exit(p[0]>20||(p[0]===20&&p[1]>=9)?0:1)'
-if ($LASTEXITCODE -ne 0) {
-  Write-Host "需要 Node.js >= 20.9（当前: $(node -v)）。请升级后重试。" -ForegroundColor Red
+$version = node -e "console.log(process.version)"
+$parts = $version.Substring(1) -split "\."
+$major = [int]$parts[0]
+$minor = [int]$parts[1]
+
+if ($major -lt 20 -or ($major -eq 20 -and $minor -lt 9)) {
+  Write-Host "需要 Node.js >= 20.9（当前：$version）。请升级。" -ForegroundColor Red
   exit 1
 }
-Write-Host "OK Node.js $(node -v)" -ForegroundColor Green
+Write-Host "OK Node.js $version" -ForegroundColor Green
 
 if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
-  Write-Host "正在通过 Corepack 启用 pnpm…"
+  Write-Host "正在通过 Corepack 启用 pnpm..."
   corepack enable
   corepack prepare pnpm@latest --activate
 }
@@ -41,32 +45,72 @@ Write-Host "OK pnpm $(pnpm -v)" -ForegroundColor Green
 
 if (-not $SkipFfmpeg) {
   if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-    Write-Host "未检测到 ffmpeg，尝试使用 winget 安装（可能需要管理员窗口）…"
+    Write-Host "未找到 ffmpeg。尝试自动安装..."
+    $installed = $false
+
+    # 尝试 winget
     $winget = Get-Command winget -ErrorAction SilentlyContinue
     if ($winget) {
+      Write-Host "尝试通过 winget 安装..."
       winget install -e --id Gyan.FFmpeg --accept-package-agreements --accept-source-agreements
-      if ($LASTEXITCODE -ne 0) {
-        Write-Host "winget 安装 ffmpeg 未成功（可忽略若暂不跑 TTS）" -ForegroundColor Yellow
+      if ($LASTEXITCODE -eq 0) {
+        $installed = $true
       }
-      # Refresh PATH in this session (common winget install location)
-      $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-      $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-      $env:Path = "$machinePath;$userPath"
-    } else {
-      Write-Host "未找到 winget。请手动安装 ffmpeg 或从 https://ffmpeg.org/download.html 下载，也可使用 Chocolatey: choco install ffmpeg" -ForegroundColor Yellow
-      Write-Host "继续仅安装 npm 依赖…（之后 TTS 仍需要 ffmpeg）" -ForegroundColor Yellow
+    }
+
+    # 如果 winget 失败，尝试 Chocolatey
+    if (-not $installed) {
+      $choco = Get-Command choco -ErrorAction SilentlyContinue
+      if ($choco) {
+        Write-Host "尝试通过 Chocolatey 安装..."
+        choco install ffmpeg -y
+        if ($LASTEXITCODE -eq 0) {
+          $installed = $true
+        }
+      }
+    }
+
+    # 如果都失败，下载静态构建
+    if (-not $installed) {
+      Write-Host "尝试下载静态构建..."
+      try {
+        $ffmpegDir = "$env:USERPROFILE\bin\ffmpeg"
+        if (-not (Test-Path $ffmpegDir)) {
+          New-Item -ItemType Directory -Path $ffmpegDir -Force | Out-Null
+        }
+        $zipPath = "$env:TEMP\ffmpeg.zip"
+        Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile $zipPath
+        Expand-Archive -Path $zipPath -DestinationPath $env:TEMP\ffmpeg-temp -Force
+        $extractedDir = Get-ChildItem "$env:TEMP\ffmpeg-temp" | Where-Object { $_.PSIsContainer } | Select-Object -First 1
+        Copy-Item "$extractedDir\bin\*" $ffmpegDir -Force
+        Remove-Item $zipPath, "$env:TEMP\ffmpeg-temp" -Recurse -Force
+
+        # 添加到用户 PATH
+        $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+        if ($userPath -notlike "*$ffmpegDir*") {
+          [Environment]::SetEnvironmentVariable("Path", "$userPath;$ffmpegDir", "User")
+        }
+        $env:Path = "$env:Path;$ffmpegDir"
+        $installed = $true
+      } catch {
+        Write-Host "自动下载失败。请手动从 https://ffmpeg.org/download.html 下载并添加到 PATH。" -ForegroundColor Yellow
+      }
+    }
+
+    if (-not $installed) {
+      Write-Host "ffmpeg 安装失败（如果不使用 TTS 可以忽略）" -ForegroundColor Yellow
     }
   }
   if (Get-Command ffmpeg -ErrorAction SilentlyContinue) {
     Write-Host "OK ffmpeg 可用" -ForegroundColor Green
   }
 } else {
-  Write-Host "已跳过 ffmpeg（-SkipFfmpeg）" -ForegroundColor Yellow
+  Write-Host "跳过 ffmpeg 安装 (-SkipFfmpeg)" -ForegroundColor Yellow
 }
 
 Write-Host ""
-Write-Host "正在执行 pnpm install（含 workspace 与 Playwright Chromium）…"
+Write-Host "正在运行 pnpm install（工作区和 Playwright Chromium）..."
 pnpm install
 
 Write-Host ""
-Write-Host "安装完成。可运行: pnpm check:setup" -ForegroundColor Green
+Write-Host "设置完成。您现在可以运行：pnpm check:setup" -ForegroundColor Green

@@ -21,14 +21,14 @@ function nodeVersionOk() {
   return major > 20 || (major === 20 && minor >= 9);
 }
 
-console.log("=== Panda Video Generator — environment check ===");
+console.log("=== Panda Video Generator — 环境检查 ===");
 console.log("");
 
 if (nodeVersionOk()) {
-  console.log(`[OK] node ${process.version} (need >=20.9, see package.json engines)`);
+  console.log(`[OK] node ${process.version}（需要 >=20.9，请查看 package.json engines）`);
 } else {
   console.log(
-    `[!!] node ${process.version} — need >=20.9: https://nodejs.org/`,
+    `[!!] node ${process.version} — 需要 >=20.9：https://nodejs.org/`,
   );
   fail = 1;
 }
@@ -45,7 +45,7 @@ if (hasCmd("pnpm", ["-v"])) {
   }
 } else {
   console.log(
-    "[!!] pnpm not found — try: corepack enable && corepack prepare pnpm@latest --activate",
+    "[!!] 未找到 pnpm — 尝试：corepack enable && corepack prepare pnpm@latest --activate",
   );
   fail = 1;
 }
@@ -58,24 +58,24 @@ if (hasCmd("ffmpeg", ["-version"])) {
   console.log(`[OK] ffmpeg ${line ?? ""}`.trim());
 } else {
   console.log(
-    "[--] ffmpeg not on PATH — needed for pnpm tts / cover; install ffmpeg for your OS",
+    "[--] ffmpeg 不在 PATH 中 — pnpm tts / cover 需要；为您的操作系统安装 ffmpeg",
   );
 }
 
 const pkg = path.join(projectRoot, "package.json");
 const nm = path.join(projectRoot, "node_modules");
 if (fs.existsSync(pkg) && fs.existsSync(nm)) {
-  console.log("[OK] node_modules exists (run pnpm install if you just cloned)");
+  console.log("[OK] node_modules 存在（如果刚克隆，请运行 pnpm install）");
 } else {
-  console.log("[--] run pnpm install in repo root");
+  console.log("[--] 在仓库根目录运行 pnpm install");
 }
 
 console.log("");
 console.log(
-  "Playwright: Chromium is fetched when you run pnpm install (needs network).",
+  "Playwright：运行 pnpm install 时获取 Chromium（需要网络）。",
 );
 console.log(
-  "If login/upload fails: pnpm exec playwright install --with-deps chromium",
+  "如果登录/上传失败：pnpm exec playwright install --with-deps chromium",
 );
 console.log("");
 
