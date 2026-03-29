@@ -2,11 +2,18 @@ import { test } from '@playwright/test';
 import path from 'path';
 import { existsSync } from 'fs';
 import { getAuthFilePath } from '../utils/login-helper';
+import {
+  humanClick,
+  humanDelay,
+  humanFillEditable,
+  patchNavigatorForPage,
+} from '../utils/human-behavior';
 import { UPLOAD_PATHS } from '../../types/paths';
 
 /**
- * Auto upload video to RedNote
- * Uses Playwright's default setup with saved login state
+ * Auto upload video to RedNote (小红书创作平台)
+ * Uses saved login state plus human-like delays/clicks/typing and light navigator
+ * hardening to reduce risk-control triggers (not a guarantee).
  * Automatically reads video and title from configured paths (see types/paths.ts)
  * 
  * Usage: 
@@ -89,6 +96,12 @@ if (existsSync(rednoteAuthFile)) {
   console.log('Auth: RedNote (not found, run: pnpm login:rednote)');
 }
 
+test.use({
+  launchOptions: {
+    args: ['--disable-blink-features=AutomationControlled'],
+  },
+});
+
 // Configure test suite: 5 minute timeout
 test.describe.configure({ timeout: 5 * 60 * 1000 });
 
@@ -100,9 +113,11 @@ test('upload video to rednote', async ({ page }) => {
 
   console.log(`Upload: RedNote - ${config.title}`);
 
+  await patchNavigatorForPage(page);
+
   // Step 1: Navigate to RedNote (Xiaohongshu Creator Platform) upload page
   await page.goto('https://creator.xiaohongshu.com/', { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(3000);
+  await humanDelay(page, 2200, 3800);
 
   // Check if logged in
   const loginRequired = await page.locator('text=登录').first().isVisible().catch(() => false) ||
@@ -119,7 +134,7 @@ test('upload video to rednote', async ({ page }) => {
 
   // Step 2: Navigate to content management or upload page
   console.log('🔍 Looking for content management or upload option...');
-  await page.waitForTimeout(2000);
+  await humanDelay(page, 1400, 2600);
 
   // Try to find and click "发布笔记" or "内容管理" or upload button
   const uploadPageSelectors = [
@@ -140,10 +155,10 @@ test('upload video to rednote', async ({ page }) => {
     try {
       const element = page.locator(selector).first();
       if (await element.isVisible({ timeout: 3000 })) {
-        await element.click();
+        await humanClick(page, element);
         console.log(`✅ Clicked upload/content option: ${selector}`);
         uploadPageNavigated = true;
-        await page.waitForTimeout(3000);
+        await humanDelay(page, 2200, 3800);
         break;
       }
     } catch (e) {
@@ -156,14 +171,14 @@ test('upload video to rednote', async ({ page }) => {
     console.log('💡 Trying to navigate directly to upload page...');
     try {
       await page.goto('https://creator.xiaohongshu.com/publish/publish', { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(3000);
+      await humanDelay(page, 2200, 3800);
       console.log('✅ Navigated to publish page');
     } catch (e) {
       console.log('⚠️  Could not navigate to upload page directly, continuing with current page...');
     }
   }
 
-  await page.waitForTimeout(2000);
+  await humanDelay(page, 1400, 2600);
 
   // Step 3: Find the file input element for video upload
   console.log('📤 Looking for upload file input...');
@@ -209,11 +224,11 @@ test('upload video to rednote', async ({ page }) => {
         if (await area.isVisible({ timeout: 3000 })) {
           const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser', { timeout: 5000 }),
-            area.click(),
+            humanClick(page, area),
           ]);
           await fileChooser.setFiles(config.videoPath);
           console.log(`✅ Video file selected via file chooser: ${selector}`);
-          await page.waitForTimeout(3000);
+          await humanDelay(page, 2200, 3800);
           break;
         }
       } catch (e) {
@@ -226,7 +241,7 @@ test('upload video to rednote', async ({ page }) => {
     try {
       await uploadInput.setInputFiles(config.videoPath);
       console.log('✅ Video file selected');
-      await page.waitForTimeout(3000);
+      await humanDelay(page, 2200, 3800);
     } catch (error: any) {
       console.log(`❌ Error uploading file: ${error.message}`);
       console.log('💡 Trying alternative method: using file chooser...');
@@ -235,11 +250,11 @@ test('upload video to rednote', async ({ page }) => {
       if (await uploadArea.isVisible({ timeout: 3000 })) {
         const [fileChooser] = await Promise.all([
           page.waitForEvent('filechooser', { timeout: 5000 }),
-          uploadArea.click(),
+          humanClick(page, uploadArea),
         ]);
         await fileChooser.setFiles(config.videoPath);
         console.log('✅ Video file selected via file chooser');
-        await page.waitForTimeout(3000);
+        await humanDelay(page, 2200, 3800);
       } else {
         throw new Error('Could not find upload area or file input');
       }
@@ -248,11 +263,11 @@ test('upload video to rednote', async ({ page }) => {
 
   // Step 5: Wait for video to process/upload
   console.log('⏳ Waiting for video to finish uploading/processing...');
-  await page.waitForTimeout(5000);
+  await humanDelay(page, 4000, 6000);
 
   // Step 6: Fill in video information
   console.log('✏️  Filling in video information...');
-  await page.waitForTimeout(2000);
+  await humanDelay(page, 1400, 2600);
 
   // Fill title/caption (Xiaohongshu uses "标题" for title)
   // RedNote/Xiaohongshu has a 20 character limit for titles
@@ -292,11 +307,10 @@ test('upload video to rednote', async ({ page }) => {
       if (count > 0) {
         const visible = await titleInput.isVisible({ timeout: 2000 });
         if (visible) {
-          await titleInput.click({ timeout: 1000 });
-          await titleInput.fill(truncatedTitle);
+          await humanFillEditable(page, titleInput, truncatedTitle);
           console.log(`✅ Title filled using selector: ${selector}`);
           titleFilled = true;
-          await page.waitForTimeout(500);
+          await humanDelay(page, 350, 650);
           break;
         }
       }
@@ -330,11 +344,10 @@ test('upload video to rednote', async ({ page }) => {
         if (count > 0) {
           const visible = await descInput.isVisible({ timeout: 2000 });
           if (visible) {
-            await descInput.click({ timeout: 1000 });
-            await descInput.fill(config.description);
+            await humanFillEditable(page, descInput, config.description);
             console.log(`✅ Description filled using selector: ${selector}`);
             descFilled = true;
-            await page.waitForTimeout(500);
+            await humanDelay(page, 350, 650);
             break;
           }
         }
@@ -372,13 +385,12 @@ test('upload video to rednote', async ({ page }) => {
         if (count > 0) {
           const visible = await tagInput.isVisible({ timeout: 2000 });
           if (visible) {
-            await tagInput.click({ timeout: 1000 });
             // Format tags with # prefix if not already present
             const formattedTags = config.tags.map(tag => tag.startsWith('#') ? tag : `#${tag}`).join(' ');
-            await tagInput.fill(formattedTags);
+            await humanFillEditable(page, tagInput, formattedTags);
             console.log(`✅ Tags filled using selector: ${selector}`);
             tagsFilled = true;
-            await page.waitForTimeout(500);
+            await humanDelay(page, 350, 650);
             break;
           }
         }
@@ -394,17 +406,17 @@ test('upload video to rednote', async ({ page }) => {
 
   // Step 7: Wait for video processing to complete
   console.log('⏳ Waiting for video processing to complete...');
-  await page.waitForTimeout(10000);
+  await humanDelay(page, 8500, 11500);
 
   // Step 8: Click publish button
   console.log('');
   console.log('📝 Video upload/form filling completed!');
   console.log('🚀 Looking for publish button...');
-  await page.waitForTimeout(2000);
+  await humanDelay(page, 1400, 2600);
 
   // Scroll to bottom to ensure publish button is visible
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForTimeout(1000);
+  await humanDelay(page, 700, 1300);
 
   // Try to find publish button
   let publishClicked = false;
@@ -431,10 +443,10 @@ test('upload video to rednote', async ({ page }) => {
         const isEnabled = await publishButton.isEnabled().catch(() => false);
         if (isEnabled) {
           console.log(`✅ Found publish button: ${selector}`);
-          await publishButton.click();
+          await humanClick(page, publishButton);
           console.log('✅ Publish button clicked!');
           publishClicked = true;
-          await page.waitForTimeout(2000);
+          await humanDelay(page, 1400, 2600);
           break;
         } else {
           console.log(`⚠️  Publish button found but disabled: ${selector}`);
@@ -452,7 +464,7 @@ test('upload video to rednote', async ({ page }) => {
   } else {
     // Wait for publication to complete
     console.log('⏳ Waiting for publication to complete...');
-    await page.waitForTimeout(5000);
+    await humanDelay(page, 4000, 6000);
 
     // Check for success indicators
     let publicationSuccess = false;
