@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender, Html5Audio } from 'remotion';
+import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender, Html5Audio, getStaticFiles } from 'remotion';
 import { Video as RemotionVideo } from '@remotion/media';
 import { REMOTION_PATHS } from '../../../types/paths';
 import { Intro, TitleSequence } from './Intro';
@@ -34,7 +34,47 @@ async function getAudioDurationFromVtt(vttFile: string): Promise<number> {
 	}
 }
 
-// Background: always public/video/0.mp4. Run scripts/shuffle-bg-videos.sh before render to permute which clip sits at each index.
+const BG_VIDEO_RELATIVE = 'video/0.mp4';
+
+/**
+ * Prefer bundle manifest (no extra network read). Returns null when manifest is unavailable
+ * (e.g. some non-Studio contexts) — caller should fall back to a light HTTP probe.
+ */
+function bgVideoListedInStaticManifest(): boolean | null {
+	const files = getStaticFiles();
+	if (files.length === 0) {
+		return null;
+	}
+	return files.some((f) => f.name === BG_VIDEO_RELATIVE);
+}
+
+/** Last resort: HEAD, then one-byte Range (avoid downloading the whole mp4). */
+async function staticFileExistsLightProbe(relativePublicPath: string): Promise<boolean> {
+	const url = staticFile(relativePublicPath);
+	try {
+		const head = await fetch(url, { method: 'HEAD' });
+		if (head.ok) {
+			return true;
+		}
+		if (head.status === 404) {
+			return false;
+		}
+		const ranged = await fetch(url, { headers: { Range: 'bytes=0-0' } });
+		return ranged.ok || ranged.status === 206;
+	} catch {
+		return false;
+	}
+}
+
+async function resolveBgVideoAvailable(): Promise<boolean> {
+	const fromManifest = bgVideoListedInStaticManifest();
+	if (fromManifest !== null) {
+		return fromManifest;
+	}
+	return staticFileExistsLightProbe(BG_VIDEO_RELATIVE);
+}
+
+// Background: public/video/0.mp4 when present (black fallback if missing). Optional local: shuffle-bg-videos.sh before render to re-index clips.
 
 export const Video: React.FC<{
 	title?: string;
@@ -51,16 +91,20 @@ export const Video: React.FC<{
 		const { fps } = useVideoConfig();
 		const [contentDuration, setContentDuration] = useState<number>(0);
 		const [loaded, setLoaded] = useState(false);
+		const [bgVideoAvailable, setBgVideoAvailable] = useState(false);
 		const { delayRender, continueRender } = useDelayRender();
 		const [handle] = useState(() => delayRender());
 
-		// Load VTT file to calculate content duration
+		// Load VTT for duration; probe background video (staticFile) so we can fall back to black.
 		useEffect(() => {
 			const loadData = async () => {
 				try {
-					// Load content duration
-					const duration = await getAudioDurationFromVtt(vttFile);
+					const [duration, hasBgVideo] = await Promise.all([
+						getAudioDurationFromVtt(vttFile),
+						resolveBgVideoAvailable(),
+					]);
 					setContentDuration(duration);
+					setBgVideoAvailable(hasBgVideo);
 					setLoaded(true);
 				} catch (e) {
 					console.error('Failed to load data:', e);
@@ -102,21 +146,25 @@ export const Video: React.FC<{
 			// 	filter: 'invert(1)',
 			// }}
 			>
-				{/* Background video layer */}
-				<RemotionVideo
-					src={staticFile('video/0.mp4')}
-					style={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						width: '100%',
-						height: '100%',
-						objectFit: 'cover',
-						filter: 'brightness(0.8)',
-					}}
-					muted
-					loop
-				/>
+				{/* Background video layer, or black if file missing */}
+				{bgVideoAvailable ? (
+					<RemotionVideo
+						src={staticFile(BG_VIDEO_RELATIVE)}
+						style={{
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%',
+							objectFit: 'cover',
+							filter: 'brightness(0.8)',
+						}}
+						muted
+						loop
+					/>
+				) : (
+					<AbsoluteFill style={{ backgroundColor: '#000' }} />
+				)}
 
 				{/* Cover sequence - displayed first */}
 				<Sequence from={coverStart} durationInFrames={coverDuration}>

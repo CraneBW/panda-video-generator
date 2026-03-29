@@ -1,10 +1,9 @@
 {
   "name": "panda-video-generator",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "author": {
     "name": "szhshp",
-    "email": "24031shp@sina.com",
     "url": "https://github.com/szhshp"
   },
   "dependencies": {
@@ -66,6 +65,9 @@
     "tts": "SPIDER_OUTPUT_DIR=output/spider TTS_OUTPUT_DIR=output/tts TTS_PUBLIC_DIR=public/tts sh scripts/tts.sh",
     "render:video": "SPIDER_OUTPUT_DIR=output/spider TTS_OUTPUT_DIR=output/tts TTS_PUBLIC_DIR=public/tts sh scripts/render-video-only.sh",
     "render:composition": "sh scripts/render-composition-only.sh",
+    "shuffle:bg-video": "sh scripts/shuffle-bg-videos.sh",
+    "shuffle:bgm": "sh scripts/shuffle-bgm.sh",
+    "shuffle:all": "sh scripts/shuffle-bg-videos.sh && sh scripts/shuffle-bgm.sh",
     "pipeline:tts-render": "SPIDER_OUTPUT_DIR=output/spider TTS_OUTPUT_DIR=output/tts TTS_PUBLIC_DIR=public/tts sh scripts/pipeline-tts-then-render.sh",
     "render:all": "pnpm run pipeline:tts-render",
     "remotion:deploy": "node deploy.mjs",

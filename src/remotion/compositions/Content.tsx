@@ -8,6 +8,7 @@ import {
 	Html5Audio,
 	interpolate,
 	spring,
+	getStaticFiles,
 } from 'remotion';
 import { loadFont } from '@remotion/fonts';
 import { REMOTION_PATHS } from '../../../types/paths';
@@ -99,7 +100,42 @@ async function fetchVttText(primaryPath: string, fallbackPath: string): Promise<
 	throw new Error(`Failed to load WebVTT from ${primaryPath} or ${fallbackPath}`);
 }
 
-// Background music: always public/bgm/0.mp3. Run scripts/shuffle-bgm.sh before render to permute tracks.
+/** Canonical public path; manifest may list different casing (e.g. 0.MP3 on macOS). */
+const BGM_CANONICAL = 'bgm/0.mp3';
+
+async function staticFileExistsLightProbe(relativePublicPath: string): Promise<boolean> {
+	const url = staticFile(relativePublicPath);
+	try {
+		const head = await fetch(url, { method: 'HEAD' });
+		if (head.ok) {
+			return true;
+		}
+		if (head.status === 404) {
+			return false;
+		}
+		const ranged = await fetch(url, { headers: { Range: 'bytes=0-0' } });
+		return ranged.ok || ranged.status === 206;
+	} catch {
+		return false;
+	}
+}
+
+/** Prefer bundle manifest (no extra read). Returns manifest-relative path or null if absent. */
+async function resolveBgmStaticPath(): Promise<string | null> {
+	const files = getStaticFiles();
+	if (files.length > 0) {
+		const exact = files.find((f) => f.name === BGM_CANONICAL);
+		if (exact) {
+			return exact.name;
+		}
+		const ci = files.find((f) => f.name.toLowerCase() === BGM_CANONICAL.toLowerCase());
+		return ci?.name ?? null;
+	}
+	const ok = await staticFileExistsLightProbe(BGM_CANONICAL);
+	return ok ? BGM_CANONICAL : null;
+}
+
+// Background: bgm/0.mp3 when present (no BGM layer if missing). Optional local: shuffle-bgm.sh to re-index.
 
 interface ContentProps {
 	audioFile?: string;
@@ -116,6 +152,7 @@ export const Content: React.FC<ContentProps> = ({
 	const { fps } = useVideoConfig();
 	const [captions, setCaptions] = useState<Caption[]>([]);
 	const [vttLoaded, setVttLoaded] = useState(false);
+	const [bgmStaticPath, setBgmStaticPath] = useState<string | null>(null);
 	const { delayRender, continueRender, cancelRender } = useDelayRender();
 	const [handle] = useState(() => delayRender());
 
@@ -125,9 +162,13 @@ export const Content: React.FC<ContentProps> = ({
 				captionVttFile === REMOTION_PATHS.TTS_VTT
 					? REMOTION_PATHS.SPIDER_CAPTIONS_VTT
 					: REMOTION_PATHS.TTS_VTT;
-			const vttContent = await fetchVttText(captionVttFile, fallback);
+			const [vttContent, bgmPath] = await Promise.all([
+				fetchVttText(captionVttFile, fallback),
+				resolveBgmStaticPath(),
+			]);
 			const parsedCaptions = parseVtt(vttContent);
 			setCaptions(parsedCaptions);
+			setBgmStaticPath(bgmPath);
 			setVttLoaded(true);
 		} catch (e) {
 			console.error('Failed to load VTT file:', e);
@@ -284,13 +325,15 @@ export const Content: React.FC<ContentProps> = ({
 				name="TTS Audio"
 			/>
 
-			{/* Background music - loops throughout content with fade out at audio end */}
-			<Html5Audio
-				src={staticFile('bgm/0.mp3')}
-				volume={bgmVolume}
-				loop
-				name="Background Music"
-			/>
+			{/* Background music — only mount when file exists (manifest or light probe) */}
+			{bgmStaticPath !== null ? (
+				<Html5Audio
+					src={staticFile(bgmStaticPath)}
+					volume={bgmVolume}
+					loop
+					name="Background Music"
+				/>
+			) : null}
 
 			{/* Dancing lines - slow animated background decoration */}
 			{/* <svg
