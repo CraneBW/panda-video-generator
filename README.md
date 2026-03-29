@@ -5,7 +5,7 @@
   
   **熊猫视频自动化引擎**
 
-  *Creator automation, the developer way.*
+  *"Developer-first video automation."*
   
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
@@ -59,7 +59,9 @@ Panda Video Generator 是一个全自动化的视频内容生成与发布平台�
 ├── 🎬 文本转视频
 │   ├── ✅ 自动生成语音和字幕（TTS）
 │   ├── ✅ 自动渲染视频
-│   └── 🚧 视频模板系统
+│   └── 🚧 视频模板系统 
+│       ├── ✅ 横屏模板
+│       └── 🚧 竖屏模板
 ├── 🚀 多平台发布
 │   ├── ✅ Bilibili 自动发布
 │   ├── ✅ 抖音自动发布
