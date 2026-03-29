@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Randomly permute public/video/0.mp4..3.mp4 so a different clip lands at each index.
-# Video composition always loads 0.mp4 — run this before each render for variety.
+# Video composition always loads 0.mp4 — not run by render pipelines; use locally before render if you want variety.
 # Skips (exit 0) if any of the four files is missing.
 
 set -e

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Randomly permute public/bgm/0.mp3..(N-1).mp3 so a different track lands at each index.
-# Content composition always loads bgm/0.mp3 — run this before each render for variety.
+# Content composition always loads bgm/0.mp3 — not run by render pipelines; use locally before render if you want variety.
 # Skips (exit 0) if any expected file is missing.
 
 set -e

@@ -39,10 +39,6 @@ else
 	echo -e "${YELLOW}⚠️  No $TITLE_PUBLIC — using default title${NC}"
 fi
 
-bash "$SCRIPT_DIR/shuffle-bg-videos.sh"
-bash "$SCRIPT_DIR/shuffle-bgm.sh"
-echo ""
-
 RENDER_OPTS="--codec=h264 --crf=23"
 if [ -n "$PROPS_FILE" ] && [ -f "$PROPS_FILE" ]; then
 	echo -e "${BLUE}🎬 Remotion only → $OUTPUT_FILE${NC}"
