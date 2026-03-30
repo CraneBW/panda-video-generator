@@ -2,7 +2,7 @@
 
 /**
  * Internal browser spider: Zhihu question pages vs generic article hosts.
- * Public spider contract is `{ title, content }` JSON via `cli-extract-json` (Zhihu + .md only).
+ * Public `{ title, content }` JSON: `cli-extract-text-file-json` (local text) and `cli-extract-page-url-json` (http(s) pages).
  */
 
 import puppeteer from 'puppeteer-extra';

@@ -2,38 +2,39 @@
 
 **Public contract:** one JSON object with **`title`** and **`content`** (strings only).
 
-**Inputs (two modes):** local **`.md`** file, or **Zhihu question URL**.  
-**Invocation:** `pnpm spider:extract` reads **only environment variables** (no CLI arguments).
+**Lightweight extract (env-only, no CLI args):**
 
-## Required environment variables
+| Script | Input |
+|--------|--------|
+| `pnpm spider:extract:file` | Local **UTF-8 text file** (any extension) |
+| `pnpm spider:extract:url` | Any **http(s)** page (`SPIDER_SOURCE` = URL) |
 
-| Variable | Values | Meaning |
-|----------|--------|---------|
-| `SPIDER_MODE` | `md` or `zhihu` (`markdown` accepted as alias for `md`) | Which input type to use |
-| `SPIDER_SOURCE` | Path or URL | **`md`:** path to `.md` (relative to cwd ok). **`zhihu`:** full question URL |
-| `SPIDER_OUTPUT_DIR` | Directory path | Target directory for the JSON file (created if missing; relative to cwd ok) |
+**Local file title rule:** if the first non-empty line is `# Heading` (Markdown-style ATX), that line is the title and the rest is `content`; otherwise `title` is the **filename without extension** and `content` is the **entire file**.
 
-## Optional environment variables
+**Zhihu full pipeline** (crawl + captions + repo paths): **`pnpm spider:zhihu -- <url>`** — unchanged; separate from the extract commands above.
 
-| Variable | Default | Meaning |
-|----------|---------|---------|
-| `SPIDER_OUTPUT_FILENAME` | `output.json` | Filename inside `SPIDER_OUTPUT_DIR` |
+## Shared environment variables
+
+| Variable | Required | Meaning |
+|----------|----------|---------|
+| `SPIDER_SOURCE` | Yes | **`extract:file`:** path to UTF-8 text file. **`extract:url`:** full page URL |
+| `SPIDER_OUTPUT_DIR` | Yes | Target directory for the JSON file (created if missing; relative to cwd ok) |
+| `SPIDER_OUTPUT_FILENAME` | No | Default `output.json` |
 
 ## Examples
 
 ```bash
-# Markdown → ./out/article.json
-SPIDER_MODE=md \
-SPIDER_SOURCE=docs/post.md \
+# Plain text, .txt, .md, script, etc.
+SPIDER_SOURCE=docs/notes.txt \
 SPIDER_OUTPUT_DIR=./out \
 SPIDER_OUTPUT_FILENAME=article.json \
-pnpm spider:extract
+pnpm spider:extract:file
 
-# Zhihu → output/spider/result.json
-SPIDER_MODE=zhihu \
-SPIDER_SOURCE=https://www.zhihu.com/question/316150890 \
-SPIDER_OUTPUT_DIR=output/spider \
-pnpm spider:extract
+# Any page → ./out/page.json
+SPIDER_SOURCE=https://example.com/blog/post \
+SPIDER_OUTPUT_DIR=./out \
+SPIDER_OUTPUT_FILENAME=page.json \
+pnpm spider:extract:url
 ```
 
 JSON shape:
@@ -47,21 +48,18 @@ JSON shape:
 
 ## Other spider-related env (crawl / CI)
 
-- `PUPPETEER_EXECUTABLE_PATH` — custom Chromium for zhihu mode
-- `SPIDER_SAVE_DEBUG=1` — write debug HTML/PNG under `output/spider/` during crawl
-
-## Monorepo note
-
-**`pnpm spider:zhihu`** runs `zhihu/cli-zhihu-video-prep.ts` (crawl + caption + video paths). That is separate from **`spider:extract`** (env-only JSON).
+- `PUPPETEER_EXECUTABLE_PATH` — custom Chromium for browser-backed extract (`extract:url`)
+- `SPIDER_SAVE_DEBUG=1` — write debug HTML/PNG under spider output dir during crawl
 
 ## Layout
 
 | Path | Role |
 |------|------|
-| `extract-json.ts` | Parse md / fetch zhihu → `{ title, content }` |
-| `cli-extract-json.ts` | `pnpm spider:extract` (env-driven) |
+| `extract-json.ts` | `parseTextFileToSpiderJson` / `extractPageUrlToSpiderJson` → `{ title, content }` |
+| `cli-extract-text-file-json.ts` | `pnpm spider:extract:file` |
+| `cli-extract-page-url-json.ts` | `pnpm spider:extract:url` |
 | `generic-url-spider.ts` | `GenericPageSpider` (Puppeteer) |
-| `zhihu/` | Zhihu wrapper + video-prep CLI |
+| `zhihu/` | Zhihu wrapper + `pnpm spider:zhihu` video-prep CLI |
 
 ## License
 
