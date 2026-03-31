@@ -3,6 +3,10 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import {
+  generateCoverJpgFromMp4,
+  generateCoverStillAndJpg,
+} from "./lib/generate-remotion-cover.mjs";
 import { projectRoot } from "./lib/project-root.mjs";
 import { hasFfmpeg, run } from "./lib/run-cmd.mjs";
 import { writeRenderPropsFromTitle } from "./lib/render-props.mjs";
@@ -25,8 +29,6 @@ const VIDEO_PUBLIC_DIR = resolvePath(
 const TITLE_PUBLIC = path.join(VIDEO_PUBLIC_DIR, "title.json");
 const OUTPUT_FILE = path.join(projectRoot, "output", "video", "video.mp4");
 const PROPS_PATH = path.join(projectRoot, "output", "video", "render-props.json");
-const COVER_JPG = path.join(projectRoot, "output", "video", "cover.jpg");
-const COVER_PNG = path.join(projectRoot, "output", "video", "cover.png");
 
 console.log(`${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}`);
 console.log(`${BLUE}🎬 Remotion video + cover${NC}`);
@@ -77,76 +79,11 @@ if (run("pnpm", renderArgs) !== 0) {
   process.exit(1);
 }
 
-console.log("");
-console.log(`${YELLOW}🖼️  Cover image...${NC}`);
-
-let coverGenerated = false;
-
-function tryStill(extraProps) {
-  const args = [
-    "exec",
-    "remotion",
-    "still",
-    "Cover-Still",
-    COVER_PNG,
-    ...(extraProps ? [`--props=${extraProps}`] : []),
-  ];
-  return run("pnpm", args) === 0;
-}
-
-if (propsFile && fs.existsSync(propsFile)) {
-  if (tryStill(propsFile)) {
-    console.log(`${GREEN}✅ Cover PNG: ${COVER_PNG}${NC}`);
-    coverGenerated = true;
-  }
-}
-if (!coverGenerated && tryStill()) {
-  console.log(`${GREEN}✅ Cover PNG: ${COVER_PNG}${NC}`);
-  coverGenerated = true;
-}
-
-if (coverGenerated && hasFfmpeg()) {
-  if (
-    run("ffmpeg", [
-      "-i",
-      COVER_PNG,
-      "-frames:v",
-      "1",
-      "-update",
-      "1",
-      "-q:v",
-      "2",
-      COVER_JPG,
-      "-y",
-      "-loglevel",
-      "warning",
-    ]) === 0
-  ) {
-    console.log(`${GREEN}✅ Cover JPG: ${COVER_JPG}${NC}`);
-  }
-}
-
-if (!coverGenerated && hasFfmpeg()) {
-  console.log(
-    `${YELLOW}⚠️  Remotion still failed, trying ffmpeg from first frame...${NC}`,
-  );
-  if (
-    run("ffmpeg", [
-      "-ss",
-      "0",
-      "-i",
-      OUTPUT_FILE,
-      "-vframes",
-      "1",
-      COVER_JPG,
-      "-y",
-      "-loglevel",
-      "warning",
-    ]) === 0
-  ) {
-    console.log(`${GREEN}✅ Cover JPG: ${COVER_JPG}${NC}`);
-    coverGenerated = true;
-  }
+const { pngOk } = generateCoverStillAndJpg(
+  propsFile && fs.existsSync(propsFile) ? propsFile : undefined,
+);
+if (!pngOk && hasFfmpeg()) {
+  generateCoverJpgFromMp4(OUTPUT_FILE);
 }
 
 if (propsFile && fs.existsSync(propsFile)) {

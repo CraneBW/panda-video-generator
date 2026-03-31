@@ -23,32 +23,32 @@ async function main() {
 
   // Validate URL
   if (!url) {
-    console.error('❌ Error: Please provide a Zhihu question URL');
-    console.error('Usage: tsx packages/spider/zhihu/cli-zhihu-video-prep.ts <zhihu_url>');
-    console.error('Example: tsx packages/spider/zhihu/cli-zhihu-video-prep.ts https://www.zhihu.com/question/316150890');
+    console.error('❌ 请提供知乎问题链接');
+    console.error('用法: tsx packages/spider/zhihu/cli-zhihu-video-prep.ts <zhihu_url>');
+    console.error('示例: tsx packages/spider/zhihu/cli-zhihu-video-prep.ts https://www.zhihu.com/question/316150890');
     process.exit(1);
   }
 
   // Validate Zhihu URL format
   if (!url.match(/^https:\/\/www\.zhihu\.com\/question\//)) {
-    console.error('❌ Error: Invalid Zhihu URL format');
-    console.error('Expected format: https://www.zhihu.com/question/<question_id>');
+    console.error('❌ 知乎链接格式无效');
+    console.error('正确格式: https://www.zhihu.com/question/<问题 ID>');
     process.exit(1);
   }
 
   const spider = new ZhihuSpider();
 
   try {
-    console.log('🕷️  Initializing browser...');
+    console.log('🕷️  正在启动浏览器…');
     await spider.init();
 
-    console.log(`📝 Extracting content from: ${url}`);
+    console.log(`📝 正在抓取: ${url}`);
     const data = await spider.extractQuestion(url);
 
-    console.log('\n=== Extracted Content ===');
-    console.log(`Title: ${data.title}`);
-    console.log(`Question: ${data.content.substring(0, 100)}${data.content.length > 100 ? '...' : ''}`);
-    console.log(`Answers found: ${data.answers.length}`);
+    console.log('\n=== 抓取结果摘要 ===');
+    console.log(`标题: ${data.title}`);
+    console.log(`问题: ${data.content.substring(0, 100)}${data.content.length > 100 ? '...' : ''}`);
+    console.log(`回答条数: ${data.answers.length}`);
 
     // Save crawl JSON (fixed name: output.json)
     const spiderOutDir = getSpiderOutputDir();
@@ -60,16 +60,16 @@ async function main() {
       answers: data.answers,
     };
     await fs.writeFile(outputPath, JSON.stringify(onDisk, null, 2), 'utf-8');
-    console.log(`Content saved to: ${outputPath}`);
+    console.log(`内容已保存: ${outputPath}`);
 
-    console.log('\n✅ Extraction completed successfully!');
+    console.log('\n✅ 抓取完成');
 
     // Generate video script
     if (data.title && (data.content || data.answers.length > 0)) {
       try {
         await generateVideoScript(data);
       } catch (error) {
-        console.error('⚠️  Failed to generate video script, but extraction was successful');
+        console.error('⚠️  口播稿生成失败（抓取已成功）');
         console.error(error);
       }
     }
@@ -85,27 +85,28 @@ async function main() {
           JSON.stringify({ title: data.title }, null, 2),
           'utf-8'
         );
-        console.log(`\n📄 Title JSON exported: ${titleJsonPath}`);
-        console.log(`   Title: ${data.title}`);
-        
+        console.log(`\n📄 已导出标题 JSON: ${titleJsonPath}`);
+        console.log(`   标题: ${data.title}`);
+
         // Also copy to public/video/ for Remotion Studio access
         await fs.mkdir(resolve(process.cwd(), PUBLIC_VIDEO_DIR), { recursive: true });
         await fs.copyFile(titleJsonPath, publicTitleJsonPath);
-        console.log(`📋 Title JSON also copied to: ${publicTitleJsonPath}`);
+        console.log(`📋 标题 JSON 已同步到: ${publicTitleJsonPath}`);
       } catch (error) {
-        console.error('⚠️  Failed to generate title.json:', error);
+        console.error('⚠️  生成 title.json 失败:', error);
       }
     }
 
-    console.log('\n📁 Output files:');
-    console.log(`  - Caption: ${getTtsInputFile()}`);
-    console.log(`  - Crawl JSON: ${getSpiderOutputJsonPath()}`);
+    console.log('\n📁 输出文件:');
+    console.log(`  - 口播稿: ${getTtsInputFile()}`);
+    console.log(`  - 爬取 JSON: ${getSpiderOutputJsonPath()}`);
     if (data.title) {
-      console.log(`  - Title JSON: ${getSpiderTitleJsonPath()}`);
+      console.log(`  - 标题 JSON: ${getSpiderTitleJsonPath()}`);
     }
-    console.log('\n💡 Next step: Run \'pnpm render:video\' to generate video from the extracted content');
+    console.log('\n💡 下一步: 执行 pnpm render:video 根据以上内容渲染视频');
+    console.log('\n✅ 成功');
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('❌ 出错:', error);
     process.exit(1);
   } finally {
     await spider.close();

@@ -5,6 +5,24 @@
  *
  * Comment out entries below to hide them from /scripts/step-3 (CLI whitelist unchanged).
  */
+
+/** Must match `ALLOWED` in `scripts/run-render-composition.mjs`. */
+export const RENDER_COMPOSITION_CLI_IDS = new Set([
+  "Intro",
+  "Video",
+  "Content",
+  "Intro-Vertical",
+  "Video-Vertical",
+  "Content-Vertical",
+  "Cover",
+]);
+
+/** Basename (no extension) for `output/video/<name>.mp4`; aligned with run-render-composition.mjs. */
+export function outputVideoBasenameForComposition(compositionId: string): string {
+  return compositionId === "Video"
+    ? "video"
+    : compositionId.replace(/[^a-zA-Z0-9-]/g, "-");
+}
 export type RemotionRenderOption = {
   id: string;
   labelZh: string;

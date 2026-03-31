@@ -1,5 +1,6 @@
 /**
  * Remotion render for one composition (no sync — run sync/tts separately if needed).
+ * Always runs Cover-Still + JPG (or ffmpeg fallback from output) so STEP3 matches upload assets.
  *
  * Usage:
  *   node scripts/run-render-composition.mjs [compositionId]
@@ -11,6 +12,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { projectRoot } from "./lib/project-root.mjs";
+import {
+  coverArtifactPaths,
+  generateCoverJpgFromMp4,
+  generateCoverStillAndJpg,
+} from "./lib/generate-remotion-cover.mjs";
 import { run } from "./lib/run-cmd.mjs";
 import { writeRenderPropsFromTitle } from "./lib/render-props.mjs";
 
@@ -70,6 +76,11 @@ if (fs.existsSync(TITLE_PUBLIC)) {
   console.log(`${YELLOW}⚠️  No ${TITLE_PUBLIC} — using default title${NC}`);
 }
 
+generateCoverStillAndJpg(
+  propsFile && fs.existsSync(propsFile) ? propsFile : undefined,
+  { label: "Cover image (before render)" },
+);
+
 const renderBase = [
   "exec",
   "remotion",
@@ -92,6 +103,11 @@ if (run("pnpm", renderArgs) !== 0) {
 
 if (propsFile && fs.existsSync(propsFile)) {
   fs.rmSync(propsFile, { force: true });
+}
+
+const { COVER_JPG } = coverArtifactPaths();
+if (!fs.existsSync(COVER_JPG)) {
+  generateCoverJpgFromMp4(OUTPUT_FILE);
 }
 
 console.log(`${GREEN}✅ Done: ${OUTPUT_FILE}${NC}`);

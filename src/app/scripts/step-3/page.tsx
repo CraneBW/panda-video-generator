@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Loader2, Square } from "lucide-react";
-import { REMOTION_RENDER_OPTIONS } from "../../../lib/remotion-compositions";
+import { ArrowLeft, Loader2, RefreshCw, Square } from "lucide-react";
+import {
+  outputVideoBasenameForComposition,
+  REMOTION_RENDER_OPTIONS,
+} from "../../../lib/remotion-compositions";
 import { useRunScriptStreamLog } from "../use-run-script-stream-log";
 
 type SseLine =
@@ -38,6 +41,8 @@ export default function ScriptsStep3Page() {
   const { log, setLog, appendStream, appendImmediate, flushPending } =
     useRunScriptStreamLog();
   const [running, setRunning] = useState(false);
+  const [previewNonce, setPreviewNonce] = useState(0);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const abortByUserRef = useRef(false);
   const logEndRef = useRef<HTMLSpanElement>(null);
@@ -45,6 +50,10 @@ export default function ScriptsStep3Page() {
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [log]);
+
+  useEffect(() => {
+    setPreviewError(null);
+  }, [compositionId]);
 
   const stopRun = useCallback(() => {
     abortByUserRef.current = true;
@@ -121,10 +130,14 @@ export default function ScriptsStep3Page() {
       `\n──────── ${stamp} · STEP3 · render:composition · ${id} ────────\n`,
     );
     try {
-      await consumeRunScript(
+      const code = await consumeRunScript(
         { script: "render:composition", args: [id] },
         ac.signal,
       );
+      if (code === 0) {
+        setPreviewNonce((n) => n + 1);
+        setPreviewError(null);
+      }
     } catch (e) {
       if ((e as Error).name === "AbortError") {
         if (abortByUserRef.current) {
@@ -152,6 +165,14 @@ export default function ScriptsStep3Page() {
     () => REMOTION_RENDER_OPTIONS.find((o) => o.id === compositionId)?.hintZh,
     [compositionId],
   );
+
+  const previewSrc = useMemo(() => {
+    const q = new URLSearchParams({
+      composition: compositionId.trim() || "Video",
+      v: String(previewNonce),
+    });
+    return `/api/dev/step3/output-video?${q.toString()}`;
+  }, [compositionId, previewNonce]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-black to-black text-zinc-100">
@@ -229,6 +250,46 @@ export default function ScriptsStep3Page() {
             清空日志
           </button>
         </div>
+
+        <section className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-medium text-zinc-300">成片预览</h2>
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewNonce((n) => n + 1);
+                setPreviewError(null);
+              }}
+              disabled={running}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-40"
+            >
+              <RefreshCw className="size-3.5" aria-hidden />
+              刷新预览
+            </button>
+          </div>
+          <p className="text-xs text-zinc-500">
+            来源{" "}
+            <code className="rounded bg-zinc-900 px-1 text-zinc-400">
+              output/video/{outputVideoBasenameForComposition(compositionId)}.mp4
+            </code>
+          </p>
+          <video
+            key={previewSrc}
+            src={previewSrc}
+            controls
+            playsInline
+            className="aspect-video w-full rounded-lg border border-zinc-800 bg-black object-contain"
+            onLoadedData={() => setPreviewError(null)}
+            onError={() =>
+              setPreviewError(
+                "无法加载预览。请先完成渲染，或确认左侧所选合成与已生成的文件一致。",
+              )
+            }
+          />
+          {previewError ? (
+            <p className="text-xs text-amber-400">{previewError}</p>
+          ) : null}
+        </section>
 
         <div className="space-y-2">
           <span className="text-sm font-medium text-zinc-400">运行日志</span>

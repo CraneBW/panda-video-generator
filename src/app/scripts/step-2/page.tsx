@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Loader2, RefreshCw, Save, Square } from "lucide-react";
+import {
+  ArrowLeft,
+  Headphones,
+  Loader2,
+  RefreshCw,
+  Save,
+  Square,
+  StopCircle,
+} from "lucide-react";
 import {
   DEFAULT_AZURE_TTS_VOICE_VALUE,
   formatAzureVoiceOptionLabel,
@@ -60,6 +68,9 @@ export default function ScriptsStep2Page() {
   /** True only when user clicked 中止 (vs tab refresh / navigate aborting fetch). */
   const abortByUserRef = useRef(false);
   const logEndRef = useRef<HTMLSpanElement>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [previewHint, setPreviewHint] = useState<string | null>(null);
+  const [previewPlaying, setPreviewPlaying] = useState(false);
 
   const loadManuscript = useCallback(async () => {
     setManuscriptLoading(true);
@@ -205,6 +216,35 @@ export default function ScriptsStep2Page() {
       abortByUserRef.current = false;
     }
   }, [appendImmediate, consumeRunScript, edgeTtsVoice, manuscript, running]);
+
+  const playTtsPreview = useCallback(() => {
+    const el = previewAudioRef.current;
+    if (!el) return;
+    setPreviewHint(null);
+    el.pause();
+    el.currentTime = 0;
+    el.src = `/tts/audio.mp3?t=${Date.now()}`;
+    const p = el.play();
+    if (p !== undefined) {
+      p.catch((err) => {
+        setPreviewPlaying(false);
+        setPreviewHint(
+          err instanceof Error
+            ? err.message
+            : "播放失败，请先执行 TTS 或检查 public/tts/audio.mp3",
+        );
+      });
+    }
+  }, []);
+
+  const stopTtsPreview = useCallback(() => {
+    const el = previewAudioRef.current;
+    if (!el) return;
+    el.pause();
+    el.currentTime = 0;
+    setPreviewPlaying(false);
+    setPreviewHint(null);
+  }, []);
 
   const voiceGroups = useMemo(() => groupAzureTtsVoicesForSelect(), []);
 
@@ -390,6 +430,20 @@ export default function ScriptsStep2Page() {
               </optgroup>
             ))}
           </select>
+          <audio
+            ref={previewAudioRef}
+            preload="none"
+            className="hidden"
+            onPlay={() => setPreviewPlaying(true)}
+            onPause={() => setPreviewPlaying(false)}
+            onEnded={() => setPreviewPlaying(false)}
+            onError={() => {
+              setPreviewPlaying(false);
+              setPreviewHint(
+                "无法加载试听音频。若尚未执行过 TTS，请先点击「执行 tts」。",
+              );
+            }}
+          />
         </div>
 
         <p className="text-xs text-zinc-500">
@@ -397,44 +451,73 @@ export default function ScriptsStep2Page() {
           执行渲染（或将来自此页接入）。
         </p>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={run}
-            disabled={
-              running ||
-              manuscriptLoading ||
-              manuscript === null ||
-              !!manuscriptError
-            }
-            className="inline-flex min-w-[120px] items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
-          >
-            {running ? (
-              <>
-                <Loader2 className="size-4 animate-spin" aria-hidden />
-                执行中
-              </>
-            ) : (
-              "执行 tts"
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={stopRun}
-            disabled={!running}
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40"
-          >
-            <Square className="size-4" aria-hidden />
-            中止
-          </button>
-          <button
-            type="button"
-            onClick={() => setLog("")}
-            disabled={running}
-            className="text-sm text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline disabled:opacity-40"
-          >
-            清空日志
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={run}
+              disabled={
+                running ||
+                manuscriptLoading ||
+                manuscript === null ||
+                !!manuscriptError
+              }
+              className="inline-flex min-w-[120px] items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+            >
+              {running ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                  执行中
+                </>
+              ) : (
+                "执行 tts"
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={stopRun}
+              disabled={!running}
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40"
+            >
+              <Square className="size-4" aria-hidden />
+              中止
+            </button>
+            <button
+              type="button"
+              onClick={() => setLog("")}
+              disabled={running}
+              className="text-sm text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline disabled:opacity-40"
+            >
+              清空日志
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={playTtsPreview}
+              disabled={running}
+              title="播放 public/tts/audio.mp3（最近一次 TTS）"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800 disabled:opacity-40"
+            >
+              <Headphones className="size-4" aria-hidden />
+              试听
+            </button>
+            <button
+              type="button"
+              onClick={stopTtsPreview}
+              disabled={!previewPlaying}
+              title="停止试听"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800 disabled:opacity-40"
+            >
+              <StopCircle className="size-4" aria-hidden />
+              停止
+            </button>
+            {previewHint ? (
+              <span className="w-full text-right text-xs text-amber-400 sm:w-auto">
+                {previewHint}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         <div className="space-y-2">
