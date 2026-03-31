@@ -5,7 +5,7 @@ import { Metadata, Viewport } from "next";
 export const metadata: Metadata = {
   title: "熊猫视频自动化引擎 - Panda Video Generator",
   description:
-    "全自动化的视频内容生成与发布平台：网页提取、一键成片（Edge TTS + Remotion）与 Playwright 多平台网页端上传，各平台相近流程、独立脚本。",
+    "全自动化的视频内容生成与发布引擎：内容提取, AI 整理、一键成片与多平台自动上传. 对开发者友好、使用简单、功能强大。",
   verification: {
     other: {
       "msvalidate.01": "FFFE3E3280889E0058410FD735227147",
