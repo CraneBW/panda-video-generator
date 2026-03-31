@@ -175,30 +175,86 @@ output/
 
 ### 分步执行
 
-自备口播或对接爬虫结果时，按下面顺序即可（输出路径见上文「输出文件」树）：
+- **顺序：** **STEP1** → **STEP2** → **STEP3**（可选）
+- **路径：** 与上文「输出文件」目录树一致
 
-1. **准备口播稿**  
-   - 写入 **`output/spider/input.txt`**，或使用环境变量 **`TTS_INPUT_FILE`** 指向其它文件。  
-   - 知乎链路也可由 **`pnpm spider:zhihu`** / **`pnpm caption:env`** 生成上述文件。
+#### STEP1：文稿准备+整理
 
-2. **做成视频**  
-   - **一键：** `pnpm pipeline:tts-render`（与 `pnpm render:all` 相同）  
-   - **分步：** `pnpm tts` → `pnpm render:video`  
-   - **只重新出片**（`public/` 里 TTS 等已齐）：`pnpm render:composition`  
-   - **可选素材：** 背景 **`public/video/0.mp4`**、配乐 **`public/bgm/0.mp3`**（文件名均为 **`0`**；缺背景则为黑底）。  
-   - 目录默认值可用 `SPIDER_OUTPUT_DIR`、`TTS_OUTPUT_DIR`、`TTS_PUBLIC_DIR` 等调整（仍以 `package.json` 与环境说明为准）。
+- **目标**
+  - 得到 **`output/spider/input.txt`** 供 TTS 使用（默认路径；可自定义 **`TTS_INPUT_FILE`**）
+- **做法（三选一）**
+  - **手工写稿**
+    - **写入：** **`output/spider/input.txt`**
+    - **分段：** 每个**非空行**为一段，**STEP2** 中 TTS 按段合成
+    - **说明：** 不会自动润色；定稿后再进入 **STEP2**
+  - **知乎爬虫 + LLM**
+    - **命令：** **`pnpm spider:zhihu -- <知乎问题 URL>`**
+    - **产出：**
+      - **`output/spider/output.json`**
+      - **`output/spider/input.txt`**、**`title.json`**（LLM 生成）
+    - **依赖：** **`.env.local`** → **`DEEPSEEK_API_KEY`**
+    - **示例：**
+      ```bash
+      pnpm spider:zhihu -- https://www.zhihu.com/question/2021664832844308557
+      ```
+    - **改读稿路径：** 环境变量 **`TTS_INPUT_FILE`**
+  - **通用网页爬虫 + 成稿**
+    - **爬取**
+      - **环境变量：** **`SPIDER_SOURCE`** = 页面完整 **http(s)** URL
+      - **命令：** **`pnpm spider:extract:url`**
+      - **产出：** **`output/spider/output.json`**（仅 `title`、`content`，**无** `input.txt`）
+    - **成稿**
+      - **命令：** **`pnpm caption:env`**
+      - **产出：** **`output/spider/input.txt`**、**`captions.vtt`**
+      - **依赖：** **`DEEPSEEK_API_KEY`**；可选 
+      - **可选参数：** **`CAPTION_INPUT_JSON`** 指向其它 JSON（默认即为 **`output/spider/output.json`**）
+    - **示例：**
 
-3. **多平台发布（可选）**  
-   - 首次：**`pnpm login:<平台>`**（浏览器扫码）。  
-   - 上传：**`pnpm upload:<平台>`** 或 **`pnpm upload:all`**。  
-   - 元数据：**`VIDEO_TITLE`**、**`VIDEO_DESC`**、**`VIDEO_TAGS`**（例：`VIDEO_DESC=… VIDEO_TAGS=… pnpm upload:douyin`）。  
-   - 更多 `login:*` / `upload:*` 见 **`package.json`**。
+      ```bash
+      SPIDER_SOURCE='https://example.com/article' pnpm spider:extract:url
+      pnpm caption:env
+      ```
 
-```bash
+#### STEP2：做成视频
+
+- **前置**
+  - **`output/spider/input.txt`** 已存在（或 **`TTS_INPUT_FILE`** 指向有效文稿）
+- **命令**
+  - **一键：** **`pnpm pipeline:tts-render`**
+  - **分步：** **`pnpm tts`** → **`pnpm render:video`**
+  - **仅重渲染（`public/` 素材已齐）：** **`pnpm render:composition`**
+- **可选配置**
+  - **片内素材**
+    - **背景：** **`public/video/0.mp4`**
+    - **配乐：** **`public/bgm/0.mp3`**
+    - **命名：** 均为 **`0`**；无背景则黑底
+  - **目录（环境变量）**
+    - **`SPIDER_OUTPUT_DIR`**、**`TTS_OUTPUT_DIR`**、**`TTS_PUBLIC_DIR`** 等 → 详见 **`package.json`** 与各脚本
+
+#### STEP3：多平台发布（可选）
+
+- **登录（每平台首次）**
+  - **`pnpm login:<平台>`**（需要浏览器扫码）
+- **上传**
+  - **`pnpm upload:<平台>`** 或 **`pnpm upload:all`**
+- **元数据（可选环境变量）**
+  - **`VIDEO_TITLE`**、**`VIDEO_DESC`**、**`VIDEO_TAGS`**
+- **示例**
+
+  ```bash
+  VIDEO_DESC="这是一个关于老子的视频" \
+  VIDEO_TAGS="老子, 道教, 学术, 文化" \
+  pnpm upload:douyin
+  ```
+
+- **更多脚本**
+  - **`package.json`** 中所有 **`login:*`** / **`upload:*`**
+
+<!-- ```bash
 # 最短示例：写稿 → 出片
 mkdir -p output/spider && echo "你的口播内容…" > output/spider/input.txt
 pnpm pipeline:tts-render
-```
+``` -->
 
 ---
 
