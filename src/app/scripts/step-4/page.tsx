@@ -199,21 +199,18 @@ export default function ScriptsStep4Page() {
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-zinc-400">
           STEP4：自动化上传。
         </p>
-        <p className="text-xs text-zinc-500">点击按钮后会启动另一浏览器进程；请先按仓库{" "}
-          <a
-            href="https://github.com/szhshp/panda-video-generator?tab=readme-ov-file#-%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-zinc-300 underline underline-offset-2 hover:text-zinc-100"
-          >
-            环境配置
-          </a>
-          {" "}
-          保证所有依赖已经安装。</p>
-        <p className="text-xs text-zinc-500">先点击左侧平台登录, 再点击右侧平台上传.</p>
+        <p className="mt-2 max-w-3xl text-xs text-zinc-500">
+          若提示缺少浏览器内核，在本项目目录终端执行一次：{" "}
+          <code className="rounded bg-zinc-900 px-1 text-zinc-400">
+            pnpm exec playwright install chromium
+          </code>
+        </p>
         <p className="text-xs text-zinc-500">
-          信息完全保存在本地目录 <code className="rounded bg-zinc-900 px-1 text-zinc-400">playwright/.auth/</code>
-          关闭浏览器后也不会丢失, 只要在登录有效期内, 再次打开自动化向导直接上传即可.
+          左侧先做各平台登录，再在右侧上传；登录状态在{" "}
+          <code className="rounded bg-zinc-900 px-1 text-zinc-400">
+            playwright/.auth/
+          </code>
+          ，有效期内一般不用重复登录。
         </p>
       </header>
 
@@ -312,7 +309,7 @@ export default function ScriptsStep4Page() {
             </button>
           </div>
           <p className="text-xs text-zinc-500">
-            默认横屏成片（{PREVIEW_COMPOSITION_ID}），与 STEP3 同源{" "}
+            预览上一步生成的默认横屏成片，文件路径：{" "}
             <code className="rounded bg-zinc-900 px-1 text-zinc-400">
               output/video/
               {outputVideoBasenameForComposition(PREVIEW_COMPOSITION_ID)}.mp4
@@ -327,7 +324,7 @@ export default function ScriptsStep4Page() {
             onLoadedData={() => setPreviewError(null)}
             onError={() =>
               setPreviewError(
-                "无法加载预览。请先在 STEP3 完成默认成片渲染（Video 合成）。",
+                "无法加载预览。请先在第三步完成渲染，或确认上述 mp4 已生成。",
               )
             }
           />

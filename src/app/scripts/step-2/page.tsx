@@ -205,7 +205,7 @@ export default function ScriptsStep2Page() {
   const run = useCallback(async () => {
     if (running) return;
     if (manuscript === null) {
-      appendImmediate("[提示] 未找到 output/spider/input.txt，请先在 STEP1 准备文稿。\n");
+      appendImmediate("[提示] 还没有口播稿，请先在 STEP1 生成或保存。\n");
       return;
     }
     const voice = edgeTtsVoice.trim() || DEFAULT_AZURE_TTS_VOICE_VALUE;
@@ -233,7 +233,7 @@ export default function ScriptsStep2Page() {
           );
         } else {
           appendImmediate(
-            "\n[已中止] 浏览器请求被中断（常见于刷新/关闭标签、双开同页再次执行等）。若你并未点「中止」，任务可能被拦腰切断。多段 TTS 耗时较长，请保持本页打开；也可在终端执行：pnpm tts\n",
+            "\n[已中止] 请求被中断（例如刷新或关了标签）。TTS 较久，请尽量别关页；若需命令行可运行 pnpm tts。\n",
           );
         }
       } else {

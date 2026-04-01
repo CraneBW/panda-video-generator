@@ -1,12 +1,30 @@
 /**
  * Start Next.js dev server, then open the script runner UI once ready.
  * Run via `pnpm automation` (optional args are forwarded to `next dev`, e.g. `pnpm automation -- -p 3001`).
+ *
+ * Default port is 3000: we pass `-p 3000` to `next dev` when nothing else sets PORT / -p,
+ * so the server binds to 3000 (Next otherwise may pick 3001+ and the open URL would be wrong).
  */
 import { spawn } from "node:child_process";
 import process from "node:process";
 import { projectRoot } from "./lib/project-root.mjs";
 
 const forwardedArgs = process.argv.slice(2);
+
+function hasExplicitPort(argv) {
+  if (process.env.PORT && String(process.env.PORT).trim() !== "") return true;
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "-p" || a === "--port") return true;
+    if (a.startsWith("--port=")) return true;
+  }
+  return false;
+}
+
+/** Args passed to `next dev` (includes `-p 3000` unless port already chosen). */
+const nextDevArgs = hasExplicitPort(forwardedArgs)
+  ? forwardedArgs
+  : ["-p", "3000", ...forwardedArgs];
 
 function resolvePort(argv) {
   if (process.env.PORT) return process.env.PORT;
@@ -47,17 +65,21 @@ async function waitForRunnerPage(port, timeoutMs) {
   return false;
 }
 
-const port = resolvePort(forwardedArgs);
+const port = resolvePort(nextDevArgs);
 let opened = false;
 
 const child = spawn(
   "pnpm",
-  ["exec", "next", "dev", ...forwardedArgs],
+  ["exec", "next", "dev", ...nextDevArgs],
   {
     cwd: projectRoot,
     stdio: "inherit",
     shell: process.platform === "win32",
-    env: process.env,
+    env: {
+      ...process.env,
+      /** Used by src/middleware.ts: `/` → `/scripts` (wizard-first entry). */
+      AUTOMATION_ENTRY: "1",
+    },
   },
 );
 

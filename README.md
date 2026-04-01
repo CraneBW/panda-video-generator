@@ -72,6 +72,8 @@ Panda Video Generator `熊猫视频自动化引擎`
 ![向导 STEP1 运行](./docs/assets/wizard_1.webp)
 ![向导 STEP2 TTS](./docs/assets/wizard_2.webp)
 ![向导 STEP3 渲染](./docs/assets/wizard_3.webp)
+![向导 STEP4 上传](./docs/assets/wizard_4.webp)
+
 
 ---
 <a id="quick-start"></a>

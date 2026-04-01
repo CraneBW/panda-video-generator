@@ -313,7 +313,7 @@ export default function ScriptsStep3Page() {
             onLoadedData={() => setPreviewError(null)}
             onError={() =>
               setPreviewError(
-                "无法加载预览。请先完成渲染，或确认左侧所选合成与已生成的文件一致。",
+                "无法加载预览。请先完成渲染，或确认上面的视频文件已存在。",
               )
             }
           />

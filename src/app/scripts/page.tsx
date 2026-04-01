@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Globe, Headphones, Upload, Video } from "lucide-react";
+import { Globe, Headphones, Upload, Video } from "lucide-react";
 
 const STEPS: readonly {
   href: string;
@@ -62,7 +62,7 @@ export default function ScriptsHubPage() {
           分步向导
         </h2>
         <p className="mx-auto mt-3 max-w-lg px-2 text-center text-sm leading-relaxed text-zinc-500">
-          按 README 分步流程：点击下方卡片进入对应步骤。
+          从第一步依次做到第四步即可；点卡片进入对应页面。
         </p>
         <ul className="mt-10 grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
           {STEPS.map((step) => {
