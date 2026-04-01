@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Github, Globe, Video, Upload } from "lucide-react";
+import {
+  Compass,
+  ExternalLink,
+  Github,
+  Globe,
+  Video,
+  Upload,
+} from "lucide-react";
 import { defaultMyCompProps } from "../../types/constants";
 
 // Media files in /public/media directory
@@ -79,12 +86,14 @@ export default function Home() {
             <Github size={18} className="sm:w-5 sm:h-5" />
             <span>View on GitHub</span>
           </Link>
-          {/* <Link
-            href="/scripts"
-            className="px-4 sm:px-6 py-2.5 sm:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+          <Link
+            href="https://github.com/szhshp/panda-video-generator#quick-start"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 sm:px-6 py-2.5 sm:py-3 bg-red-400 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
           >
             开始使用
-          </Link> */}
+          </Link>
         </div>
       </section>
 
@@ -96,7 +105,7 @@ export default function Home() {
         <p className="mx-auto mt-3 max-w-lg text-center text-sm text-zinc-500 leading-relaxed">
           抓取与成片、多平台发布既可单独使用，也可接成端到端自动化流水线。
         </p>
-        <div className="mt-10 grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
           <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/55 to-zinc-950/90 p-6 ring-1 ring-inset ring-white/[0.06] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40 hover:ring-zinc-500/20 sm:p-7">
             <span
               className="pointer-events-none absolute -right-1 -top-6 text-[5.5rem] font-black leading-none tabular-nums text-white/[0.035] transition-colors duration-300 group-hover:text-white/[0.055] sm:text-[6.25rem]"
@@ -161,7 +170,7 @@ export default function Home() {
             </div>
           </article>
 
-          <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/55 to-zinc-950/90 p-6 ring-1 ring-inset ring-white/[0.06] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40 hover:ring-zinc-500/20 sm:p-7 md:col-span-2 lg:col-span-1">
+          <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/55 to-zinc-950/90 p-6 ring-1 ring-inset ring-white/[0.06] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40 hover:ring-zinc-500/20 sm:p-7">
             <span
               className="pointer-events-none absolute -right-1 -top-6 text-[5.5rem] font-black leading-none tabular-nums text-white/[0.035] transition-colors duration-300 group-hover:text-white/[0.055] sm:text-[6.25rem]"
               aria-hidden
@@ -191,6 +200,40 @@ export default function Home() {
               </span>
             </div>
           </article>
+
+          <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/55 to-zinc-950/90 p-6 ring-1 ring-inset ring-white/[0.06] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40 hover:ring-zinc-500/20 sm:p-7">
+            <span
+              className="pointer-events-none absolute -right-1 -top-6 text-[5.5rem] font-black leading-none tabular-nums text-white/[0.035] transition-colors duration-300 group-hover:text-white/[0.055] sm:text-[6.25rem]"
+              aria-hidden
+            >
+              4
+            </span>
+            <div
+              className="mb-5 inline-flex size-11 items-center justify-center rounded-2xl bg-zinc-800/80 text-zinc-400 ring-1 ring-zinc-700/80"
+              aria-hidden
+            >
+              <Compass className="size-5" strokeWidth={1.75} />
+            </div>
+            <h3 className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl">
+              <span className="text-yellow-400 font-bold">傻瓜式</span>
+              自动化向导
+            </h3>
+            <p className="mt-3 grow text-sm leading-relaxed text-zinc-400">
+              通过浏览器向导用点击完成文稿、TTS、成片渲染与可选发布；项目根目录执行{" "}
+              <code className="rounded bg-zinc-800/90 px-1.5 py-0.5 text-xs text-zinc-300">
+                pnpm automation
+              </code>{" "}
+              将自动打开向导界面，亦可在本站点直接进入步骤页。
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-zinc-800/90 px-3 py-1 text-xs font-medium text-zinc-400">
+                全流程
+              </span>
+              <span className="rounded-full bg-zinc-800/90 px-3 py-1 text-xs font-medium text-zinc-400">
+                无需记命令
+              </span>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -202,7 +245,7 @@ export default function Home() {
         <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
           <iframe
             title="Panda Video Generator 成品展示"
-            src="https://player.bilibili.com/player.html?isOutside=true&aid=116245168922269&bvid=BV19Rw9zwEd4&cid=36772710081&p=1"
+            src="https://player.bilibili.com/player.html?isOutside=true&aid=116245168922269&bvid=BV19Rw9zwEd4&cid=36772710081&p=1&autoplay=0"
             className="absolute inset-0 w-full h-full border-0"
             scrolling="no"
             allowFullScreen
