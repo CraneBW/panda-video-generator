@@ -18,6 +18,7 @@ const mediaFiles = [
   { id: "weichat", path: "/media/weichat.webp", label: "微信视频号 · 熊猫智研社" },
   { id: "kuaishou", path: "/media/kuaishou.webp", label: "快手 · 熊猫智研社" },
   { id: "rednote", path: "/media/rednote.webp", label: "小红书 · 熊猫智研社" },
+  { id: "bilibili", path: "/media/bilibili.webp", label: "哔哩哔哩 · 熊猫智研社" },
 ];
 
 export default function Home() {
@@ -68,13 +69,11 @@ export default function Home() {
           熊猫视频自动化引擎
         </p>
         <p className="text-base sm:text-lg text-zinc-400 italic mb-4 sm:mb-5 px-2">
-          &ldquo;Developer-first video automation.&rdquo;
+          &ldquo;Developer-first video automation engine.&rdquo;
         </p>
         <p className="text-sm sm:text-base md:text-lg text-zinc-400 max-w-3xl mx-auto mb-6 sm:mb-8 px-2 leading-relaxed">
-          Panda Video Generator
-          是全自动化视频内容生成与发布平台，支持从网页内容提取、文本转视频到多平台发布的完整工作流。通过
-          AI 驱动的文本转语音（TTS）与视频渲染引擎帮助快速生成高质量视频；发布侧通过 Playwright
-          驱动浏览器完成上传，各平台共用相近自动化流程。
+          一站式全自动化的视频内容生成与发布引擎，支持从网页内容提取、文本转视频到多平台发布的完整工作流。通过
+          AI 驱动的文本转语音（TTS）技术和视频渲染引擎，帮助内容创作者快速生成高质量视频并一键发布到多个平台。
         </p>
         <div className="flex gap-3 sm:gap-4 justify-center flex-wrap px-2">
           <Link
@@ -97,23 +96,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature demo — walkthrough / capability overview */}
-      <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-zinc-50 px-2">
-          功能演示
-        </h2>
-        <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
-          <iframe
-            title="Panda Video Generator 功能演示"
-            src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
-            className="absolute inset-0 w-full h-full border-0"
-            scrolling="no"
-            allow="fullscreen; encrypted-media; picture-in-picture"
-            sandbox="allow-scripts allow-same-origin allow-presentation"
-            allowFullScreen
-          />
-        </div>
-      </section>
 
       {/* Features — distinct product cards (not pipeline / mono spec style) */}
       <section className="container mx-auto px-4 sm:px-6 py-8 sm:py-16">
@@ -255,6 +237,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Feature demo — walkthrough / capability overview */}
+      <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-zinc-50 px-2">
+          功能演示
+        </h2>
+        <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
+          <iframe
+            title="Panda Video Generator 功能演示"
+            src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
+            className="absolute inset-0 w-full h-full border-0"
+            scrolling="no"
+            allow="fullscreen; encrypted-media; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-presentation"
+            allowFullScreen
+          />
+        </div>
+      </section>
+
+
       {/* Finished work showcase */}
       <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-zinc-50 px-2">
@@ -287,7 +288,7 @@ export default function Home() {
             网页端截取，展示以各平台当时界面为准。
           </p> */}
         </header>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
           {mediaFiles.map((file) => (
             <div
               key={file.id}

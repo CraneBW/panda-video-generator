@@ -15,7 +15,7 @@
 
 ---
 
-- 官方网站：[https://panda.szhshp.org](https://panda.szhshp.org)
+[官方网站](https://panda.szhshp.org)
 
 
 ## ✨ 核心特性
@@ -60,10 +60,22 @@ Panda Video Generator `熊猫视频自动化引擎`
 
 <table>
   <tr>
-    <td align="center"><img src="./public/media/douyin.webp" width="180" alt="抖音 · 熊猫智研社"></td>
-    <td align="center"><img src="./public/media/weichat.webp" width="180" alt="微信视频号 · 熊猫智研社"></td>
-    <td align="center"><img src="./public/media/kuaishou.webp" width="180" alt="快手 · 熊猫智研社"></td>
-    <td align="center"><img src="./public/media/rednote.webp" width="180" alt="小红书 · 熊猫智研社"></td>
+    <td align="center" valign="top" width="33%">
+      <img src="./public/media/douyin.webp" width="240" alt="抖音 · 熊猫智研社">
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="./public/media/weichat.webp" width="240" alt="微信视频号 · 熊猫智研社">
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="./public/media/kuaishou.webp" width="240" alt="快手 · 熊猫智研社">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" colspan="3">
+      <img src="./public/media/rednote.webp" width="240" alt="小红书 · 熊猫智研社">
+      &emsp;&emsp;
+      <img src="./public/media/bilibili.webp" width="240" alt="哔哩哔哩 · 熊猫智研社">
+    </td>
   </tr>
 </table>
 
