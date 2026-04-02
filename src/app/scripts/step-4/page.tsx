@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Loader2, RefreshCw, Square } from "lucide-react";
 import { outputVideoBasenameForComposition } from "../../../lib/remotion-compositions";
 import { useRunScriptStreamLog } from "../use-run-script-stream-log";
+import { useStickToBottomLogScroll } from "../use-stick-to-bottom-log-scroll";
 
 type SseLine =
   | { type: "stdout"; text: string }
@@ -71,13 +72,9 @@ export default function ScriptsStep4Page() {
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [runningLabel, setRunningLabel] = useState<string | null>(null);
+  const { logPreRef, onLogPreScroll } = useStickToBottomLogScroll(log, running);
   const abortRef = useRef<AbortController | null>(null);
   const abortByUserRef = useRef(false);
-  const logEndRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [log]);
 
   const previewSrc = useMemo(() => {
     const q = new URLSearchParams({
@@ -358,11 +355,12 @@ export default function ScriptsStep4Page() {
         <div className="space-y-2">
           <span className="text-sm font-medium text-zinc-400">运行日志</span>
           <pre
+            ref={logPreRef}
+            onScroll={onLogPreScroll}
             className="max-h-[min(55vh,480px)] overflow-auto rounded-xl border border-zinc-800 bg-black/80 p-4 font-mono text-xs leading-relaxed text-zinc-300 whitespace-pre-wrap"
             aria-live="polite"
           >
             {log || "（尚无输出）"}
-            <span ref={logEndRef} />
           </pre>
         </div>
       </main>

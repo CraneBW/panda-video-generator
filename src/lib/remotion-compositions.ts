@@ -35,13 +35,13 @@ export type RemotionRenderOption = {
 export const REMOTION_RENDER_OPTIONS: RemotionRenderOption[] = [
   {
     id: "Video",
-    labelZh: "完整成片（横屏）",
-    hintZh: "Cover + Intro + Content，默认使用 public/tts",
+    labelZh: "横屏模板",
+    hintZh: "Cover + Intro + Content",
   },
   {
     id: "Video-Vertical",
-    labelZh: "完整成片（竖屏）",
-    hintZh: "竖屏版 Video",
+    labelZh: "竖屏模板",
+    hintZh: "Cover + Intro + Content",
   },
   // {
   //   id: "Content",

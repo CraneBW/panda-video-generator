@@ -19,6 +19,7 @@ import {
 import { NextStepFab } from "../next-step-fab";
 import { usePersistedJson } from "../use-persisted-json";
 import { useRunScriptStreamLog } from "../use-run-script-stream-log";
+import { useStickToBottomLogScroll } from "../use-stick-to-bottom-log-scroll";
 
 type SseLine =
   | { type: "stdout"; text: string }
@@ -98,10 +99,10 @@ export default function ScriptsStep2Page() {
   const { log, setLog, appendStream, appendImmediate, flushPending } =
     useRunScriptStreamLog();
   const [running, setRunning] = useState(false);
+  const { logPreRef, onLogPreScroll } = useStickToBottomLogScroll(log, running);
   const abortRef = useRef<AbortController | null>(null);
   /** True only when user clicked 中止 (vs tab refresh / navigate aborting fetch). */
   const abortByUserRef = useRef(false);
-  const logEndRef = useRef<HTMLSpanElement>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const [previewHint, setPreviewHint] = useState<string | null>(null);
   const [previewPlaying, setPreviewPlaying] = useState(false);
@@ -148,10 +149,6 @@ export default function ScriptsStep2Page() {
   useEffect(() => {
     loadManuscript();
   }, [loadManuscript]);
-
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [log]);
 
   const stopRun = useCallback(() => {
     abortByUserRef.current = true;
@@ -655,11 +652,12 @@ export default function ScriptsStep2Page() {
         <div className="space-y-2">
           <span className="text-sm font-medium text-zinc-400">运行日志</span>
           <pre
+            ref={logPreRef}
+            onScroll={onLogPreScroll}
             className="max-h-[min(55vh,480px)] overflow-auto rounded-xl border border-zinc-800 bg-black/80 p-4 font-mono text-xs leading-relaxed text-zinc-300 whitespace-pre-wrap"
             aria-live="polite"
           >
             {log || "（尚无输出）"}
-            <span ref={logEndRef} />
           </pre>
         </div>
       </main>

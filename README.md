@@ -368,6 +368,7 @@ pnpm upload:all
 │   └── ✅ 视频模板系统 
 │       ├── ✅ 横屏模板
 │       ├── ✅ 竖屏模板
+│       ├── ✅ 你可以自由修改视频模板的任何细节
 │       └── 🚧 更多模板...
 ├── 🎞️ **视频素材**
 │   ├── ✅ 自定义音乐
@@ -385,8 +386,10 @@ pnpm upload:all
 ├── 🔧 开发工具
 │   ├── ✅ 开发服务器
 │   └── 🚧 Github Action 自动化视频生成
-├── 🧩 Agent Skills
+├── 🧩 AI Integration
+│   └── 🚧 Skills 开发
 ├── 🦞 OpenClaw Integration
+│   └── 🚧 我相信有了 Skills 全部都可以 Automated!
 └── ✨ And More...
 
 

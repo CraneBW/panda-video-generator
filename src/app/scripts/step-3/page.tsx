@@ -10,6 +10,7 @@ import {
 import { NextStepFab } from "../next-step-fab";
 import { usePersistedJson } from "../use-persisted-json";
 import { useRunScriptStreamLog } from "../use-run-script-stream-log";
+import { useStickToBottomLogScroll } from "../use-stick-to-bottom-log-scroll";
 
 type SseLine =
   | { type: "stdout"; text: string }
@@ -42,22 +43,38 @@ const ALLOWED_COMPOSITION_IDS = new Set(
   REMOTION_RENDER_OPTIONS.map((o) => o.id),
 );
 
-type Step3Persisted = { compositionId: string };
+type Step3Persisted = {
+  compositionId: string;
+  /** Last successfully uploaded original filename (display only). */
+  bgVideoFileName?: string;
+  bgmFileName?: string;
+};
 
 const STEP3_DEFAULT: Step3Persisted = {
   compositionId: DEFAULT_COMPOSITION,
 };
+
+function clipPersistedName(v: unknown): string | undefined {
+  if (typeof v !== "string") return undefined;
+  const t = v.trim().slice(0, 180);
+  return t.length ? t : undefined;
+}
 
 function normalizeStep3Persisted(
   raw: unknown,
   d: Step3Persisted,
 ): Step3Persisted {
   if (!raw || typeof raw !== "object") return d;
-  const c = (raw as { compositionId?: unknown }).compositionId;
+  const o = raw as Record<string, unknown>;
+  let compositionId = d.compositionId;
+  const c = o.compositionId;
   if (typeof c === "string" && ALLOWED_COMPOSITION_IDS.has(c)) {
-    return { compositionId: c };
+    compositionId = c;
   }
-  return d;
+  const bgVideoFileName =
+    clipPersistedName(o.bgVideoFileName) ?? d.bgVideoFileName;
+  const bgmFileName = clipPersistedName(o.bgmFileName) ?? d.bgmFileName;
+  return { compositionId, bgVideoFileName, bgmFileName };
 }
 
 export default function ScriptsStep3Page() {
@@ -67,20 +84,24 @@ export default function ScriptsStep3Page() {
     normalizeStep3Persisted,
   );
   const compositionId = s3.compositionId;
+  const [uploadingKind, setUploadingKind] = useState<
+    "bg-video" | "bgm" | null
+  >(null);
+  const [uploadBanner, setUploadBanner] = useState<{
+    tone: "ok" | "err";
+    text: string;
+    kind: "bg-video" | "bgm";
+  } | null>(null);
   const { log, setLog, appendStream, appendImmediate, flushPending } =
     useRunScriptStreamLog();
   const [running, setRunning] = useState(false);
+  const { logPreRef, onLogPreScroll } = useStickToBottomLogScroll(log, running);
   const [previewNonce, setPreviewNonce] = useState(0);
   const [previewError, setPreviewError] = useState<string | null>(null);
   /** Show video element only after a successful render for the current composition (this session). */
   const [videoPreviewReady, setVideoPreviewReady] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const abortByUserRef = useRef(false);
-  const logEndRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [log]);
 
   useEffect(() => {
     setPreviewError(null);
@@ -92,6 +113,53 @@ export default function ScriptsStep3Page() {
     abortRef.current?.abort();
     abortRef.current = null;
   }, []);
+
+  const uploadPublicMedia = useCallback(
+    async (kind: "bg-video" | "bgm", file: File | undefined) => {
+      if (!file || running) return;
+      setUploadingKind(kind);
+      setUploadBanner(null);
+      try {
+        const fd = new FormData();
+        fd.set("kind", kind);
+        fd.set("file", file);
+        const res = await fetch("/api/dev/step3/public-media", {
+          method: "POST",
+          body: fd,
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          path?: string;
+        };
+        if (!res.ok) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+        setUploadBanner({
+          tone: "ok",
+          kind,
+          text:
+            kind === "bg-video"
+              ? `背景视频已写入 ${data.path ?? "public/video/0.mp4"}。`
+              : `背景音乐已写入 ${data.path ?? "public/bgm/0.mp3"}。`,
+        });
+        setS3((p) => ({
+          ...p,
+          ...(kind === "bg-video"
+            ? { bgVideoFileName: file.name }
+            : { bgmFileName: file.name }),
+        }));
+      } catch (e) {
+        setUploadBanner({
+          tone: "err",
+          kind,
+          text: e instanceof Error ? e.message : String(e),
+        });
+      } finally {
+        setUploadingKind(null);
+      }
+    },
+    [running, setS3],
+  );
 
   const consumeRunScript = useCallback(
     async (
@@ -224,6 +292,118 @@ export default function ScriptsStep3Page() {
 
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 pb-24 sm:px-6 sm:pb-20">
 
+        <div className="space-y-4">
+          <section className="w-full space-y-4 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+              <h2 className="text-sm font-medium text-zinc-300">背景视频</h2>
+              <code className="shrink-0 text-right text-xs text-zinc-500">
+                public/video/0.mp4
+              </code>
+            </div>
+            <p className="text-xs leading-relaxed text-zinc-500">
+              上传或替换后将写入上述路径。不操作则保留模板默认背景视频。 <br />
+              视频将循环并与 TTS 内容时长匹配。
+            </p>
+            {uploadBanner?.kind === "bg-video" ? (
+              <p
+                className={
+                  uploadBanner.tone === "ok"
+                    ? "text-xs text-emerald-400"
+                    : "text-xs text-amber-400"
+                }
+              >
+                {uploadBanner.text}
+              </p>
+            ) : null}
+            <div className="space-y-2">
+              <label
+                htmlFor="step3-bg-video"
+                className="block text-xs font-medium text-zinc-400"
+              >
+                选择文件
+              </label>
+              <input
+                id="step3-bg-video"
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                disabled={running || uploadingKind !== null}
+                className="block w-full cursor-pointer text-xs text-zinc-400 file:mr-3 file:cursor-pointer file:rounded-lg file:border file:border-zinc-600 file:bg-zinc-900 file:px-3 file:py-1.5 file:text-xs file:text-zinc-200 hover:file:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  void uploadPublicMedia("bg-video", f);
+                  e.target.value = "";
+                }}
+              />
+              {s3.bgVideoFileName ? (
+                <p className="text-xs text-zinc-500">
+                  上次选择：{s3.bgVideoFileName}
+                </p>
+              ) : null}
+            </div>
+            {uploadingKind === "bg-video" ? (
+              <p className="flex items-center gap-2 text-xs text-zinc-400">
+                <Loader2 className="size-3.5 animate-spin shrink-0" aria-hidden />
+                正在上传背景视频…
+              </p>
+            ) : null}
+          </section>
+
+          <section className="w-full space-y-4 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+              <h2 className="text-sm font-medium text-zinc-300">背景音乐</h2>
+              <code className="shrink-0 text-right text-xs text-zinc-500">
+                public/bgm/0.mp3
+              </code>
+            </div>
+            <p className="text-xs leading-relaxed text-zinc-500">
+              上传或替换后将写入上述路径。不操作则保留模板默认背景音乐。<br />
+              音乐将循环并与 TTS 内容时长匹配, 全长收尾音量自动淡入淡出。
+            </p>
+            {uploadBanner?.kind === "bgm" ? (
+              <p
+                className={
+                  uploadBanner.tone === "ok"
+                    ? "text-xs text-emerald-400"
+                    : "text-xs text-amber-400"
+                }
+              >
+                {uploadBanner.text}
+              </p>
+            ) : null}
+            <div className="space-y-2">
+              <label
+                htmlFor="step3-bgm"
+                className="block text-xs font-medium text-zinc-400"
+              >
+                选择文件
+              </label>
+              <input
+                id="step3-bgm"
+                type="file"
+                accept="audio/mpeg,.mp3"
+                disabled={running || uploadingKind !== null}
+                className="block w-full cursor-pointer text-xs text-zinc-400 file:mr-3 file:cursor-pointer file:rounded-lg file:border file:border-zinc-600 file:bg-zinc-900 file:px-3 file:py-1.5 file:text-xs file:text-zinc-200 hover:file:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  void uploadPublicMedia("bgm", f);
+                  e.target.value = "";
+                }}
+              />
+              {s3.bgmFileName ? (
+                <p className="text-xs text-zinc-500">
+                  上次选择：{s3.bgmFileName}
+                </p>
+              ) : null}
+            </div>
+            {uploadingKind === "bgm" ? (
+              <p className="flex items-center gap-2 text-xs text-zinc-400">
+                <Loader2 className="size-3.5 animate-spin shrink-0" aria-hidden />
+                正在上传背景音乐…
+              </p>
+            ) : null}
+          </section>
+        </div>
+
         <div className="space-y-2">
           <label
             htmlFor="step3-composition"
@@ -339,11 +519,12 @@ export default function ScriptsStep3Page() {
         <div className="space-y-2">
           <span className="text-sm font-medium text-zinc-400">运行日志</span>
           <pre
+            ref={logPreRef}
+            onScroll={onLogPreScroll}
             className="max-h-[min(55vh,480px)] overflow-auto rounded-xl border border-zinc-800 bg-black/80 p-4 font-mono text-xs leading-relaxed text-zinc-300 whitespace-pre-wrap"
             aria-live="polite"
           >
             {log || "（尚无输出）"}
-            <span ref={logEndRef} />
           </pre>
         </div>
       </main>
