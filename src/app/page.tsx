@@ -97,6 +97,24 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Feature demo — walkthrough / capability overview */}
+      <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-zinc-50 px-2">
+          功能演示
+        </h2>
+        <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
+          <iframe
+            title="Panda Video Generator 功能演示"
+            src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
+            className="absolute inset-0 w-full h-full border-0"
+            scrolling="no"
+            allow="fullscreen; encrypted-media; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-presentation"
+            allowFullScreen
+          />
+        </div>
+      </section>
+
       {/* Features — distinct product cards (not pipeline / mono spec style) */}
       <section className="container mx-auto px-4 sm:px-6 py-8 sm:py-16">
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-zinc-50 px-2">
@@ -245,25 +263,11 @@ export default function Home() {
         <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
           <iframe
             title="Panda Video Generator 成品展示"
-            src="https://player.bilibili.com/player.html?isOutside=true&aid=116245168922269&bvid=BV19Rw9zwEd4&cid=36772710081&p=1&autoplay=0"
+            src="https://player.bilibili.com/player.html?bvid=BV19Rw9zwEd4&autoplay=0&danmaku=0"
             className="absolute inset-0 w-full h-full border-0"
             scrolling="no"
-            allowFullScreen
-          />
-        </div>
-      </section>
-
-      {/* Demo video */}
-      <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-zinc-50 px-2">
-          技术演示
-        </h2>
-        <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
-          <iframe
-            title="Panda Video Generator 演示视频"
-            src="https://player.bilibili.com/player.html?isOutside=true&aid=116312193900291&bvid=BV1v5XXBMEz9&cid=37073193133&p=1&autoplay=0"
-            className="absolute inset-0 w-full h-full border-0"
-            scrolling="no"
+            allow="fullscreen; encrypted-media; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-presentation"
             allowFullScreen
           />
         </div>

@@ -44,7 +44,7 @@ Panda Video Generator `熊猫视频自动化引擎`
 
 ## ❇️ 功能演示
 
-[![使用演示 · 点击在 bilibili 播放](./docs/assets/wizard_0.webp)](https://www.bilibili.com/video/BV141XfB3ELj/?vd_source=a7353d3395fdf5c1b78e0a2367800f20)
+[![使用演示 · 点击在 bilibili 播放](./docs/assets/2.png)](https://www.bilibili.com/video/BV141XfB3ELj/?vd_source=a7353d3395fdf5c1b78e0a2367800f20)
 
 
 ## 🎉 产品展示
