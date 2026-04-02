@@ -295,25 +295,13 @@ export default function ScriptsStep4Page() {
         <section className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-medium text-zinc-300">成片预览</h2>
-            <button
-              type="button"
-              onClick={() => {
-                setPreviewNonce((n) => n + 1);
-                setPreviewError(null);
-              }}
-              disabled={running}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-40"
-            >
-              <RefreshCw className="size-3.5" aria-hidden />
-              刷新预览
-            </button>
-          </div>
-          <p className="text-xs text-zinc-500">
-            预览上一步生成的默认横屏成片，文件路径：{" "}
-            <code className="rounded bg-zinc-900 px-1 text-zinc-400">
+            <code className="max-w-[min(100%,18rem)] truncate text-right text-xs text-zinc-500 sm:max-w-none">
               output/video/
               {outputVideoBasenameForComposition(PREVIEW_COMPOSITION_ID)}.mp4
             </code>
+          </div>
+          <p className="text-xs text-zinc-500">
+            与第三步渲染产物相同；上传脚本使用该文件。
           </p>
           <video
             key={previewSrc}
@@ -331,6 +319,20 @@ export default function ScriptsStep4Page() {
           {previewError ? (
             <p className="text-xs text-amber-400">{previewError}</p>
           ) : null}
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-zinc-800/70 pt-3">
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewNonce((n) => n + 1);
+                setPreviewError(null);
+              }}
+              disabled={running}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+            >
+              <RefreshCw className="size-3.5" aria-hidden />
+              刷新预览
+            </button>
+          </div>
         </section>
 
         <div className="flex flex-wrap gap-2">

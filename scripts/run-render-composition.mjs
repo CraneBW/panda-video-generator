@@ -7,6 +7,8 @@
  *   pnpm run render:composition -- Video-Vertical
  *   (pnpm forwards a literal "--" in argv; we skip it.)
  *
+ * All compositions write to the same file: output/video/video.mp4 (overwrites previous render).
+ *
  * Keep ALLOWED in sync with src/lib/remotion-compositions.ts + src/remotion/Root.tsx.
  */
 import fs from "node:fs";
@@ -61,8 +63,7 @@ const VIDEO_PUBLIC_DIR = resolvePath(
   process.env.VIDEO_PUBLIC_DIR ?? "public/video",
 );
 const TITLE_PUBLIC = path.join(VIDEO_PUBLIC_DIR, "title.json");
-const outName = compositionId === "Video" ? "video" : compositionId.replace(/[^a-zA-Z0-9-]/g, "-");
-const OUTPUT_FILE = path.join(projectRoot, "output", "video", `${outName}.mp4`);
+const OUTPUT_FILE = path.join(projectRoot, "output", "video", "video.mp4");
 const PROPS_PATH = path.join(projectRoot, "output", "video", "render-props.json");
 
 fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });

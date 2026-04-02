@@ -27,7 +27,7 @@
 <mark>一键</mark>跑通口播链路：Edge TTS + VTT 字幕，Remotion 模板渲染成片。
 
 ### 🚀 <mark>一键</mark>多平台发布
-<mark>一键</mark>驱动 Playwright 上传；B 站、抖音、视频号、YouTube、小红书、快手等共用相近流程。
+<mark>一键</mark>驱动浏览器自动化上传；B 站、抖音、视频号、YouTube、小红书、快手等共用相近流程。
 
 ### 🧭 一个<mark>傻瓜式</mark>自动化向导 (有手就行)
 一个<mark>傻瓜式</mark> [自动化向导](#wizard-automation)，通过鼠标傻瓜式点击就能帮忙完成文稿、TTS、渲染、发布全流程。
@@ -78,12 +78,15 @@ Panda Video Generator `熊猫视频自动化引擎`
 
 
 1. **[环境配置(必须)](#env-setup)** 
-   - 安装 Node / ffmpeg、克隆、安装依赖、`pnpm check:setup`、按需复制并填写环境变量
+   - 安装 Node / ffmpeg、克隆、安装依赖、
+   - 运行`pnpm check:setup`自检
 2. **[方式1: 自动化向导](#wizard-automation)**（**推荐！**）
    - 啊我亲爱的土拨鼠啊, 我开源当天连夜写了这个功能, 如果你不知道从哪里开始, 快来用这个自动化
    向导吧!
    - 入口：[自动化向导](#wizard-automation)
-3. **[方式2: CLI 命令行](#usage-guide)** : 执行向导底层命令，适合终端、脚本与进阶组合。
+3. **[方式2: CLI 命令行](#usage-guide)** : 
+   - 执行向导底层命令，适合终端、脚本与进阶组合。
+   - 需要提供环境变量
 4. **[完整工作流示例](#full-workflow)** : 从知乎链路到成片与多平台发布的命令行示例。
 
 <a id="env-setup"></a>
@@ -116,7 +119,7 @@ cd panda-video-generator
 ### 4. 验证与配置
 
 - 自检：`pnpm check:setup`
-- `cp .env.example .env`，按需填写如 `DEEPSEEK_API_KEY`
+- `cp .env.example .env`，需要提供环境变量
 
 ---
 
@@ -269,14 +272,6 @@ output/
   pnpm upload:douyin
   ```
 
-- **更多脚本**
-  - **`package.json`** 中所有 **`login:*`** / **`upload:*`**
-
-<!-- ```bash
-# 最短示例：写稿 → 出片
-mkdir -p output/spider && echo "你的口播内容…" > output/spider/input.txt
-pnpm pipeline:tts-render
-``` -->
 
 ---
 
@@ -295,7 +290,7 @@ pnpm remotion
 <a id="full-workflow"></a>
 ## 📝 完整工作流示例
 
-### 方式一：一键生成（命令行推荐）
+### 方式一：一键生成
 
 ```bash
 # 一键从知乎链接生成视频（组合：爬虫 / 脚本 → TTS → 渲染）
@@ -304,7 +299,6 @@ pnpm pipeline:zhihu-video -- https://www.zhihu.com/question/316150890
 # 首次使用需要登录（只需一次）
 pnpm login:bilibili
 pnpm login:douyin
-pnpm login:youtube
 # ... 其他平台见 package.json 中以 login: 开头的脚本
 
 # 发布到所有平台
@@ -316,7 +310,7 @@ pnpm upload:all
 ### 方式二：分步操作（命令行）
 
 ```bash
-# 1. 提取知乎内容（URL 请放在 `--` 之后，避免被误解析为参数）
+# 1. 提取知乎内容
 pnpm spider:zhihu -- https://www.zhihu.com/question/316150890
 
 # 2. 生成视频（组合：TTS + 渲染）
@@ -325,7 +319,6 @@ pnpm pipeline:tts-render
 # 3. 首次使用需要登录（只需一次）
 pnpm login:bilibili
 pnpm login:douyin
-pnpm login:youtube
 # ... 其他平台见 package.json 中以 login: 开头的脚本
 
 # 4. 发布到所有平台

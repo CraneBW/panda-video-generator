@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 import { NextResponse } from "next/server";
 import { isScriptRunnerEnabled } from "../../../../../lib/dev-script-runner";
 
@@ -80,5 +80,56 @@ export async function GET() {
     title,
     titlePath: normPath(TITLE_REL_PATH),
     titleFileExists,
+  });
+}
+
+export async function POST(request: Request) {
+  if (!isScriptRunnerEnabled()) {
+    return NextResponse.json(
+      {
+        error:
+          "This API is only available in development or when ALLOW_SCRIPT_RUNNER=1.",
+      },
+      { status: 403 },
+    );
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "Expected JSON object" }, { status: 400 });
+  }
+
+  const content = (body as { content?: unknown }).content;
+  if (typeof content !== "string") {
+    return NextResponse.json({ error: "`content` must be a string" }, { status: 400 });
+  }
+
+  const bytes = Buffer.byteLength(content, "utf8");
+  if (bytes > MAX_BYTES) {
+    return NextResponse.json(
+      { error: `Content exceeds ${MAX_BYTES} bytes` },
+      { status: 413 },
+    );
+  }
+
+  const cwd = process.cwd();
+  const abs = join(cwd, REL_PATH);
+  try {
+    mkdirSync(dirname(abs), { recursive: true });
+    writeFileSync(abs, content, "utf8");
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Write failed";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    path: REL_PATH.replace(/\\/g, "/"),
   });
 }

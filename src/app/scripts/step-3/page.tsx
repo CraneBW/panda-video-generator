@@ -72,6 +72,8 @@ export default function ScriptsStep3Page() {
   const [running, setRunning] = useState(false);
   const [previewNonce, setPreviewNonce] = useState(0);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  /** Show video element only after a successful render for the current composition (this session). */
+  const [videoPreviewReady, setVideoPreviewReady] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const abortByUserRef = useRef(false);
   const logEndRef = useRef<HTMLSpanElement>(null);
@@ -82,6 +84,7 @@ export default function ScriptsStep3Page() {
 
   useEffect(() => {
     setPreviewError(null);
+    setVideoPreviewReady(false);
   }, [compositionId]);
 
   const stopRun = useCallback(() => {
@@ -166,6 +169,7 @@ export default function ScriptsStep3Page() {
       if (code === 0) {
         setPreviewNonce((n) => n + 1);
         setPreviewError(null);
+        setVideoPreviewReady(true);
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") {
@@ -284,7 +288,39 @@ export default function ScriptsStep3Page() {
 
         <section className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-medium text-zinc-300">成片预览</h2>
+            <h2 className="text-sm font-medium text-zinc-300">渲染结果</h2>
+            <code className="max-w-[min(100%,18rem)] truncate text-right text-xs text-zinc-500 sm:max-w-none">
+              output/video/{outputVideoBasenameForComposition(compositionId)}.mp4
+            </code>
+          </div>
+          <p className="text-xs text-zinc-500">
+            渲染成功后即可预览。
+          </p>
+          {videoPreviewReady ? (
+            <>
+              <video
+                key={previewSrc}
+                src={previewSrc}
+                controls
+                playsInline
+                className="aspect-video w-full rounded-lg border border-zinc-800 bg-black object-contain"
+                onLoadedData={() => setPreviewError(null)}
+                onError={() =>
+                  setPreviewError(
+                    "无法加载预览。请确认输出文件存在，或重新渲染。",
+                  )
+                }
+              />
+              {previewError ? (
+                <p className="text-xs text-amber-400">{previewError}</p>
+              ) : null}
+            </>
+          ) : (
+            <div className="flex aspect-video w-full items-center justify-center rounded-lg border border-zinc-800 border-dashed bg-zinc-950/80 px-4 text-center text-sm text-zinc-500">
+              请先点击「开始渲染」，本次在当前合成下渲染成功后，将在此显示视频预览。
+            </div>
+          )}
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-zinc-800/70 pt-3">
             <button
               type="button"
               onClick={() => {
@@ -292,34 +328,12 @@ export default function ScriptsStep3Page() {
                 setPreviewError(null);
               }}
               disabled={running}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
             >
               <RefreshCw className="size-3.5" aria-hidden />
               刷新预览
             </button>
           </div>
-          <p className="text-xs text-zinc-500">
-            来源{" "}
-            <code className="rounded bg-zinc-900 px-1 text-zinc-400">
-              output/video/{outputVideoBasenameForComposition(compositionId)}.mp4
-            </code>
-          </p>
-          <video
-            key={previewSrc}
-            src={previewSrc}
-            controls
-            playsInline
-            className="aspect-video w-full rounded-lg border border-zinc-800 bg-black object-contain"
-            onLoadedData={() => setPreviewError(null)}
-            onError={() =>
-              setPreviewError(
-                "无法加载预览。请先完成渲染，或确认上面的视频文件已存在。",
-              )
-            }
-          />
-          {previewError ? (
-            <p className="text-xs text-amber-400">{previewError}</p>
-          ) : null}
         </section>
 
         <div className="space-y-2">

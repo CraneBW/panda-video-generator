@@ -84,8 +84,13 @@ export default function ScriptsStep2Page() {
   const edgeTtsVoice = s2.edgeTtsVoice;
   const [manuscriptPath, setManuscriptPath] = useState("");
   const [manuscript, setManuscript] = useState<string | null>(null);
+  const [savedManuscript, setSavedManuscript] = useState<string | null>(null);
   const [manuscriptLoading, setManuscriptLoading] = useState(true);
   const [manuscriptError, setManuscriptError] = useState<string | null>(null);
+  const [manuscriptSaving, setManuscriptSaving] = useState(false);
+  const [manuscriptFeedback, setManuscriptFeedback] = useState<string | null>(
+    null,
+  );
   const [titlePathDisplay, setTitlePathDisplay] = useState("");
   const [savedTitle, setSavedTitle] = useState("");
   const [titleSaving, setTitleSaving] = useState(false);
@@ -118,16 +123,21 @@ export default function ScriptsStep2Page() {
       setSavedTitle(t);
       setTitlePathDisplay(json.titlePath ?? "output/spider/title.json");
       setTitleFeedback(null);
+      setManuscriptFeedback(null);
       if (json.exists) {
-        setManuscript(json.content ?? "");
+        const text = json.content ?? "";
+        setManuscript(text);
+        setSavedManuscript(text);
       } else {
         setManuscript(null);
+        setSavedManuscript(null);
       }
     } catch (e) {
       setManuscriptError(
         e instanceof Error ? e.message : "无法读取文稿",
       );
       setManuscript(null);
+      setSavedManuscript(null);
       setS2((prev) => ({ ...prev, videoTitle: "" }));
       setSavedTitle("");
     } finally {
@@ -279,6 +289,11 @@ export default function ScriptsStep2Page() {
 
   const voiceGroups = useMemo(() => groupAzureTtsVoicesForSelect(), []);
 
+  const manuscriptDirty =
+    manuscript !== null &&
+    savedManuscript !== null &&
+    manuscript !== savedManuscript;
+
   const titleDirty =
     videoTitle.trim() !== savedTitle.trim();
 
@@ -317,6 +332,42 @@ export default function ScriptsStep2Page() {
     }
   }, [running, titleSaving, videoTitle]);
 
+  const saveManuscript = useCallback(async () => {
+    if (
+      manuscriptSaving ||
+      running ||
+      manuscript === null ||
+      !manuscriptDirty
+    ) {
+      return;
+    }
+    setManuscriptSaving(true);
+    setManuscriptFeedback(null);
+    try {
+      const res = await fetch("/api/dev/step2/manuscript", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: manuscript }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
+      if (!res.ok) {
+        setManuscriptFeedback(json.error ?? `保存失败（${res.status}）`);
+        return;
+      }
+      setSavedManuscript(manuscript);
+      setManuscriptFeedback("已保存至 output/spider/input.txt。");
+    } catch (e) {
+      setManuscriptFeedback(
+        e instanceof Error ? e.message : "保存失败",
+      );
+    } finally {
+      setManuscriptSaving(false);
+    }
+  }, [manuscript, manuscriptDirty, manuscriptSaving, running]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-black to-black text-zinc-100">
       <header className="border-b border-zinc-800/80 bg-zinc-950/60 px-4 py-3 sm:px-6">
@@ -338,25 +389,9 @@ export default function ScriptsStep2Page() {
             <h2 className="text-sm font-medium text-zinc-300">
               当前文稿
             </h2>
-            <div className="flex items-center gap-2">
-              {manuscriptPath ? (
-                <code className="text-xs text-zinc-500">
-                  {manuscriptPath}
-                </code>
-              ) : null}
-              <button
-                type="button"
-                onClick={loadManuscript}
-                disabled={manuscriptLoading || running}
-                className="inline-flex items-center gap-1 rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
-              >
-                <RefreshCw
-                  className={`size-3.5 ${manuscriptLoading ? "animate-spin" : ""}`}
-                  aria-hidden
-                />
-                刷新
-              </button>
-            </div>
+            {manuscriptPath ? (
+              <code className="text-xs text-zinc-500">{manuscriptPath}</code>
+            ) : null}
           </div>
           {manuscriptError ? (
             <p className="text-sm text-amber-400">{manuscriptError}</p>
@@ -371,10 +406,74 @@ export default function ScriptsStep2Page() {
               。
             </p>
           ) : (
-            <pre className="max-h-64 overflow-auto rounded-lg border border-zinc-800/80 bg-black/60 p-3 font-mono text-xs leading-relaxed text-zinc-300 whitespace-pre-wrap">
-              {manuscript || "（文件为空）"}
-            </pre>
+            <div className="space-y-2">
+              <p className="text-xs text-zinc-500">
+                可直接编辑口播稿；修改后请点击「保存文稿」
+              </p>
+              <textarea
+                id="step2-manuscript"
+                value={manuscript}
+                onChange={(e) => {
+                  setManuscript(e.target.value);
+                  setManuscriptFeedback(null);
+                }}
+                disabled={manuscriptLoading || running}
+                spellCheck={false}
+                className="min-h-[12rem] w-full max-h-[min(24rem,50vh)] resize-y rounded-xl border border-zinc-700 bg-black/60 px-3 py-2.5 font-mono text-xs leading-relaxed text-zinc-200 outline-offset-2 placeholder:text-zinc-600 focus:outline focus:outline-2 focus:outline-app-cta/65 disabled:opacity-50"
+                aria-label="当前口播文稿"
+              />
+              {manuscriptDirty ? (
+                <p className="text-xs text-amber-400">
+                  文稿有未保存修改；请先保存后再执行 TTS。
+                </p>
+              ) : null}
+              {manuscriptFeedback ? (
+                <p
+                  className={
+                    manuscriptFeedback.includes("失败") ||
+                      manuscriptFeedback.includes("exceeds")
+                      ? "text-xs text-amber-400"
+                      : "text-xs text-zinc-500"
+                  }
+                >
+                  {manuscriptFeedback}
+                </p>
+              ) : null}
+            </div>
           )}
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-zinc-800/70 pt-3">
+            <button
+              type="button"
+              onClick={saveManuscript}
+              disabled={
+                manuscriptLoading ||
+                running ||
+                manuscriptSaving ||
+                manuscript === null ||
+                !manuscriptDirty
+              }
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:opacity-50"
+            >
+              {manuscriptSaving ? (
+                <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              ) : (
+                <Save className="size-3.5" aria-hidden />
+              )}
+              保存文稿
+            </button>
+            <button
+              type="button"
+              onClick={loadManuscript}
+              disabled={manuscriptLoading || running}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`size-3.5 ${manuscriptLoading ? "animate-spin" : ""}`}
+                aria-hidden
+              />
+              刷新
+            </button>
+          </div>
         </section>
 
         <section className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
@@ -387,11 +486,7 @@ export default function ScriptsStep2Page() {
             ) : null}
           </div>
           <p className="text-xs text-zinc-500">
-            用于片头与 Cover（Remotion 读取{" "}
-            <code className="rounded bg-zinc-900 px-1 text-zinc-400">
-              public/video/title.json
-            </code>
-            ）。修改后请先<strong className="text-zinc-400">保存</strong>，再执行 TTS。
+            用于片头与 Cover, 修改后请先<strong className="text-zinc-400">保存</strong>
           </p>
           <input
             id="step2-video-title"
@@ -406,7 +501,18 @@ export default function ScriptsStep2Page() {
             className="w-full rounded-xl border border-zinc-700 bg-zinc-900/90 px-3 py-2.5 text-sm text-zinc-100 outline-offset-2 placeholder:text-zinc-600 focus:outline focus:outline-2 focus:outline-app-cta/65 disabled:opacity-50"
             autoComplete="off"
           />
-          <div className="flex flex-wrap items-center gap-2">
+          {titleFeedback ? (
+            <p
+              className={
+                titleFeedback.includes("失败")
+                  ? "text-xs text-amber-400"
+                  : "text-xs text-zinc-500"
+              }
+            >
+              {titleFeedback}
+            </p>
+          ) : null}
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-zinc-800/70 pt-3">
             <button
               type="button"
               onClick={saveTitle}
@@ -416,7 +522,7 @@ export default function ScriptsStep2Page() {
                 titleSaving ||
                 !titleDirty
               }
-              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-800 disabled:opacity-50"
             >
               {titleSaving ? (
                 <Loader2 className="size-3.5 animate-spin" aria-hidden />
@@ -425,17 +531,6 @@ export default function ScriptsStep2Page() {
               )}
               保存标题
             </button>
-            {titleFeedback ? (
-              <span
-                className={
-                  titleFeedback.includes("失败")
-                    ? "text-xs text-amber-400"
-                    : "text-xs text-zinc-500"
-                }
-              >
-                {titleFeedback}
-              </span>
-            ) : null}
           </div>
         </section>
 
@@ -496,7 +591,8 @@ export default function ScriptsStep2Page() {
                 running ||
                 manuscriptLoading ||
                 manuscript === null ||
-                !!manuscriptError
+                !!manuscriptError ||
+                manuscriptDirty
               }
               className="inline-flex min-w-[120px] items-center justify-center gap-2 rounded-xl bg-app-cta px-4 py-2.5 text-sm font-medium text-app-cta-foreground hover:bg-app-cta-hover disabled:opacity-50"
             >

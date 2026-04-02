@@ -17,11 +17,14 @@ export const RENDER_COMPOSITION_CLI_IDS = new Set([
   "Cover",
 ]);
 
-/** Basename (no extension) for `output/video/<name>.mp4`; aligned with run-render-composition.mjs. */
-export function outputVideoBasenameForComposition(compositionId: string): string {
-  return compositionId === "Video"
-    ? "video"
-    : compositionId.replace(/[^a-zA-Z0-9-]/g, "-");
+/**
+ * Basename (no extension) for the rendered mp4.
+ * All compositions share `output/video/video.mp4` (see scripts/run-render-composition.mjs).
+ */
+export function outputVideoBasenameForComposition(
+  _compositionId: string,
+): string {
+  return "video";
 }
 export type RemotionRenderOption = {
   id: string;
