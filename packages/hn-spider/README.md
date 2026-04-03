@@ -1,26 +1,14 @@
-# hn-spider
+# @panda-video-generator/hn-spider
 
-Hacker News → DeepSeek → WeChat Official Account HTML pipeline. Package name: `@panda-video-generator/hn-spider`. Mirrors `zhihu-to-weixin-mp-article.ts`: reads `DEEPSEEK_API_KEY` from the **monorepo root** `.env` (see root `.env.example`) or from the process environment; writes `weixin-mp-article.json` and `.html`.
+Hacker News → DeepSeek → WeChat Official Account HTML pipeline (`weixin-mp-article.json` / `.html`). Reads **`DEEPSEEK_API_KEY`** from the **monorepo root** `.env` (onboard from [`.env.example`](../../.env.example)) or from the process environment.
 
-## Setup
-
-From the monorepo root:
-
-```bash
-pnpm install
-```
-
-Set `DEEPSEEK_API_KEY` in the repo root `.env` (not inside this package).
-
-## Run
-
-From the monorepo root:
+**Run (from repo root):**
 
 ```bash
 pnpm --filter @panda-video-generator/hn-spider hn:weixin-mp
-pnpm --filter @panda-video-generator/hn-spider hn:weixin-mp:dry    # fetch HN only, no DeepSeek / writes
+pnpm --filter @panda-video-generator/hn-spider hn:weixin-mp:dry
 ```
 
-Or `cd packages/hn-spider` and run `pnpm hn:weixin-mp` / `pnpm hn:weixin-mp:dry`.
+Edit `hn-config.json` for thresholds, keywords, and output paths (relative to cwd).
 
-Edit `hn-config.json` for score thresholds, keywords, and output paths (relative to current working directory).
+There is no Agent Skill for this package yet; extend here or add `../../.agent/skills/hn-spider/SKILL.md` when you want the same stub pattern as other packages.

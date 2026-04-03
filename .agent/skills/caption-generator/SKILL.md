@@ -8,7 +8,7 @@ description: >-
 
 # Caption Generator — 三种用法（输入 / 输出 / 环境变量）
 
-在 **monorepo 根目录**执行（`cwd` 影响路径；`DEEPSEEK_API_KEY` 从仓库根 **`.env`** 或环境变量读取）。不负责爬取。详情见 `packages/caption-generator/README.md`。
+在 **monorepo 根目录**执行（`cwd` 影响路径；`DEEPSEEK_API_KEY` 从仓库根 **`.env`** 或环境变量读取）。不负责爬取。`packages/caption-generator/README.md` 仅为路牌链回本文。
 
 **Payload**（凡调 DeepSeek）：`title` 非空，且 **`content` 或 `answers` 至少一方有内容**（`answers` 非数组视为 `[]`，此时须 **`content`**）。可带 `sourceUrl`，不参与模型。
 

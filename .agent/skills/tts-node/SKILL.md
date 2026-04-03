@@ -8,7 +8,7 @@ description: >-
 
 # TTS Node — 三种用法（输入 / 输出 / 环境变量）
 
-包 **`@panda-video-generator/tts-node`**：读口播纯文本（**非空行 = 一段**），用 **Microsoft Edge TTS** 合成、**ffmpeg** 拼接并 **`atempo`** 加速，写出 **`audio.mp3`** + **`audio.vtt`**。需 **网络**；**ffmpeg 在 PATH**。详情见 `packages/tts-node/README.md`。
+包 **`@panda-video-generator/tts-node`**：读口播纯文本（**非空行 = 一段**），用 **Microsoft Edge TTS** 合成、**ffmpeg** 拼接并 **`atempo`** 加速，写出 **`audio.mp3`** + **`audio.vtt`**。需 **网络**；**ffmpeg 在 PATH**。`packages/tts-node/README.md` 仅为路牌链回本文。
 
 ---
 

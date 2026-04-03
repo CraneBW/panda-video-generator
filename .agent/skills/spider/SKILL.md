@@ -7,7 +7,7 @@ description: >-
 
 # Spider — 三种用法（输入 / 输出 / 环境变量）
 
-在 **monorepo 根目录**执行（`cwd` 影响相对路径；DeepSeek 相关见仓库根 **`.env`**）。详情见 `packages/spider/README.md`。
+在 **monorepo 根目录**执行（`cwd` 影响相对路径；DeepSeek 相关见仓库根 **`.env`**）。`packages/spider/README.md` 仅为路牌链回本文。
 
 ---
 
