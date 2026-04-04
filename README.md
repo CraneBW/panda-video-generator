@@ -40,9 +40,17 @@ Panda Video Generator `熊猫视频自动化引擎`
 
 一站式全自动化的视频内容生成与发布引擎，支持从网页内容提取、文本转视频到多平台发布的完整工作流。通过 AI 驱动的文本转语音（TTS）技术和视频渲染引擎，帮助内容创作者快速生成高质量视频并一键发布到多个平台。
 
+## ❇️ 功能演示1 - Agent 使用演示
+
+> 用 AI 的方式一人运营十个自媒体账号
 
 
-## ❇️ 功能演示
+[![使用演示 · 点击在 bilibili 播放](./docs/assets/3.png)](https://www.bilibili.com/video/BV1WXDABGEB7/?vd_source=a7353d3395fdf5c1b78e0a2367800f20)
+
+
+## ❇️ 功能演示2 - 网页向导
+
+> 用程序员的方式一人运营十个自媒体账号
 
 [![使用演示 · 点击在 bilibili 播放](./docs/assets/2.png)](https://www.bilibili.com/video/BV141XfB3ELj/?vd_source=a7353d3395fdf5c1b78e0a2367800f20)
 
@@ -54,6 +62,14 @@ Panda Video Generator `熊猫视频自动化引擎`
 [![成品展示 · 点击在 bilibili 播放](./docs/assets/1.png)](https://www.bilibili.com/video/BV19Rw9zwEd4/)
 
 
+## 📅 更新日志
+
+- **V1.3** · 2026-04-03
+  - YES, SKILLS! 
+  - Why not try it in your OpenClaw? 🦞
+- **V1.2** · 2026-04-01
+  - 添加了自动化向导功能，通过鼠标傻瓜式点击就能帮忙完成文稿、TTS、渲染、发布全流程。
+  - 统一了环境变量名称，将 `.env.local` 重命名为 `.env`。
 
 
 ## 📷 平台示例
@@ -87,6 +103,8 @@ Panda Video Generator `熊猫视频自动化引擎`
 ---
 <a id="quick-start"></a>
 ## 🚀 快速开始
+
+> 如果你有一个 AI Agent (Claude Code, Cursor, Copilot etc.), 你可以让他来阅读这个项目, 包含项目里面的 ReadMe, Docs 和 Agent Skills. 并根据这个项目来完成 Setup 和视频发布全流程.
 
 
 1. **[环境配置(必须)](#env-setup)** 
