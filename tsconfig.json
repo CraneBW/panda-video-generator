@@ -29,6 +29,12 @@
       "@panda-video-generator/caption-generator": [
         "./packages/caption-generator/caption-generator.ts"
       ],
+      "@panda-video-generator/caption-generator/llm-config": [
+        "./packages/caption-generator/llm-config.ts"
+      ],
+      "@panda-video-generator/caption-generator/prompts": [
+        "./packages/caption-generator/video-script-prompts.ts"
+      ],
       "@panda-video-generator/caption-generator/paths": [
         "./packages/caption-generator/paths.ts"
       ],

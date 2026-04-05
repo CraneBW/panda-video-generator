@@ -42,7 +42,7 @@
 
 ## 📖 简介
 
-Panda Video Generator `熊猫视频自动化引擎` 
+**Panda Video Generator**（熊猫视频自动化引擎）
 
 一站式全自动化的视频内容生成与发布引擎，支持从网页内容提取、文本转视频到多平台发布的完整工作流。通过 AI 驱动的文本转语音（TTS）技术和视频渲染引擎，帮助内容创作者快速生成高质量视频并一键发布到多个平台。
 
@@ -52,7 +52,7 @@ Panda Video Generator `熊猫视频自动化引擎`
 
 
 <a href="https://www.bilibili.com/video/BV1WXDABGEB7/?vd_source=a7353d3395fdf5c1b78e0a2367800f20">
-  <img src="./docs/assets/3.png" alt="使用演示 · 点击在 bilibili 播放" width="640" />
+  <img src="./docs/assets/3.png" alt="使用演示 · 点击在 Bilibili 播放" width="640" />
 </a>
 
 
@@ -61,31 +61,22 @@ Panda Video Generator `熊猫视频自动化引擎`
 > 《用程序员的方式一人运营十个自媒体账号》
 
 <a href="https://www.bilibili.com/video/BV141XfB3ELj/?vd_source=a7353d3395fdf5c1b78e0a2367800f20">
-  <img src="./docs/assets/2.png" alt="使用演示 · 点击在 bilibili 播放" width="640" />
+  <img src="./docs/assets/2.png" alt="使用演示 · 点击在 Bilibili 播放" width="640" />
 </a>
 
 
 ## 🎉 产品展示
 
 <a href="https://www.bilibili.com/video/BV19Rw9zwEd4/">
-  <img src="./docs/assets/1.png" alt="成品展示 · 点击在 bilibili 播放" width="640" />
+  <img src="./docs/assets/1.png" alt="成品展示 · 点击在 Bilibili 播放" width="640" />
 </a>
 
 
 <a id="changelog"></a>
 ## 📅 更新日志
 
-- **V1.3** · 2026-04-03
-  - YES, SKILLS! 
-  - Why not try it in your OpenClaw? 🦞
-- **V1.2** · 2026-04-01
-  - 添加了自动化向导功能，通过鼠标傻瓜式点击就能帮忙完成文稿、TTS、渲染、发布全流程。
-  - 统一了环境变量名称，将 `.env.local` 重命名为 `.env`。
-
-
-<a id="changelog"></a>
-## 📅 更新日志
-
+- **V1.3.1** · 2026-04-05
+  - 支持 KIMI
 - **V1.3** · 2026-04-03
   - YES, SKILLS! 
   - Why not try it in your OpenClaw? 🦞
@@ -128,17 +119,19 @@ Panda Video Generator `熊猫视频自动化引擎`
 
 
 1. **[环境配置（必须）](#env-setup)**
-   - 安装 Node / ffmpeg、克隆、安装依赖、
-   - 运行 `pnpm check:setup` 自检
-2. **[方式1: 自动化向导](#wizard-automation)**（**推荐新手！**）
-   - 开源当天写的傻瓜向导：不知道从哪里开始时优先用这个。
+   - Node 20+、ffmpeg、克隆仓库、安装依赖。
+   - `pnpm check:setup` 自检；`cp .env.example .env` 并按分组填写（见 [环境配置](#env-setup)）。
+2. **[方式1: 自动化向导](#wizard-automation)**（**推荐新手**）
+   - 根目录 `pnpm automation`，浏览器内按步操作。
+   - 不确定从哪开始时优先用这个。
 3. **[方式2: Agent Skills](#agent-skills)**
-   - 各技能见目录 **[`.agent/skills`](./.agent/skills)**（含 `SKILL.md`）。
-   - 可先读 [CLI 使用指南](./docs/readme/cli-usage-guide.md) 与 [分步操作详细说明](./docs/readme/step-by-step.md)，再让 Agent 按需调用脚本。
+   - 技能定义：**[`.agent/skills`](./.agent/skills)**（各包 `SKILL.md`）。
+   - 建议先读 [CLI 使用指南](./docs/readme/cli-usage-guide.md)、[分步说明](./docs/readme/step-by-step.md)，再让 Agent 调脚本。
 4. **[方式3: CLI 命令行](./docs/readme/cli-usage-guide.md)**
-   - 执行向导底层命令，适合终端、脚本与进阶组合。
-   - 需要提供环境变量
-5. **[完整工作流示例](./docs/readme/full-workflow.md)**：从知乎链路到成片与多平台发布的命令行示例。
+   - 与向导相同底层命令，适合终端与自动化脚本。
+   - 需配置根目录 **`.env`**（口播、TTS、发布等）。
+5. **[完整工作流示例](./docs/readme/full-workflow.md)**
+   - 知乎链路到成片、多平台发布的命令示例合集。
 
 
 <a id="env-setup"></a>
@@ -158,7 +151,7 @@ Panda Video Generator `熊猫视频自动化引擎`
 
 ```bash
 git clone https://github.com/szhshp/panda-video-generator.git
-cd panda-video-generator 
+cd panda-video-generator
 ```
 
 ### 3. 一键安装
@@ -182,11 +175,11 @@ cd panda-video-generator
 
 ### 怎么用来着?
 
-1. 先完成 [环境配置](#env-setup)。
-2. 在**项目根目录**执行 `pnpm automation`。
-3. 浏览器会**自动打开**向导界面。
-4. 按界面步骤完成：**文稿 → TTS → 成片渲染 → 发布（可选）**。
-5. 遇到问题可提交 [Issue](https://github.com/szhshp/panda-video-generator/issues)。
+1. 完成 [环境配置](#env-setup)
+2. 在**项目根目录**执行 **`pnpm automation`**。
+3. 浏览器自动打开向导。
+4. 按步骤完成：**文稿 → TTS → 成片渲染 → 发布（可选）**。
+5. 问题反馈：[Issue](https://github.com/szhshp/panda-video-generator/issues)。
 
 ---
 
@@ -230,7 +223,7 @@ pnpm remotion
 │   └── 🚧 And More...
 ├── 🤖 总结与优化（LLM）
 │   ├── ✅ DeepSeek
-│   ├── 🚧 Kimi / Moonshot
+│   ├── ✅ Kimi / Moonshot
 │   ├── 🚧 Doubao
 │   ├── 🚧 Qwen
 │   ├── 🚧 Hunyuan
@@ -260,7 +253,7 @@ pnpm remotion
 │   └── 🚧 And More...
 ├── 🔧 开发工具
 │   ├── ✅ 开发服务器
-│   └── 🚧 Github Action 自动化视频生成
+│   └── 🚧 GitHub Actions 自动化视频生成
 ├── 🧩 AI Integration
 │   └── ✅ Agent Skills
 ├── 🦞 OpenClaw Integration

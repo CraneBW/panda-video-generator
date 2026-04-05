@@ -1,5 +1,7 @@
 # @panda-video-generator/caption-generator
 
-DeepSeek-powered narration script generation for TTS/subtitles from structured JSON (`title`, `content`, `answers`).
+Structured JSON → narration script (OpenAI-compatible API). **Default:** DeepSeek. **Kimi:** `LLM_PROVIDER=kimi` + `MOONSHOT_API_KEY` (default base `https://api.moonshot.cn/v1`, model `kimi-k2.5`). See [`llm-config.ts`](./llm-config.ts).
 
-**Full documentation (commands, env vars, I/O):** [`.agent/skills/caption-generator/SKILL.md`](../../.agent/skills/caption-generator/SKILL.md)
+Prompts: [`video-script-prompts.ts`](./video-script-prompts.ts) (`@panda-video-generator/caption-generator/prompts`). Run: **`pnpm caption:env`**.
+
+**Docs:** [`.agent/skills/caption-generator/SKILL.md`](../../.agent/skills/caption-generator/SKILL.md)

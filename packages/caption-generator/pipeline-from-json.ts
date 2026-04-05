@@ -35,7 +35,7 @@ export async function runCaptionAndVttFromSpiderJson(
 
   const scriptText = await generateVideoScriptText(payload);
   if (!scriptText) {
-    throw new Error('DeepSeek returned empty script');
+    throw new Error('LLM returned empty script');
   }
 
   const outDir = resolve(outputDir);

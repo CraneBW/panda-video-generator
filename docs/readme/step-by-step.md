@@ -24,7 +24,7 @@
     - **产出：**
       - **`output/spider/output.json`**
       - **`output/spider/input.txt`**、**`title.json`**（LLM 生成）
-    - **依赖：** **`.env`** → **`DEEPSEEK_API_KEY`**
+    - **依赖：** 根目录 **`.env`** 口播密钥，见 **[`.env.example`](../../.env.example)** / [SKILL](../../.agent/skills/caption-generator/SKILL.md)
     - **示例：**
       ```bash
       pnpm spider:zhihu -- https://www.zhihu.com/question/2021664832844308557
@@ -38,7 +38,7 @@
     - **成稿**
       - **命令：** **`pnpm caption:env`**
       - **产出：** **`output/spider/input.txt`**、**`captions.vtt`**
-      - **依赖：** **`DEEPSEEK_API_KEY`**（配置在仓库根目录 **`.env`** 或当前 shell 环境变量）
+      - **依赖：** 同上（`.env` 口播）
       - **可选参数：** **`CAPTION_INPUT_JSON`** 指向其它 JSON（默认即为 **`output/spider/output.json`**）
     - **示例：**
 

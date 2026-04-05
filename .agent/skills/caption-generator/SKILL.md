@@ -1,16 +1,29 @@
 ---
 name: caption-generator
 description: >-
-  Atomic reference for @panda-video-generator/caption-generator: pnpm caption:env, write input.txt only,
-  string-only DeepSeek + optional WebVTT estimate; inputs, outputs, env vars.
-  Triggers: 口播, input.txt, captions.vtt, CAPTION_*, DEEPSEEK.
+  Prefer the hosting AI Agent to write narration into input.txt from crawl JSON (no external LLM).
+  Fallback only: pnpm caption:env / generateVideoScript* (DeepSeek or Kimi) + optional WebVTT estimate.
+  Triggers: 口播, input.txt, captions.vtt, LLM_PROVIDER, DEEPSEEK, MOONSHOT, KIMI.
 ---
 
 # Caption Generator — 三种用法（输入 / 输出 / 环境变量）
 
-在 **monorepo 根目录**执行（`cwd` 影响路径；`DEEPSEEK_API_KEY` 从仓库根 **`.env`** 或环境变量读取）。不负责爬取。`packages/caption-generator/README.md` 仅为路牌链回本文。
+## Agent 使用优先级（必读）
 
-**Payload**（凡调 DeepSeek）：`title` 非空，且 **`content` 或 `answers` 至少一方有内容**（`answers` 非数组视为 `[]`，此时须 **`content`**）。可带 `sourceUrl`，不参与模型。
+1. **优先 — 由当前 AI Agent 直接出稿**  
+   若任务由 AI Agent 执行（Cursor、Claude Code、Copilot、OpenClaw 等），**应优先让 Agent 根据爬虫 JSON**（或等价的 `title` / `content` / `answers`）**自行撰写口播正文**，并写入 **`output/spider/input.txt`**（或用户配置的 **`TTS_INPUT_FILE`**）。**不要**为此先调用包内 DeepSeek/Kimi 接口，以减少对外部 API、密钥和计费的依赖。
+
+2. **兜底 — 再使用本包 LLM**  
+   **仅当** Agent **无法**可靠完成口播撰稿（例如会话/策略限制长文本输出、用户明确要求只走仓库 CLI、或需在无 Agent 的环境里批处理）时，再使用下文的 **`pnpm caption:env`**、`generateVideoScript` / `generateVideoScriptFromFile` / `generateVideoScriptText`。
+
+3. **与模板口径一致（Agent 撰稿时）**  
+   自行撰写的口播，建议在风格与硬约束上对齐仓库内 **[`packages/caption-generator/video-script-prompts.ts`](../../packages/caption-generator/video-script-prompts.ts)**（开场与收束、分段与字数上限、避免不宜上屏的符号等）。不需要走 LLM 时，仍可用 **用法 B**（`scriptToEstimatedWebVtt`）在本地从纯文本生成估算 WebVTT。
+
+---
+
+在 **monorepo 根目录**执行（`cwd` 影响路径；见下文 **LLM 提供商**）。以下 **LLM 路径为兜底**；`loadCaptionLlmEnvFromDotenv` 会把仓库根 **`.env`** 里列出的 LLM 键写入 `process.env`，**同名字段以 `.env` 为准**（含 `LLM_PROVIDER`）。不负责爬取。`packages/caption-generator/README.md` 仅为路牌链回本文。
+
+**Payload**（凡调 LLM）：`title` 非空，且 **`content` 或 `answers` 至少一方有内容**（`answers` 非数组视为 `[]`，此时须 **`content`**）。可带 `sourceUrl`，不参与模型。
 
 ```ts
 {
@@ -19,6 +32,28 @@ description: >-
   answers: Array<{ author: string; content: string; voteCount: number }>;
 }
 ```
+
+---
+
+## LLM 提供商（默认 DeepSeek，可选 Kimi）
+
+DeepSeek 默认值与官方一致：[API 文档](https://api-docs.deepseek.com/)（`base_url` `https://api.deepseek.com`，模型 `deepseek-chat`）；代码中写死为默认，可用下表变量覆盖。
+
+Kimi 默认与常见官方示例一致：`base_url` **`https://api.moonshot.cn/v1`**，模型 **`kimi-k2.5`**（国内控制台密钥通常走 `.cn`；若你的密钥面向 **`https://api.moonshot.ai/v1`**，请设 `MOONSHOT_API_BASE_URL`）。[文档入口](https://platform.moonshot.ai/docs/api-reference)。
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `LLM_PROVIDER` | 否 | 默认 `deepseek`。设为 `kimi` 或 `moonshot` 时使用 **Moonshot**（Kimi）OpenAI 兼容接口。 |
+| `DEEPSEEK_API_KEY` | 默认提供商时必填 | `LLM_PROVIDER` 未设或为 `deepseek` 时使用。 |
+| `DEEPSEEK_API_BASE_URL` | 否 | DeepSeek API 根地址；默认 **`https://api.deepseek.com`**（也可用文档中的 `https://api.deepseek.com/v1`）。 |
+| `DEEPSEEK_MODEL` | 否 | DeepSeek 模型名；默认 **`deepseek-chat`**。 |
+| `MOONSHOT_API_KEY` 或 `KIMI_API_KEY` | 选 Kimi 时必填 | 与 `LLM_PROVIDER=kimi`（或 `moonshot`）二选一填写即可（优先 `MOONSHOT_API_KEY`）。 |
+| `MOONSHOT_API_BASE_URL` | 否 | Kimi API 根地址；默认 **`https://api.moonshot.cn/v1`**。 |
+| `MOONSHOT_MODEL` | 否 | Kimi 聊天模型名；默认 **`kimi-k2.5`**。 |
+| `CAPTION_LLM_MODEL` | 否 | **Kimi**：若未设 `MOONSHOT_MODEL`，此项可覆盖模型。**DeepSeek**：若未设 `DEEPSEEK_MODEL`，此项可覆盖模型。 |
+| `CAPTION_LLM_BASE_URL` | 否 | **Kimi**：若未设 `MOONSHOT_API_BASE_URL`，此项可覆盖 base。**DeepSeek**：若未设 `DEEPSEEK_API_BASE_URL`，则此项可覆盖 base（兼容旧配置）。 |
+
+程序化解析：`import { getCaptionLlmConfig } from '@panda-video-generator/caption-generator'` 或 `@panda-video-generator/caption-generator/llm-config`。
 
 ---
 
@@ -61,7 +96,7 @@ pnpm run caption:env
 | `CAPTION_VTT_FILENAME` | 否 | `captions.vtt` |
 | `CAPTION_SEC_PER_CHAR` | 否 | `0.12`；须 **> 0**，否则 CLI 退出 1 |
 | `SPIDER_OUTPUT_DIR` | 否 | 影响默认 JSON 路径 |
-| `DEEPSEEK_API_KEY` | 是 | 环境变量或根目录 `.env` |
+| 见上文 **LLM 提供商** | 按所选提供商 | 默认 DeepSeek：`DEEPSEEK_API_KEY` |
 
 ---
 
@@ -96,13 +131,13 @@ await generateVideoScriptFromFile(jsonPath[, outputDir]);
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
-| `DEEPSEEK_API_KEY` | 是 | `.env` 或环境变量 |
+| 见上文 **LLM 提供商** | 按所选提供商 | 默认需 `DEEPSEEK_API_KEY` |
 | `SPIDER_OUTPUT_DIR` | 否 | 默认目录层级 |
 | `TTS_INPUT_FILE` | 否 | 省略 `outputDir` 时覆盖默认 `input.txt` |
 
 ---
 
-## 3. 只要口播字符串；或本地把正文变成 WebVTT（不经 DeepSeek）
+## 3. 只要口播字符串；或本地把正文变成 WebVTT（不经云端 LLM）
 
 **用法 A — 仅字符串**
 
@@ -142,4 +177,4 @@ const vtt = scriptToEstimatedWebVtt(scriptText[, secPerChar]);
 
 | 变量 | 说明 |
 |------|------|
-| `DEEPSEEK_API_KEY` | 仅 **用法 A** 需要 |
+| 见上文 **LLM 提供商** | 仅 **用法 A** 需要 |

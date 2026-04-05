@@ -1,8 +1,8 @@
 # @panda-video-generator/hn-spider
 
-Hacker News → DeepSeek → WeChat Official Account HTML pipeline (`weixin-mp-article.json` / `.html`). Reads **`DEEPSEEK_API_KEY`** from the **monorepo root** `.env` (onboard from [`.env.example`](../../.env.example)) or from the process environment.
+Hacker News → DeepSeek → WeChat article HTML (`weixin-mp-article.json` / `.html`). **`DEEPSEEK_API_KEY`** from repo root `.env` only (not caption / Kimi).
 
-**Run (from repo root):**
+**Run (repo root):**
 
 ```bash
 pnpm --filter @panda-video-generator/hn-spider hn:weixin-mp

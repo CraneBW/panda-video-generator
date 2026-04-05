@@ -4,6 +4,8 @@
   "private": true,
   "exports": {
     ".": "./caption-generator.ts",
+    "./llm-config": "./llm-config.ts",
+    "./prompts": "./video-script-prompts.ts",
     "./paths": "./paths.ts",
     "./pipeline": "./pipeline-from-json.ts",
     "./webvtt": "./webvtt-estimate.ts"

@@ -1,8 +1,14 @@
 import OpenAI from 'openai';
-import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { dirname } from 'path';
 import { promises as fs } from 'fs';
 import { getTtsInputFile } from './paths';
+import { getCaptionLlmConfig, type CaptionLlmConfig } from './llm-config';
+import {
+  buildVideoScriptUserPrompt,
+  VIDEO_SCRIPT_SYSTEM_PROMPT,
+} from './video-script-prompts';
+
+export { getCaptionLlmConfig, loadCaptionLlmEnvFromDotenv, type CaptionLlmConfig, type CaptionLlmId } from './llm-config';
 
 /** Crawled or structured content for video script (Zhihu, generic article, etc.). */
 export type VideoScriptSourcePayload = {
@@ -25,74 +31,50 @@ function normalizePayload(
   };
 }
 
-/**
- * Load API key from .env file
- */
-function loadApiKey(): void {
-  const envPath = resolve(process.cwd(), '.env');
-  try {
-    const envContent = readFileSync(envPath, 'utf-8');
-    const lines = envContent.split('\n');
-
-    for (const line of lines) {
-      if (line.startsWith('DEEPSEEK_API_KEY=')) {
-        process.env.DEEPSEEK_API_KEY = line.split('=')[1].trim();
-      }
-    }
-  } catch {
-    // Use system env if .env not found
-  }
+function providerLabel(cfg: CaptionLlmConfig): string {
+  return cfg.id === 'moonshot' ? 'Kimi (Moonshot)' : 'DeepSeek';
 }
 
 /**
- * Call DeepSeek and return the video script text only (no file I/O).
- * Use when you need the string for further steps (e.g. WebVTT) before or instead of writing input.txt.
+ * Call configured LLM (default DeepSeek; optional Kimi via env) and return video script text only (no file I/O).
  */
 export async function generateVideoScriptText(
   data: VideoScriptSourcePayload & { sourceUrl?: string },
 ): Promise<string | null> {
-  loadApiKey();
-
   const payload = normalizePayload(data);
 
   if (!payload.title || (!payload.content && payload.answers.length === 0)) {
     throw new Error('Invalid data: title and content/answers are required');
   }
 
-  if (!process.env.DEEPSEEK_API_KEY) {
-    throw new Error('DEEPSEEK_API_KEY is not set. Please set it in .env file or environment variables.');
+  let llm: CaptionLlmConfig;
+  try {
+    llm = getCaptionLlmConfig();
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error(`\n❌ ${e.message}`);
+    }
+    throw e;
   }
+
+  const contentForModel = JSON.stringify(payload, null, 2);
+  const userPrompt = buildVideoScriptUserPrompt(contentForModel);
 
   try {
     const openai = new OpenAI({
-      baseURL: 'https://api.deepseek.com',
-      apiKey: process.env.DEEPSEEK_API_KEY,
+      baseURL: llm.baseURL,
+      apiKey: llm.apiKey,
     });
 
-    const contentForDeepSeek = JSON.stringify(payload, null, 2);
-    const userPrompt = `内容进行整理，并且生成一段视频完整的视频台词, 是平台要尽可能贴近原文, 并且要有Intro和ending的话语
-
-以下是爬取/提供的正文与结构化内容（JSON 格式，可能含标题、问题描述、多条回答等）：
-${contentForDeepSeek}
-
-请根据以上内容，在内容前加入一段开场白, 并且在内容后加入一段结尾语, 并且生成一段完整的视频台词.
-
-生成的这些台词将会直接显示到视频的字幕中，因此不要添加额外的标记和符号(例如书名号或者括号等任何额外符号), 不要添加任何的解释和说明.
-
-并且根据用户聆听和阅读的友好性，将生成的内容进行调整优化以及分段，并让它变得更流畅和自然.
-
-最终生成文稿总字数不超过1000个字. 每个段落不超过40个字, 以保证用户能够流畅地阅读和理解.
-
-`;
-
-    console.log('\n📝 Sending content to DeepSeek for video script generation...');
+    console.log(
+      `\n📝 Sending content to ${providerLabel(llm)} for video script generation...`,
+    );
     const completion = await openai.chat.completions.create({
-      model: 'deepseek-chat',
+      model: llm.model,
       messages: [
         {
           role: 'system',
-          content:
-            'You are a helpful assistant that generates video scripts from user-provided article or Q&A content (any source).',
+          content: VIDEO_SCRIPT_SYSTEM_PROMPT,
         },
         {
           role: 'user',
@@ -107,16 +89,26 @@ ${contentForDeepSeek}
     }
     return scriptText;
   } catch (error) {
-    console.error('\n❌ Error generating video script with DeepSeek:', error);
-    if (error instanceof Error && (error.message.includes('API key') || error.message.includes('DEEPSEEK_API_KEY'))) {
-      console.error('\n提示: 请在 .env 文件中设置 DEEPSEEK_API_KEY');
+    console.error(
+      `\n❌ Error generating video script with ${providerLabel(llm)}:`,
+      error,
+    );
+    if (
+      error instanceof Error &&
+      (error.message.toLowerCase().includes('api key') ||
+        error.message.includes('401') ||
+        error.message.includes('403'))
+    ) {
+      console.error(
+        '\n提示: 检查 .env — DeepSeek 用 DEEPSEEK_API_KEY；Kimi 用 LLM_PROVIDER=kimi 与 MOONSHOT_API_KEY（或 KIMI_API_KEY）。',
+      );
     }
     throw error;
   }
 }
 
 /**
- * Generate video script from crawled content using DeepSeek (any source that matches the payload shape).
+ * Generate video script from crawled content using the configured LLM (see `getCaptionLlmConfig`).
  * @param data - Title, body in `content`, optional `answers` (e.g. Zhihu). Extra fields like `sourceUrl` are ignored for the prompt.
  * @param outputDir - If set, writes `<outputDir>/input.txt`. If omitted, uses `TTS_INPUT_FILE` or `getSpiderNarrationPath()` / `<SPIDER_OUTPUT_DIR>/input.txt`.
  */
@@ -127,7 +119,7 @@ export async function generateVideoScript(
   const scriptText = await generateVideoScriptText(data);
 
   if (!scriptText) {
-    console.warn('\n⚠️  No text content in DeepSeek response');
+    console.warn('\n⚠️  No text content in LLM response');
     return null;
   }
 

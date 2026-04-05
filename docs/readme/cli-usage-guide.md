@@ -49,7 +49,7 @@ output/
     └── audio.vtt — 字幕
 ```
 
-> **注意**：需要在仓库根目录的 **`.env`** 中配置 `DEEPSEEK_API_KEY`，用于智能整理和优化提取的文稿。
+> **注意**：口播依赖根目录 **`.env`**（**[`.env.example`](../../.env.example)** · **[caption SKILL](../../.agent/skills/caption-generator/SKILL.md)**）。
 
 ### 更多文档
 

@@ -9,11 +9,11 @@ import { useRunScriptStreamLog } from "../use-run-script-stream-log";
 
 type Step1Mode = "manual" | "zhihu" | "generic-web";
 
-/** Single provider today; dropdown kept for future LLMs. */
-type LlmProviderId = "deepseek";
+type LlmProviderId = "deepseek" | "kimi";
 
 const LLM_OPTIONS: { id: LlmProviderId; label: string }[] = [
   { id: "deepseek", label: "DeepSeek" },
+  { id: "kimi", label: "Kimi (Moonshot)" },
 ];
 
 const STEP_OPTIONS: {
@@ -74,6 +74,7 @@ type Step1Persisted = {
   mode: Step1Mode;
   llmProvider: LlmProviderId;
   deepseekApiKey: string;
+  moonshotApiKey: string;
   inputByMode: Record<Step1Mode, string>;
 };
 
@@ -81,6 +82,7 @@ const STEP1_DEFAULT: Step1Persisted = {
   mode: "manual",
   llmProvider: "deepseek",
   deepseekApiKey: "",
+  moonshotApiKey: "",
   inputByMode: {
     manual: "",
     zhihu: "",
@@ -94,10 +96,14 @@ function normalizeStep1Persisted(raw: unknown, d: Step1Persisted): Step1Persiste
   const mode = STEP1_MODES.includes(o.mode as Step1Mode)
     ? (o.mode as Step1Mode)
     : d.mode;
-  const llmProvider =
-    o.llmProvider === "deepseek" ? "deepseek" : d.llmProvider;
+  const llmProvider: LlmProviderId =
+    o.llmProvider === "deepseek" || o.llmProvider === "kimi"
+      ? o.llmProvider
+      : d.llmProvider;
   const deepseekApiKey =
     typeof o.deepseekApiKey === "string" ? o.deepseekApiKey : d.deepseekApiKey;
+  const moonshotApiKey =
+    typeof o.moonshotApiKey === "string" ? o.moonshotApiKey : d.moonshotApiKey;
   const inputByMode = { ...d.inputByMode };
   if (o.inputByMode && typeof o.inputByMode === "object") {
     const ibm = o.inputByMode as Record<string, unknown>;
@@ -109,7 +115,7 @@ function normalizeStep1Persisted(raw: unknown, d: Step1Persisted): Step1Persiste
   if (typeof o.input === "string" && o.inputByMode === undefined) {
     inputByMode[mode] = o.input;
   }
-  return { mode, llmProvider, deepseekApiKey, inputByMode };
+  return { mode, llmProvider, deepseekApiKey, moonshotApiKey, inputByMode };
 }
 
 export default function ScriptsStep1Page() {
@@ -121,6 +127,7 @@ export default function ScriptsStep1Page() {
   const mode = step1.mode;
   const llmProvider = step1.llmProvider;
   const deepseekApiKey = step1.deepseekApiKey;
+  const moonshotApiKey = step1.moonshotApiKey;
   const input = step1.inputByMode[step1.mode];
   const { log, setLog, appendStream, appendImmediate, flushPending } =
     useRunScriptStreamLog();
@@ -139,12 +146,18 @@ export default function ScriptsStep1Page() {
     abortRef.current = null;
   }, []);
 
-  const deepseekEnvForRun = useCallback((): Record<string, string> | undefined => {
-    if (llmProvider !== "deepseek") return undefined;
-    const k = deepseekApiKey.trim();
-    if (!k) return undefined;
-    return { DEEPSEEK_API_KEY: k };
-  }, [deepseekApiKey, llmProvider]);
+  /** Extra env for spider / caption CLIs; merged before child runs. Root `.env` still loaded inside caption and overrides these keys if present there. */
+  const captionLlmEnvForRun = useCallback((): Record<string, string> | undefined => {
+    if (llmProvider === "deepseek") {
+      const k = deepseekApiKey.trim();
+      if (!k) return undefined;
+      return { DEEPSEEK_API_KEY: k };
+    }
+    const env: Record<string, string> = { LLM_PROVIDER: "kimi" };
+    const k = moonshotApiKey.trim();
+    if (k) env.MOONSHOT_API_KEY = k;
+    return env;
+  }, [deepseekApiKey, moonshotApiKey, llmProvider]);
 
   const consumeRunScript = useCallback(
     async (
@@ -244,7 +257,7 @@ export default function ScriptsStep1Page() {
           {
             script: "spider:zhihu",
             args: [url],
-            env: deepseekEnvForRun(),
+            env: captionLlmEnvForRun(),
           },
           ac.signal,
         );
@@ -275,7 +288,7 @@ export default function ScriptsStep1Page() {
         }
         appendImmediate("\n--- caption:env ---\n");
         await consumeRunScript(
-          { script: "caption:env", env: deepseekEnvForRun() },
+          { script: "caption:env", env: captionLlmEnvForRun() },
           ac.signal,
         );
       }
@@ -294,7 +307,7 @@ export default function ScriptsStep1Page() {
   }, [
     appendImmediate,
     consumeRunScript,
-    deepseekEnvForRun,
+    captionLlmEnvForRun,
     input,
     mode,
     running,
@@ -366,11 +379,14 @@ export default function ScriptsStep1Page() {
             ))}
           </select>
           <p className="text-xs text-zinc-500">
-            选择 DeepSeek 时，可将密钥注入子进程环境变量{" "}
+            与口播链路一致：可在下方填入密钥并注入子进程；仓库根{" "}
+            <code className="rounded bg-zinc-900 px-1 text-zinc-400">.env</code>{" "}
+            中的同名变量会在 caption 进程内再次加载并覆盖（与 CLI 行为一致）。选 Kimi
+            时运行会带上{" "}
             <code className="rounded bg-zinc-900 px-1 text-zinc-400">
-              DEEPSEEK_API_KEY
+              LLM_PROVIDER=kimi
             </code>
-            ；留空则沿用已有配置（如 .env）。
+            。
           </p>
         </div>
 
@@ -392,6 +408,29 @@ export default function ScriptsStep1Page() {
               }
               disabled={running}
               placeholder="可选：留空则使用 .env 中的 DEEPSEEK_API_KEY"
+              className="w-full rounded-xl border border-zinc-700 bg-black/60 px-3 py-2.5 font-mono text-sm text-zinc-200 placeholder:text-zinc-600 outline-offset-2 focus:outline focus:outline-2 focus:outline-app-cta/55 disabled:opacity-50"
+            />
+          </div>
+        )}
+
+        {llmProvider === "kimi" && (
+          <div className="space-y-2">
+            <label
+              htmlFor="step1-moonshot-key"
+              className="block text-sm font-medium text-zinc-300"
+            >
+              Moonshot API Key（Kimi）
+            </label>
+            <input
+              id="step1-moonshot-key"
+              type="password"
+              autoComplete="off"
+              value={moonshotApiKey}
+              onChange={(e) =>
+                setStep1((s) => ({ ...s, moonshotApiKey: e.target.value }))
+              }
+              disabled={running}
+              placeholder="可选：留空则使用 .env 中的 MOONSHOT_API_KEY 或 KIMI_API_KEY"
               className="w-full rounded-xl border border-zinc-700 bg-black/60 px-3 py-2.5 font-mono text-sm text-zinc-200 placeholder:text-zinc-600 outline-offset-2 focus:outline focus:outline-2 focus:outline-app-cta/55 disabled:opacity-50"
             />
           </div>
