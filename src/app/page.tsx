@@ -237,21 +237,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature demo — walkthrough / capability overview */}
+      {/* Feature demos — aligned with README: Agent demo + wizard demo */}
       <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-zinc-50 px-2">
           功能演示
         </h2>
-        <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
-          <iframe
-            title="Panda Video Generator 功能演示"
-            src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
-            className="absolute inset-0 w-full h-full border-0"
-            scrolling="no"
-            allow="fullscreen; encrypted-media; picture-in-picture"
-            sandbox="allow-scripts allow-same-origin allow-presentation"
-            allowFullScreen
-          />
+        <div className="mx-auto flex max-w-4xl flex-col gap-10 sm:gap-12">
+          <div>
+            <h3 className="mb-2 text-center text-base font-semibold text-zinc-200 sm:text-lg">
+              功能演示 1 · Agent 使用演示
+            </h3>
+            <p className="mb-4 text-center text-sm text-zinc-500 sm:text-base">
+              《用 AI 的方式一人运营十个自媒体账号》
+            </p>
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
+              <iframe
+                title="Panda Video Generator · Agent 使用演示"
+                src="https://player.bilibili.com/player.html?bvid=BV1WXDABGEB7&autoplay=0&danmaku=0"
+                className="absolute inset-0 w-full h-full border-0"
+                scrolling="no"
+                allow="fullscreen; encrypted-media; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                allowFullScreen
+              />
+            </div>
+          </div>
+          <div>
+            <h3 className="mb-2 text-center text-base font-semibold text-zinc-200 sm:text-lg">
+              功能演示 2 · 网页自动化向导
+            </h3>
+            <p className="mb-4 text-center text-sm text-zinc-500 sm:text-base">
+              《用程序员的方式一人运营十个自媒体账号》
+            </p>
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg shadow-black/40 border border-zinc-800 bg-black">
+              <iframe
+                title="Panda Video Generator · 网页自动化向导"
+                src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
+                className="absolute inset-0 w-full h-full border-0"
+                scrolling="no"
+                allow="fullscreen; encrypted-media; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                allowFullScreen
+              />
+            </div>
+          </div>
         </div>
       </section>
 
