@@ -65,7 +65,12 @@
 </a>
 
 
-## 🎉 产品展示
+## 🎉 成品展示
+
+<a href="https://www.bilibili.com/video/BV1ZnDcBsEK7/">
+  <img src="./docs/assets/video-demo-1.png" alt="成品展示 · 点击在 Bilibili 播放" width="640" />
+</a>
+
 
 <a href="https://www.bilibili.com/video/BV19Rw9zwEd4/">
   <img src="./docs/assets/1.png" alt="成品展示 · 点击在 Bilibili 播放" width="640" />
