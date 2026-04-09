@@ -1,23 +1,26 @@
 name: Generate Video
 
 on:
-  push:
-    branches:
-      - 'ci/video-generate'
   workflow_dispatch:
     inputs:
       zhihu_url:
-        description: '知乎问题页 URL（须为 https://www.zhihu.com/question/<id>）'
+        description: 'Zhihu question URL '
         required: true
         type: string
+      video_title:
+        description: 'Optional override for the rendered video title'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   generate-video:
     runs-on: ubuntu-latest
     timeout-minutes: 90  # Set timeout for video generation (may take 30-60 minutes)
-    # Manual: inputs.zhihu_url. Push (ci/video-generate only): vars.ZHIHU_DEFAULT_URL (https://www.zhihu.com/question/...).
+    # Manual: zhihu_url; optional video_title. Push: vars.ZHIHU_DEFAULT_URL, optional vars.VIDEO_TITLE_OVERRIDE.
     env:
       ZHIHU_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.zhihu_url || vars.ZHIHU_DEFAULT_URL }}
+      VIDEO_TITLE_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.video_title || vars.VIDEO_TITLE_OVERRIDE }}
       PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
       PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
 
@@ -57,16 +60,22 @@ jobs:
             libgbm1 \
             libasound2t64
 
-      # Whole file from one Actions secret (copy .env.example → .env locally, fill keys, paste into DOTENV_FILE).
-      - name: Create .env from DOTENV_FILE secret
+      # Prefer secrets.DOTENV_FILE (full .env text). If unset, fall back to .env.example + secrets.DEEPSEEK_API_KEY.
+      - name: Create .env for CI
         env:
           DOTENV_FILE: ${{ secrets.DOTENV_FILE }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
-          if [ -z "${DOTENV_FILE}" ]; then
-            echo "::error::secrets.DOTENV_FILE is empty. Add an Actions secret DOTENV_FILE with your full .env text (start from .env.example)."
-            exit 1
+          if [ -n "${DOTENV_FILE}" ]; then
+            python3 -c "import os; open('.env','w',encoding='utf-8').write(os.environ['DOTENV_FILE'])"
+          else
+            if [ -z "${DEEPSEEK_API_KEY}" ]; then
+              echo "::error::Set Actions secret DOTENV_FILE (full .env) or DEEPSEEK_API_KEY (DeepSeek-only fallback)."
+              exit 1
+            fi
+            cp .env.example .env
+            node -e "const fs=require('fs');const k=process.env.DEEPSEEK_API_KEY;let t=fs.readFileSync('.env','utf8');const re=/^DEEPSEEK_API_KEY=.*$/m;if(re.test(t))t=t.replace(re,()=>'DEEPSEEK_API_KEY='+k);else t=t.trimEnd()+'\\nDEEPSEEK_API_KEY='+k+'\\n';fs.writeFileSync('.env',t);"
           fi
-          python3 -c "import os; open('.env','w',encoding='utf-8').write(os.environ['DOTENV_FILE'])"
 
       - name: Create necessary directories
         run: |
@@ -86,6 +95,24 @@ jobs:
             exit 1
           fi
           pnpm spider:zhihu -- "$ZHIHU_URL"
+
+      - name: Apply video title override (optional)
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const t = (process.env.VIDEO_TITLE_OVERRIDE || '').trim();
+          if (!t) {
+            console.log('No video title override; keeping spider title.json.');
+            process.exit(0);
+          }
+          const payload = JSON.stringify({ title: t }, null, 2) + '\n';
+          fs.mkdirSync('output/spider', { recursive: true });
+          fs.mkdirSync('public/video', { recursive: true });
+          fs.writeFileSync(path.join('output/spider', 'title.json'), payload);
+          fs.writeFileSync(path.join('public', 'video', 'title.json'), payload);
+          console.log('Overrode video title:', t);
+          "
 
       - name: Upload Stage 1 artifact (spider output)
         uses: actions/upload-artifact@v4
