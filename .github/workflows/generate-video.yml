@@ -1,12 +1,25 @@
 name: Generate Video
 
 on:
-  workflow_dispatch:  # Manual trigger only (POC phase)
+  push:
+    branches:
+      - 'ci/video-generate'
+  workflow_dispatch:
+    inputs:
+      zhihu_url:
+        description: '知乎问题页 URL（须为 https://www.zhihu.com/question/<id>）'
+        required: true
+        type: string
 
 jobs:
   generate-video:
     runs-on: ubuntu-latest
     timeout-minutes: 90  # Set timeout for video generation (may take 30-60 minutes)
+    # Manual: inputs.zhihu_url. Push (ci/video-generate only): vars.ZHIHU_DEFAULT_URL (https://www.zhihu.com/question/...).
+    env:
+      ZHIHU_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.zhihu_url || vars.ZHIHU_DEFAULT_URL }}
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+      PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
 
     steps:
       - name: Checkout repository
@@ -14,8 +27,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -46,11 +57,16 @@ jobs:
             libgbm1 \
             libasound2t64
 
-      - name: Create .env file
-        run: |
-          echo "DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}" > .env
+      # Whole file from one Actions secret (copy .env.example → .env locally, fill keys, paste into DOTENV_FILE).
+      - name: Create .env from DOTENV_FILE secret
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DOTENV_FILE: ${{ secrets.DOTENV_FILE }}
+        run: |
+          if [ -z "${DOTENV_FILE}" ]; then
+            echo "::error::secrets.DOTENV_FILE is empty. Add an Actions secret DOTENV_FILE with your full .env text (start from .env.example)."
+            exit 1
+          fi
+          python3 -c "import os; open('.env','w',encoding='utf-8').write(os.environ['DOTENV_FILE'])"
 
       - name: Create necessary directories
         run: |
@@ -62,12 +78,37 @@ jobs:
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
           echo "DISPLAY=:99" >> $GITHUB_ENV
 
-      - name: Generate video
-        run: pnpm run pipeline:zhihu-video -- https://www.zhihu.com/question/1997750868066447778
-        env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
-          PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
+      # Split from pipeline:zhihu-video so each stage is visible and artifacts are downloadable between steps.
+      - name: 'Stage 1/3: Zhihu spider (crawl + script)'
+        run: |
+          if [ -z "$ZHIHU_URL" ]; then
+            echo "::error::ZHIHU_URL is empty. Use workflow input (manual) or set repository variable ZHIHU_DEFAULT_URL (push)."
+            exit 1
+          fi
+          pnpm spider:zhihu -- "$ZHIHU_URL"
+
+      - name: Upload Stage 1 artifact (spider output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: spider-output
+          path: output/spider
+          retention-days: 14
+
+      - name: 'Stage 2/3: TTS (Edge) + sync to public/tts'
+        run: pnpm tts
+
+      - name: Upload Stage 2 artifact (TTS output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-output
+          path: |
+            output/tts
+            public/tts
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: 'Stage 3/3: Remotion render (video.mp4)'
+        run: pnpm render:video
 
       - name: Find generated video file
         id: find-video
@@ -88,14 +129,3 @@ jobs:
           path: ${{ steps.find-video.outputs.video_path }}
           retention-days: 30
 
-      - name: Upload additional files as artifacts (optional)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-files
-          path: |
-            output/tts/input.txt
-            output/tts/audio.mp3
-            output/tts/audio.vtt
-          retention-days: 7
-          if-no-files-found: ignore
