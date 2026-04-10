@@ -1,11 +1,11 @@
 # CLI 使用指南（命令行）
 
-[← README](../../README.md) · [索引](./README.md) · [分步说明](./step-by-step.md) · [工作流](./full-workflow.md) · [开发](../../README.md#development)
+[← README](../README.md) · [索引](./README.md) · [分步说明](./step-by-step.md) · [工作流](./full-workflow.md) · [开发](../README.md#development)
 
 <a id="cli-usage-guide"></a>
 <a id="usage-guide"></a>
 
-本文说明如何通过 **CLI（命令行）** 使用本项目，与 [自动化向导](../../README.md#wizard-automation) 在后台执行的脚本一致，便于自动化与按需拆分步骤。
+本文说明如何通过 **CLI（命令行）** 使用本项目，与 [自动化向导](../README.md#wizard-automation) 在后台执行的脚本一致，便于自动化与按需拆分步骤。
 
 ### 示例：一键从知乎生成视频
 
@@ -49,14 +49,14 @@ output/
     └── audio.vtt — 字幕
 ```
 
-> **注意**：口播依赖根目录 **`.env`**（**[`.env.example`](../../.env.example)** · **[caption SKILL](../../.agent/skills/caption-generator/SKILL.md)**）。
+> **注意**：口播依赖根目录 **`.env`**（**[`.env.example`](../.env.example)** · **[caption SKILL](../.agent/skills/caption-generator/SKILL.md)**）。
 
 ### 更多文档
 
 | 文档 | 说明 |
 |------|------|
 | [文档索引](./README.md) | 分册总览 |
-| [分步操作详细说明](./step-by-step.md) | STEP1–STEP4 命令、`login:*` / `upload:*`、素材与环境变量 |
-| [完整工作流示例](./full-workflow.md) | 一键 / 分步命令行示例 |
-| [开发](../../README.md#development) | Remotion Studio |
-| [功能状态](../../README.md#feature-status) | 能力清单与规划 |
+| [分步操作详细说明](./step-by-step.md) | STEP1–STEP4、`login:*` / `upload:*`、素材与环境变量 |
+| [完整工作流示例](./full-workflow.md) | 本地一键与分步命令合集 |
+| [开发](../README.md#development) | Remotion Studio |
+| [功能状态](../README.md#feature-status) | 能力清单与规划 |
