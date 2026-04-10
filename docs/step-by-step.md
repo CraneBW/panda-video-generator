@@ -1,6 +1,6 @@
 # 分步操作详细说明
 
-[← README](../../README.md) · [索引](./README.md) · [CLI](./cli-usage-guide.md) · [工作流](./full-workflow.md) · [开发](../../README.md#development)
+[← README](../README.md) · [索引](./README.md) · [CLI](./cli-usage-guide.md) · [工作流](./full-workflow.md) · [开发](../README.md#development)
 
 - **顺序**
   - **STEP1** 文稿 → **STEP2** TTS → **STEP3** 成片渲染 → **STEP4** 多平台发布（可选）
@@ -24,7 +24,7 @@
     - **产出：**
       - **`output/spider/output.json`**
       - **`output/spider/input.txt`**、**`title.json`**（LLM 生成）
-    - **依赖：** 根目录 **`.env`** 口播密钥，见 **[`.env.example`](../../.env.example)** / [SKILL](../../.agent/skills/caption-generator/SKILL.md)
+    - **依赖：** 根目录 **`.env`** 口播密钥，见 **[`.env.example`](../.env.example)** / [SKILL](../.agent/skills/caption-generator/SKILL.md)
     - **示例：**
       ```bash
       pnpm spider:zhihu -- https://www.zhihu.com/question/2021664832844308557

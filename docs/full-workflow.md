@@ -1,6 +1,6 @@
 # 完整工作流示例
 
-[← README](../../README.md) · [索引](./README.md) · [CLI](./cli-usage-guide.md) · [分步](./step-by-step.md) · [开发](../../README.md#development)
+[← README](../README.md) · [索引](./README.md) · [CLI](./cli-usage-guide.md) · [分步](./step-by-step.md) · [开发](../README.md#development)
 
 <a id="full-workflow"></a>
 

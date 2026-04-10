@@ -15,30 +15,86 @@
 
 ---
 
-[官方网站](https://panda.szhshp.org)
-
+<div align="center" style="margin: 12px 0 20px;">
+  <a href="https://panda.szhshp.org" title="Panda Video Generator 官方网站" style="display: inline-block; padding: 12px 28px; border: 2px solid #0969da; border-radius: 8px; font-weight: 700; font-size: 1.05em; text-decoration: none; color: #0969da;">官方网站</a>
+</div>
 
 ## ✨ 核心特性
 
-### 🕷️ <mark>一键</mark>网页转文本
-一键抓取正文与标题（如知乎），输出结构化文件，少手工整理。
+<!-- GitHub.com strips most flex/gap inline styles; use a plain row table so 3 columns match on the website. -->
+<table cellspacing="20" cellpadding="0" border="0">
+  <tr valign="top">
+    <td width="34%" valign="top">
+      <h3>🕷️ <mark>一键</mark>网页转文本</h3>
+      <p>一键抓取正文与标题（如知乎），输出结构化文件，少手工整理。</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>🎬 <mark>一键</mark>文本转视频</h3>
+      <p>一键跑通口播链路：Edge TTS + VTT 字幕，Remotion 模板渲染成片。</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>🚀 <mark>一键</mark>多平台发布</h3>
+      <p>一键驱动浏览器自动化上传；B 站、抖音、视频号、YouTube、小红书、快手等共用相近流程。</p>
+    </td>
+  </tr>
+</table>
 
-### 🎬 <mark>一键</mark>文本转视频
-一键跑通口播链路：Edge TTS + VTT 字幕，Remotion 模板渲染成片。
+## 接入方式
 
-### 🚀 <mark>一键</mark>多平台发布
+<table cellspacing="20" cellpadding="0" border="0">
+  <tr valign="top">
+    <td width="34%" valign="top">
+      <h3>🤖 1. Agent Skills 方式</h3>
+      <ul>
+        <li>使用 AI Agent 编排视频生成与发布流程。</li>
+        <li>支持口播流水线、爬虫、TTS、渲染与发布等技能。</li>
+        <li>支持 Cursor、Claude Code、Copilot 等常用 AI Agent。</li>
+      </ul>
+      <table width="50%" align="center" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td align="center">
+            <a href="#demo-agent">演示视频</a><br />
+            <a href="#agent-skills">查看更多 →</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td width="33%" valign="top">
+      <h3>🧭 2. 网页端自动化向导方式</h3>
+      <ul>
+        <li>通过傻瓜式 <a href="#wizard-automation">自动化向导</a>，无需手写命令。</li>
+        <li>在浏览器中按步骤完成文稿、TTS 与成片渲染。</li>
+        <li>多平台发布为可选步骤，可按需执行。</li>
+      </ul>
+      <table width="50%" align="center" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td align="center">
+            <a href="#demo-wizard">演示视频</a><br />
+            <a href="#wizard-automation">查看更多 →</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td width="33%" valign="top">
+      <h3>🔄 3. GitHub Actions</h3>
+      <ul>
+        <li>使用 GitHub Actions 在云端跑通抓取、TTS 与 Remotion 渲染。</li>
+        <li>无需在本地安装依赖或常驻服务。</li>
+        <li>Fork 后配置密钥与变量即可触发工作流，本地几乎不用折腾。</li>
+      </ul>
+      <table width="50%" align="center" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td align="center">
+            <a href="#demo-github-actions">演示视频</a><br />
+            <a href="#github-actions">查看更多 →</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
-一键驱动浏览器自动化上传；B 站、抖音、视频号、YouTube、小红书、快手等共用相近流程。
-
-### 🤖 <mark>一键</mark>调用 Agent Skills 完成视频生成
-
-使用 AI Agent 编排视频生成与发布流程，支持口播流水线、爬虫、TTS、渲染与发布等技能。
-
-### 🧭 一个<mark>傻瓜式</mark>自动化向导 (有手就行)
-一个傻瓜式 [自动化向导](#wizard-automation)，通过鼠标傻瓜式点击就能帮忙完成文稿、TTS、渲染、发布全流程。
-
-
--------------
+---
 
 ## 📖 简介
 
@@ -46,40 +102,52 @@
 
 一站式全自动化的视频内容生成与发布引擎，支持从网页内容提取、文本转视频到多平台发布的完整工作流。通过 AI 驱动的文本转语音（TTS）技术和视频渲染引擎，帮助内容创作者快速生成高质量视频并一键发布到多个平台。
 
+<a id="demo-agent"></a>
 ## ❇️ 功能演示1 - Agent 使用演示
 
 > 《用 AI 的方式一人运营十个自媒体账号》
 
 
-<a href="https://www.bilibili.com/video/BV1WXDABGEB7/?vd_source=a7353d3395fdf5c1b78e0a2367800f20">
-  <img src="./docs/assets/3.png" alt="使用演示 · 点击在 Bilibili 播放" width="640" />
+<a href="https://www.bilibili.com/video/BV1WXDABGEB7">
+  <img src="./docs/assets/3.png" alt="使用演示 · 点击在 Bilibili 播放" width="480" />
 </a>
 
 
+<a id="demo-wizard"></a>
 ## ❇️ 功能演示2 - 网页自动化向导
 
 > 《用程序员的方式一人运营十个自媒体账号》
 
-<a href="https://www.bilibili.com/video/BV141XfB3ELj/?vd_source=a7353d3395fdf5c1b78e0a2367800f20">
-  <img src="./docs/assets/2.png" alt="使用演示 · 点击在 Bilibili 播放" width="640" />
+<a href="https://www.bilibili.com/video/BV141XfB3ELj">
+  <img src="./docs/assets/2.png" alt="使用演示 · 点击在 Bilibili 播放" width="480" />
 </a>
 
+<a id="demo-github-actions"></a>
+## ❇️ 功能演示3 - GitHub Actions 云端成片
+
+> 《用自动化的方式一人运营十个自媒体账号》
+
+<a href="https://www.bilibili.com/video/BV1q9QABeEM3">
+  <img src="./docs/assets/4.png" alt="使用演示 · 点击在 Bilibili 播放" width="480" />
+</a>  
 
 ## 🎉 成品展示
 
 <a href="https://www.bilibili.com/video/BV1ZnDcBsEK7/">
-  <img src="./docs/assets/video-demo-1.png" alt="成品展示 · 点击在 Bilibili 播放" width="640" />
+  <img src="./docs/assets/video-demo-1.png" alt="成品展示 · 点击在 Bilibili 播放" width="480" />
 </a>
 
 
 <a href="https://www.bilibili.com/video/BV19Rw9zwEd4/">
-  <img src="./docs/assets/1.png" alt="成品展示 · 点击在 Bilibili 播放" width="640" />
+  <img src="./docs/assets/1.png" alt="成品展示 · 点击在 Bilibili 播放" width="480" />
 </a>
 
 
 <a id="changelog"></a>
 ## 📅 更新日志
 
+- **V1.4.0** · 2026-04-10
+  - 支持 GitHub Actions 云端成片
 - **V1.3.1** · 2026-04-05
   - 支持 KIMI
 - **V1.3** · 2026-04-03
@@ -120,22 +188,23 @@
 <a id="quick-start"></a>
 ## 🚀 快速开始
 
-> 如果你有一个 AI Agent (Claude Code, Cursor, Copilot 等)，可以阅读本仓库的 README、`docs/readme/` 分册以及 **[`.agent/skills`](./.agent/skills)** 下的 Agent Skills，在完成环境配置后驱动 Setup 与视频发布全流程。
 
-
-1. **[环境配置（必须）](#env-setup)**
-   - Node 20+、ffmpeg、克隆仓库、安装依赖。
-   - `pnpm check:setup` 自检；`cp .env.example .env` 并按分组填写（见 [环境配置](#env-setup)）。
-2. **[方式1: 自动化向导](#wizard-automation)**（**推荐新手**）
-   - 根目录 `pnpm automation`，浏览器内按步操作。
-   - 不确定从哪开始时优先用这个。
-3. **[方式2: Agent Skills](#agent-skills)**
-   - 技能定义：**[`.agent/skills`](./.agent/skills)**（各包 `SKILL.md`）。
-   - 建议先读 [CLI 使用指南](./docs/readme/cli-usage-guide.md)、[分步说明](./docs/readme/step-by-step.md)，再让 Agent 调脚本。
-4. **[方式3: CLI 命令行](./docs/readme/cli-usage-guide.md)**
-   - 与向导相同底层命令，适合终端与自动化脚本。
-   - 需配置根目录 **`.env`**（口播、TTS、发布等）。
-5. **[完整工作流示例](./docs/readme/full-workflow.md)**
+1. **环境配置**
+   - 若采用 **[方式3: GitHub Actions 云端成片](#github-actions)**、且只要生成视频文件：准备 `.env` 文件即可，其他所有依赖不用安装。
+   - 若采用其他方式：Node 20+、ffmpeg、克隆仓库、安装依赖。
+   - 详细步骤见 [环境配置](#env-setup)。
+2. **任选以下一种方式**
+   1. **[方式1: 自动化向导](#wizard-automation)**
+      - 根目录执行 `pnpm automation`，浏览器内按步骤操作。
+   2. **[方式2: Agent Skills](#agent-skills)**
+      - 技能定义：**[`.agent/skills`](./.agent/skills)**（各包 `SKILL.md`）。
+      - 直接和 AI Agent 对话，让 Agent 调脚本。
+   3. **[方式3: GitHub Actions 云端成片](#github-actions)**
+      - 在仓库 Actions 里直接运行 **Generate Video**, 生成视频文件, 不用安装任何依赖, 只需要准备个 `.env` 文件即可。
+   4. **[方式4: CLI 命令行](./docs/cli-usage-guide.md)**
+      - 与向导相同底层命令，适合终端与自动化脚本。
+      - 需配置根目录 **`.env`**（口播、TTS、发布等）。
+3. **[完整工作流示例](./docs/full-workflow.md)**
    - 知乎链路到成片、多平台发布的命令示例合集。
 
 
@@ -169,7 +238,7 @@ cd panda-video-generator
 ### 4. 验证与配置
 
 - 自检：`pnpm check:setup`
-- `cp .env.example .env`，需要提供环境变量
+- 复制 `.env.example` 为 `.env`，并按分组填写环境变量。
 
 ---
 
@@ -191,14 +260,29 @@ cd panda-video-generator
 <a id="agent-skills"></a>
 ## 🤖 Agent Skills 方式
 
-在已完成 [环境配置](#env-setup) 的前提下，让使用的 AI 工具加载 **[`.agent/skills`](./.agent/skills)** 中的技能说明（例如口播流水线、爬虫、TTS、渲染与发布）。技能文件描述输入输出、命令与环境变量，可与根 README、[CLI 使用指南](./docs/readme/cli-usage-guide.md)、[分步文档](./docs/readme/step-by-step.md) 对照使用。
+在已完成 [环境配置](#env-setup) 的前提下，让使用的 AI 工具加载 **[`.agent/skills`](./.agent/skills)** 中的技能说明（例如口播流水线、爬虫、TTS、渲染与发布）。技能文件描述输入输出、命令与环境变量，可与根 README、[CLI 使用指南](./docs/cli-usage-guide.md)、[分步文档](./docs/step-by-step.md) 对照使用。
+
+---
+
+<a id="github-actions"></a>
+## 🔄 GitHub Actions 云端成片
+
+1. 根据 `.env.example` 配好 `.env`；
+1. 在仓库 **Settings → Secrets and variables** 将完整的 `.env` 粘贴到 **`DOTENV_FILE`** 里；
+2. 打开仓库 **Actions**，选中工作流 **[Generate Video](.github/workflows/generate-video.yml)**，点 **Run workflow**。
+3. 填两个参数：
+   - **知乎问题链接**（`zhihu_url`，必填）
+   - **成片标题**（`video_title`，可不填）
+4. 等待跑完
+5. 在该次运行的页面底部 **Artifacts** 里下载 **`generated-video`**，即成片 `video.mp4`。
 
 
 ---
 
 ## 📚 CLI 使用指南
 
-命令行（CLI）示例与输出目录见 **[CLI 使用指南](./docs/readme/cli-usage-guide.md)**；其它分册见 **[文档索引](./docs/readme/README.md)**。
+- 命令行（CLI）示例与输出目录见 **[CLI 使用指南](./docs/cli-usage-guide.md)**；
+- 其它分册见 **[文档索引](./docs/README.md)**。
 
 ---
 
@@ -258,7 +342,9 @@ pnpm remotion
 │   └── 🚧 And More...
 ├── 🔧 开发工具
 │   ├── ✅ 开发服务器
-│   └── 🚧 GitHub Actions 自动化视频生成
+│   └── ✅ GitHub Actions **自动化**
+│       ├── ✅ 知乎链路至成片
+│       └── 🚧 自动化发布
 ├── 🧩 AI Integration
 │   └── ✅ Agent Skills
 ├── 🦞 OpenClaw Integration
