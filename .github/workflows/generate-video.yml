@@ -3,10 +3,18 @@ name: Generate Video
 on:
   workflow_dispatch:
     inputs:
-      zhihu_url:
-        description: 'Zhihu question URL '
+      source_url:
+        description: 'Source page URL'
         required: true
         type: string
+      content_source:
+        description: 'Crawl mode'
+        type: choice
+        options:
+          - auto
+          - zhihu
+          - generic_page
+        default: auto
       video_title:
         description: 'Optional override for the rendered video title'
         required: false
@@ -17,10 +25,11 @@ jobs:
   generate-video:
     runs-on: ubuntu-latest
     timeout-minutes: 90  # Set timeout for video generation (may take 30-60 minutes)
-    # Manual: zhihu_url; optional video_title. Push: vars.ZHIHU_DEFAULT_URL, optional vars.VIDEO_TITLE_OVERRIDE.
+    # Manual: source_url, content_source; optional video_title. Push (ci/github-actions-recharge): set repo vars SOURCE_DEFAULT_URL or ZHIHU_DEFAULT_URL, optional CONTENT_SOURCE, VIDEO_TITLE_OVERRIDE.
     env:
-      ZHIHU_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.zhihu_url || vars.ZHIHU_DEFAULT_URL }}
-      VIDEO_TITLE_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.video_title || vars.VIDEO_TITLE_OVERRIDE }}
+      SOURCE_URL: ${{ inputs.source_url || vars.SOURCE_DEFAULT_URL || vars.ZHIHU_DEFAULT_URL }}
+      CONTENT_SOURCE: ${{ inputs.content_source || vars.CONTENT_SOURCE || 'auto' }}
+      VIDEO_TITLE_OVERRIDE: ${{ inputs.video_title || vars.VIDEO_TITLE_OVERRIDE }}
       PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
       PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
 
@@ -87,14 +96,39 @@ jobs:
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
           echo "DISPLAY=:99" >> $GITHUB_ENV
 
-      # Split from pipeline:zhihu-video so each stage is visible and artifacts are downloadable between steps.
-      - name: 'Stage 1/3: Zhihu spider (crawl + script)'
+      # Stages are split so the run log shows each phase; final bundle is uploaded once as pipeline-output.
+      - name: 'Stage 1/3: Crawl + narration script'
         run: |
-          if [ -z "$ZHIHU_URL" ]; then
-            echo "::error::ZHIHU_URL is empty. Use workflow input (manual) or set repository variable ZHIHU_DEFAULT_URL (push)."
+          set -euo pipefail
+          if [ -z "${SOURCE_URL:-}" ]; then
+            echo "::error::SOURCE_URL is empty. Set workflow input source_url or repository variables SOURCE_DEFAULT_URL / ZHIHU_DEFAULT_URL."
             exit 1
           fi
-          pnpm spider:zhihu -- "$ZHIHU_URL"
+
+          MODE="${CONTENT_SOURCE:-auto}"
+          if [ "$MODE" = "auto" ]; then
+            if echo "$SOURCE_URL" | grep -qE '^https://www\.zhihu\.com/question/'; then
+              MODE="zhihu"
+            else
+              MODE="generic_page"
+            fi
+            echo "auto → MODE=$MODE"
+          fi
+
+          case "$MODE" in
+            zhihu)
+              pnpm spider:zhihu -- "$SOURCE_URL"
+              ;;
+            generic_page)
+              export SPIDER_SOURCE="$SOURCE_URL"
+              pnpm spider:extract:url
+              pnpm caption:env
+              ;;
+            *)
+              echo "::error::Invalid CONTENT_SOURCE: $CONTENT_SOURCE (expected auto, zhihu, or generic_page)"
+              exit 1
+              ;;
+          esac
 
       - name: Apply video title override (optional)
         run: |
@@ -114,31 +148,13 @@ jobs:
           console.log('Overrode video title:', t);
           "
 
-      - name: Upload Stage 1 artifact (spider output)
-        uses: actions/upload-artifact@v4
-        with:
-          name: spider-output
-          path: output/spider
-          retention-days: 14
-
       - name: 'Stage 2/3: TTS (Edge) + sync to public/tts'
         run: pnpm tts
-
-      - name: Upload Stage 2 artifact (TTS output)
-        uses: actions/upload-artifact@v4
-        with:
-          name: tts-output
-          path: |
-            output/tts
-            public/tts
-          retention-days: 14
-          if-no-files-found: ignore
 
       - name: 'Stage 3/3: Remotion render (video.mp4)'
         run: pnpm render:video
 
-      - name: Find generated video file
-        id: find-video
+      - name: Verify generated video exists
         run: |
           VIDEO_FILE="output/video/video.mp4"
           if [ ! -f "$VIDEO_FILE" ]; then
@@ -146,13 +162,16 @@ jobs:
             ls -la output/video/ || echo "output/video directory does not exist"
             exit 1
           fi
-          echo "video_path=$VIDEO_FILE" >> $GITHUB_OUTPUT
           echo "Found video: $VIDEO_FILE"
 
-      - name: Upload video as artifact
+      - name: Pack output folder (single archive for download)
+        run: tar -czf output-bundle.tar.gz output
+
+      - name: Upload packed output artifact
         uses: actions/upload-artifact@v4
         with:
-          name: generated-video
-          path: ${{ steps.find-video.outputs.video_path }}
+          name: pipeline-output
+          path: output-bundle.tar.gz
           retention-days: 30
+          if-no-files-found: error
 
