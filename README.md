@@ -246,12 +246,12 @@ cd panda-video-generator
 <a id="github-actions"></a>
 ## 🔄 GitHub Actions 云端成片
 
+经网友提醒, <mark>滥用此方案可能存在违反 Github 服务条款的风险</mark>, 本仓库仅供学习参考，请勿用于**高频爬取或商业用途**，请自行评估风险!
+
 1. 根据 `.env.example` 配好 `.env`；
 1. 在仓库 **Settings → Secrets and variables** 将完整的 `.env` 粘贴到 **`DOTENV_FILE`** 里；
 2. 打开仓库 **Actions**，选中工作流 **[Generate Video](.github/workflows/generate-video.yml)**，点 **Run workflow**。
-3. 填两个参数：
-   - **知乎问题链接**（`zhihu_url`，必填）
-   - **成片标题**（`video_title`，可不填）
+3. 提供参数
 4. 等待跑完
 5. 在该次运行的页面底部 **Artifacts** 里下载 **`generated-video`**，即成片 `video.mp4`。
 
@@ -306,7 +306,7 @@ pnpm remotion
 │       ├── ✅ 竖屏模板
 │       ├── ✅ 你可以自由修改视频模板的任何细节
 │       └── 🚧 更多模板...
-├── 🎞️ **视频素材**
+├── 🎞️ 视频素材
 │   ├── ✅ 自定义音乐
 │   ├── 🚧 AI 生成音乐
 │   ├── ✅ 自定义背景
@@ -321,9 +321,7 @@ pnpm remotion
 │   └── 🚧 And More...
 ├── 🔧 开发工具
 │   ├── ✅ 开发服务器
-│   └── ✅ GitHub Actions **自动化**
-│       ├── ✅ 知乎链路至成片
-│       └── 🚧 自动化发布
+│   └── ✅ GitHub Actions 
 ├── 🧩 AI Integration
 │   └── ✅ Agent Skills
 ├── 🦞 OpenClaw Integration
