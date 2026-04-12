@@ -62,13 +62,13 @@
       <p><a href="#demo-wizard">演示视频</a> / <a href="#wizard-automation">查看更多</a></p>
     </td>
     <td width="33%" valign="top">
-      <h3>🔄 3. GitHub Actions</h3>
+      <h3>💻 3. CLI 命令行</h3>
       <ul>
-        <li>使用 GitHub Actions 在云端跑通抓取、TTS 与 Remotion 渲染。</li>
-        <li>无需在本地安装依赖或常驻服务。</li>
-        <li>Fork 后配置密钥与变量即可触发工作流，本地几乎不用折腾。</li>
+        <li>与向导共用同一套 <code>pnpm</code> 脚本：爬虫、TTS、Remotion 渲染与发布。</li>
+        <li>适合终端操作、自有 CI 或与 shell / cron 等自动化对接。</li>
+        <li>命令与输出目录见 <a href="./docs/cli-usage-guide.md">CLI 使用指南</a>。</li>
       </ul>
-      <p><a href="#demo-github-actions">演示视频</a> / <a href="#github-actions">查看更多</a></p>
+      <p><a href="#cli-usage-guide">查看更多</a></p>
     </td>
   </tr>
 </table>
@@ -101,14 +101,7 @@
   <img src="./docs/assets/2.png" alt="使用演示 · 点击在 Bilibili 播放" width="480" />
 </a>
 
-<a id="demo-github-actions"></a>
-## ❇️ 功能演示3 - GitHub Actions 云端成片
 
-> 《用自动化的方式一人运营十个自媒体账号》
-
-<a href="https://www.bilibili.com/video/BV1q9QABeEM3">
-  <img src="./docs/assets/4.png" alt="使用演示 · 点击在 Bilibili 播放" width="480" />
-</a>  
 
 ## 🎉 成品展示
 
@@ -125,8 +118,10 @@
 <a id="changelog"></a>
 ## 📅 更新日志
 
+- **V1.4.1** · 2026-04-12
+  - 经过网友提醒, Github Actions 云端渲染视频可能存在违反 Action 服务条款的风险, 所以移除了 Github Actions 的示例, 但是你依然可以从 `f74291b` 这个 commit 中找到 Github Actions 的示例和文档, 仅供参考!
 - **V1.4.0** · 2026-04-10
-  - 支持 GitHub Actions 云端成片
+  - 支持 GitHub Actions 测试视频生成
 - **V1.3.1** · 2026-04-05
   - 支持 KIMI
 - **V1.3** · 2026-04-03
@@ -169,8 +164,7 @@
 
 
 1. **环境配置**
-   - 若采用 **[方式3: GitHub Actions 云端成片](#github-actions)**、且只要生成视频文件：准备 `.env` 文件即可，其他所有依赖不用安装。
-   - 若采用其他方式：Node 20+、ffmpeg、克隆仓库、安装依赖。
+   - Node 20+、ffmpeg、克隆仓库、安装依赖；复制 `.env.example` 为 `.env` 并填写。
    - 详细步骤见 [环境配置](#env-setup)。
 2. **任选以下一种方式**
    1. **[方式1: 自动化向导](#wizard-automation)**
@@ -178,11 +172,9 @@
    2. **[方式2: Agent Skills](#agent-skills)**
       - 技能定义：**[`.agent/skills`](./.agent/skills)**（各包 `SKILL.md`）。
       - 直接和 AI Agent 对话，让 Agent 调脚本。
-   3. **[方式3: GitHub Actions 云端成片](#github-actions)**
-      - 在仓库 Actions 里直接运行 **Generate Video**, 生成视频文件, 不用安装任何依赖, 只需要准备个 `.env` 文件即可。
-   4. **[方式4: CLI 命令行](./docs/cli-usage-guide.md)**
+   3. **[方式3: CLI 命令行](#cli-usage-guide)**
       - 与向导相同底层命令，适合终端与自动化脚本。
-      - 需配置根目录 **`.env`**（口播、TTS、发布等）。
+      - 需配置根目录 **`.env`**（口播、TTS、发布等）；说明见 **[CLI 使用指南](./docs/cli-usage-guide.md)**。
 3. **[完整工作流示例](./docs/full-workflow.md)**
    - 知乎链路到成片、多平台发布的命令示例合集。
 
@@ -243,21 +235,7 @@ cd panda-video-generator
 
 ---
 
-<a id="github-actions"></a>
-## 🔄 GitHub Actions 云端成片
-
-经网友提醒, <mark>滥用此方案可能存在违反 Github 服务条款的风险</mark>, 本仓库仅供学习参考，请勿用于**高频爬取或商业用途**，请自行评估风险!
-
-1. 根据 `.env.example` 配好 `.env`；
-1. 在仓库 **Settings → Secrets and variables** 将完整的 `.env` 粘贴到 **`DOTENV_FILE`** 里；
-2. 打开仓库 **Actions**，选中工作流 **[Generate Video](.github/workflows/generate-video.yml)**，点 **Run workflow**。
-3. 提供参数
-4. 等待跑完
-5. 在该次运行的页面底部 **Artifacts** 里下载 **`generated-video`**，即成片 `video.mp4`。
-
-
----
-
+<a id="cli-usage-guide"></a>
 ## 📚 CLI 使用指南
 
 - 命令行（CLI）示例与输出目录见 **[CLI 使用指南](./docs/cli-usage-guide.md)**；
@@ -321,7 +299,7 @@ pnpm remotion
 │   └── 🚧 And More...
 ├── 🔧 开发工具
 │   ├── ✅ 开发服务器
-│   └── ✅ GitHub Actions 
+│   └── ✅ CLI 命令行
 ├── 🧩 AI Integration
 │   └── ✅ Agent Skills
 ├── 🦞 OpenClaw Integration
@@ -352,6 +330,12 @@ pnpm remotion
 - Email: 24031shp@sina.com
 - GitHub: [@szhshp](https://github.com/szhshp)
 
+
+---
+
+## ⚠️ 免责声明
+
+本项目按「原样」提供，作者不对因使用本软件而产生的任何直接、间接或附带损失承担责任。你在使用爬虫、文本转语音、视频生成、浏览器自动化上传等功能时，须**自行确保**符合适用法律法规、各内容/社交平台的服务条款、robots 规则及版权与隐私要求；请勿将本工具用于未经授权的抓取、侵权转载或垃圾信息传播。本仓库与第三方平台**无任何隶属或合作关系**；相关商标与产品名称归各自权利人所有。以上说明不构成法律意见；如有合规疑虑，请咨询专业人士。
 ---
 
 <div align="center">

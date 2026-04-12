@@ -8,9 +8,9 @@ import {
   ExternalLink,
   Github,
   Globe,
+  Terminal,
   Video,
   Upload,
-  Workflow,
 } from "lucide-react";
 import { defaultMyCompProps } from "../../types/constants";
 
@@ -21,7 +21,7 @@ const readmeEmoji = {
   rocket: "\u{1F680}",
   robot: "\u{1F916}",
   compass: "\u{1F9ED}",
-  sync: "\u{1F504}",
+  cli: "\u{1F4BB}",
 } as const;
 
 // Media files in /public/media directory
@@ -293,7 +293,7 @@ export default function Home() {
         <SectionTitle
           eyebrow="三种路径"
           title="接入方式"
-          subtitle="任选 Agent、浏览器向导或 GitHub Actions，同一套能力不同上手姿势。"
+          subtitle="任选 Agent、浏览器向导或 CLI，同一套能力不同上手姿势。"
         />
         <div className="mt-12 grid gap-5 sm:gap-6 md:mt-16 md:grid-cols-3">
           <article className={pathCardClass}>
@@ -374,43 +374,47 @@ export default function Home() {
               className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/10 text-amber-200/90 shadow-inner ring-1 ring-white/10"
               aria-hidden
             >
-              <Workflow className="size-5" strokeWidth={1.75} />
+              <Terminal className="size-5" strokeWidth={1.75} />
             </div>
             <h3 className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl">
-              {readmeEmoji.sync} 3. GitHub Actions
+              {readmeEmoji.cli} 3. CLI 命令行
             </h3>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-zinc-400">
-              <li>使用 GitHub Actions 在云端跑通抓取、TTS 与 Remotion 渲染。</li>
-              <li>无需在本地安装依赖或常驻服务。</li>
-              <li>Fork 后配置密钥与变量即可触发工作流，本地几乎不用折腾。</li>
+              <li>与向导共用同一套 pnpm 脚本：爬虫、TTS、Remotion 渲染与发布。</li>
+              <li>适合终端操作、自有 CI 或与 shell、cron 等自动化对接。</li>
+              <li>
+                命令与输出目录见{" "}
+                <a
+                  href="https://github.com/szhshp/panda-video-generator/blob/main/docs/cli-usage-guide.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-amber-400/95 hover:text-amber-300 hover:underline"
+                >
+                  CLI 使用指南
+                </a>
+                。
+              </li>
             </ul>
             <p className="mt-4 text-sm text-zinc-300">
               <a
-                href="#demo-github-actions"
-                className="text-amber-400/95 hover:text-amber-300 hover:underline"
-              >
-                演示视频
-              </a>
-              <span className="text-zinc-600"> / </span>
-              <a
-                href="https://github.com/szhshp/panda-video-generator#github-actions"
+                href="https://github.com/szhshp/panda-video-generator#cli-usage-guide"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-amber-400/95 hover:text-amber-300 hover:underline"
               >
-                查看更多
+                查看 CLI 使用指南
               </a>
             </p>
           </article>
         </div>
       </section>
 
-      {/* Feature demos — aligned with README: Agent + wizard + GitHub Actions */}
+      {/* Feature demos — aligned with README: Agent + wizard（CLI 无单独演示视频，见文档） */}
       <section className="container mx-auto px-4 py-14 sm:px-6 sm:py-20">
         <SectionTitle
           eyebrow="实机演示"
           title="功能演示"
-          subtitle="三段演示分别对应 Agent、向导与云端 Actions，所见即所得。"
+          subtitle="两段演示对应 Agent 与网页向导；命令行用法见 CLI 使用指南。"
         />
         <div className="mx-auto mt-12 flex max-w-4xl flex-col gap-14 sm:mt-16 sm:gap-16">
           <div id="demo-agent" className="scroll-mt-28">
@@ -446,27 +450,6 @@ export default function Home() {
                 <iframe
                   title="Panda Video Generator · 网页自动化向导"
                   src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
-                  className="absolute inset-0 w-full h-full border-0"
-                  scrolling="no"
-                  allow="fullscreen; encrypted-media; picture-in-picture"
-                  sandbox="allow-scripts allow-same-origin allow-presentation"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          </div>
-          <div id="demo-github-actions" className="scroll-mt-28">
-            <h3 className="mb-2 text-center text-base font-bold text-zinc-100 sm:text-lg">
-              功能演示 3 · GitHub Actions 云端成片
-            </h3>
-            <p className="mb-5 text-center text-sm text-zinc-500 sm:text-base">
-              《用自动化的方式一人运营十个自媒体账号》
-            </p>
-            <div className={videoFrameClass}>
-              <div className={`${videoInnerClass} aspect-video`}>
-                <iframe
-                  title="Panda Video Generator · GitHub Actions 云端成片"
-                  src="https://player.bilibili.com/player.html?bvid=BV1q9QABeEM3&autoplay=0&danmaku=0"
                   className="absolute inset-0 w-full h-full border-0"
                   scrolling="no"
                   allow="fullscreen; encrypted-media; picture-in-picture"

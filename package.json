@@ -1,6 +1,6 @@
 {
   "name": "panda-video-generator",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "packageManager": "pnpm@10.32.1",
   "engines": {
