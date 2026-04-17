@@ -119,7 +119,7 @@
 ## 📅 更新日志
 
 - **V1.4.1** · 2026-04-12
-  - 经过网友提醒, Github Actions 云端渲染视频可能存在违反 Action 服务条款的风险, 所以移除了 Github Actions 的示例, 但是你依然可以从 `f74291b` 这个 commit 中找到 Github Actions 的示例和文档, 仅供参考!
+  - 经过网友提醒, Github Actions 云端渲染视频可能存在违反 Action 服务条款的风险, 所以移除了 Github Actions 的示例, 但是你依然可以从 `f74291b` 这个 commit 中找到 Github Actions 的示例和文档, 这里又除了`自动化发布`之外的完整功能, 仅供参考!
 - **V1.4.0** · 2026-04-10
   - 支持 GitHub Actions 测试视频生成
 - **V1.3.1** · 2026-04-05

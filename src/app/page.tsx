@@ -146,7 +146,7 @@ export default function Home() {
         <p className="mb-3 font-mono text-[0.7rem] font-medium tracking-wide text-amber-500/90 sm:text-xs">
           端到端 · 视频自动化
         </p>
-        <h1 className="mx-auto max-w-4xl px-2 font-mono text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="mx-auto max-w-4xl min-w-0 px-3 font-mono text-2xl font-bold leading-[1.15] tracking-tight break-words sm:px-4 sm:text-4xl sm:leading-[1.12] md:text-5xl lg:text-6xl">
           <span className="text-amber-400">Panda</span>
           <span className="text-zinc-50">Video</span>
           <span className="text-zinc-200">Generator</span>
