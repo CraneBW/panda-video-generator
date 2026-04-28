@@ -15,6 +15,7 @@ export default [
   {
     ignores: [
       "node_modules/**",
+      "automations/**",
       ".next/**",
       "out/**",
       "build/**",

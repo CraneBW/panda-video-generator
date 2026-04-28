@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import path from 'path';
 import { existsSync } from 'fs';
 import { getAuthFilePath } from '../utils/login-helper';
@@ -33,11 +33,11 @@ function getVideoPath(): string {
 // Get title from JSON file or environment
 function getTitleFromJson(): string | null {
   const titleJsonPath = path.join(process.cwd(), UPLOAD_PATHS.DEFAULT_TITLE_JSON);
-  
+
   if (!existsSync(titleJsonPath)) {
     return null;
   }
-  
+
   try {
     const fs = require('fs');
     const titleData = JSON.parse(fs.readFileSync(titleJsonPath, 'utf-8'));
@@ -50,17 +50,17 @@ function getTitleFromJson(): string | null {
 // Get upload configuration from environment or defaults
 function getUploadConfig(): UploadConfig {
   const videoPath = getVideoPath();
-  
+
   if (!videoPath || !existsSync(videoPath)) {
     throw new Error(
       `Video file not found: ${videoPath}\n` +
       `Please ensure ${UPLOAD_PATHS.DEFAULT_VIDEO} exists or set VIDEO_PATH environment variable.`
     );
   }
-  
+
   // Try to get title from JSON file first, then environment variable
   let title = process.env.VIDEO_TITLE || getTitleFromJson();
-  
+
   if (!title) {
     throw new Error(
       'VIDEO_TITLE is required. Please set it:\n' +
@@ -68,14 +68,14 @@ function getUploadConfig(): UploadConfig {
       `Or ensure ${UPLOAD_PATHS.DEFAULT_TITLE_JSON} exists with a title field.`
     );
   }
-  
+
   // Douyin title limit: 30 characters
   const DOUYIN_TITLE_MAX_LENGTH = 30;
   if (title.length > DOUYIN_TITLE_MAX_LENGTH) {
     title = title.substring(0, DOUYIN_TITLE_MAX_LENGTH);
     console.log(`⚠️  Title truncated to ${DOUYIN_TITLE_MAX_LENGTH} characters for Douyin`);
   }
-  
+
   const config: UploadConfig = {
     videoPath: path.resolve(videoPath),
     title,
@@ -83,7 +83,7 @@ function getUploadConfig(): UploadConfig {
     tags: process.env.VIDEO_TAGS ? process.env.VIDEO_TAGS.split(',').map(t => t.trim()) : [],
     coverPath: process.env.VIDEO_COVER ? path.resolve(process.env.VIDEO_COVER) : undefined,
   };
-  
+
   return config;
 }
 
@@ -102,33 +102,33 @@ test.describe.configure({ timeout: 10 * 60 * 1000 });
 test('upload video to douyin', async ({ page }) => {
   // Set timeout for this specific test (10 minutes)
   test.setTimeout(10 * 60 * 1000);
-  
+
   const config = getUploadConfig();
-  
+
   console.log(`Upload: Douyin - ${config.title}`);
-  
+
   // Step 1: Navigate to Douyin creator upload page
   await page.goto('https://creator.douyin.com/creator-micro/content/upload');
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(3000); // Wait for page to fully load
-  
+
   // Check if logged in
   const loginRequired = await page.locator('text=登录').first().isVisible().catch(() => false);
   const loginButton = await page.locator('button:has-text("登录")').first().isVisible().catch(() => false);
-  
+
   if (loginRequired || loginButton) {
     throw new Error(
       'Not logged in! Please run login script first:\n' +
       '  pnpm login:douyin'
     );
   }
-  
+
   console.log('✅ Logged in successfully (using saved session)');
-  
+
   // Step 2: Find the upload area/button
   console.log('📤 Looking for upload area...');
   await page.waitForTimeout(2000);
-  
+
   // Try to find upload button or area
   const uploadSelectors = [
     'button:has-text("上传视频")',
@@ -139,7 +139,7 @@ test('upload video to douyin', async ({ page }) => {
     'text=上传视频',
     'text=选择视频',
   ];
-  
+
   let uploadButton = null;
   for (const selector of uploadSelectors) {
     try {
@@ -154,11 +154,11 @@ test('upload video to douyin', async ({ page }) => {
       // Continue
     }
   }
-  
+
   // Step 3: Find file input element
   console.log('📤 Looking for upload file input...');
   await page.waitForTimeout(1000);
-  
+
   const fileInputSelectors = [
     'input[type="file"]',
     'input[accept*="video"]',
@@ -166,7 +166,7 @@ test('upload video to douyin', async ({ page }) => {
     '[class*="Upload"] input[type="file"]',
     'input[accept*="mp4"]',
   ];
-  
+
   let uploadInput = null;
   for (const selector of fileInputSelectors) {
     try {
@@ -185,10 +185,10 @@ test('upload video to douyin', async ({ page }) => {
       // Continue
     }
   }
-  
+
   // Step 4: Upload video file
   console.log(`📁 Uploading video: ${config.videoPath}`);
-  
+
   if (uploadInput) {
     try {
       await uploadInput.setInputFiles(config.videoPath);
@@ -198,7 +198,7 @@ test('upload video to douyin', async ({ page }) => {
       uploadInput = null;
     }
   }
-  
+
   // If input not found or failed, try clicking upload button and using file chooser
   if (!uploadInput && uploadButton) {
     try {
@@ -213,7 +213,7 @@ test('upload video to douyin', async ({ page }) => {
       console.log(`⚠️  File chooser method failed: ${error.message}`);
     }
   }
-  
+
   // If still no success, try clicking upload area
   if (!uploadInput) {
     console.log('💡 Trying to click upload area...');
@@ -224,7 +224,7 @@ test('upload video to douyin', async ({ page }) => {
       '[class*="drop-zone"]',
       'div[class*="upload"]',
     ];
-    
+
     for (const selector of uploadAreaSelectors) {
       try {
         const area = page.locator(selector).first();
@@ -242,21 +242,21 @@ test('upload video to douyin', async ({ page }) => {
       }
     }
   }
-  
+
   // Wait for video to start uploading
   console.log('⏳ Waiting for video upload to start...');
   await page.waitForTimeout(5000);
-  
+
   // Step 5: Fill in video information
   console.log('✏️  Waiting for form to appear...');
   await page.waitForTimeout(5000);
-  
+
   // Scroll down to see form fields
   await page.evaluate(() => window.scrollTo(0, 500));
   await page.waitForTimeout(2000);
-  
+
   console.log('✏️  Filling in video information...');
-  
+
   // Fill title
   const titleSelectors = [
     'input[placeholder*="作品标题"]',
@@ -271,7 +271,7 @@ test('upload video to douyin', async ({ page }) => {
     '[class*="Title"] input',
     'input[maxlength]',
   ];
-  
+
   let titleFilled = false;
   for (const selector of titleSelectors) {
     try {
@@ -293,11 +293,11 @@ test('upload video to douyin', async ({ page }) => {
       // Continue
     }
   }
-  
+
   if (!titleFilled) {
     console.log('⚠️  Title input not found automatically. Please fill manually.');
   }
-  
+
   // Fill description if provided
   if (config.description) {
     await page.waitForTimeout(1000);
@@ -314,7 +314,7 @@ test('upload video to douyin', async ({ page }) => {
       '[class*="Desc"] textarea',
       'textarea[maxlength]',
     ];
-    
+
     let descFilled = false;
     for (const selector of descSelectors) {
       try {
@@ -336,12 +336,12 @@ test('upload video to douyin', async ({ page }) => {
         // Continue
       }
     }
-    
+
     if (!descFilled) {
       console.log('⚠️  Description input not found automatically. Please fill manually.');
     }
   }
-  
+
   // Fill tags if provided (Douyin uses hashtags)
   if (config.tags && config.tags.length > 0) {
     await page.waitForTimeout(1000);
@@ -356,7 +356,7 @@ test('upload video to douyin', async ({ page }) => {
       '[class*="hashtag"] input',
       'input[type="text"][placeholder*="话题"]',
     ];
-    
+
     let tagsFilled = false;
     for (const selector of tagSelectors) {
       try {
@@ -380,17 +380,17 @@ test('upload video to douyin', async ({ page }) => {
         // Continue
       }
     }
-    
+
     if (!tagsFilled) {
       console.log('⚠️  Tags input not found automatically. Please fill manually.');
     }
   }
-  
+
   // Step 6: Upload cover if provided
   if (config.coverPath && existsSync(config.coverPath)) {
     console.log(`🖼️  Uploading cover: ${config.coverPath}`);
     await page.waitForTimeout(2000);
-    
+
     const coverSelectors = [
       'input[type="file"][accept*="image"]',
       '[class*="cover-upload"] input',
@@ -400,7 +400,7 @@ test('upload video to douyin', async ({ page }) => {
       'button:has-text("上传封面")',
       'button:has-text("选择封面")',
     ];
-    
+
     let coverUploaded = false;
     for (const selector of coverSelectors) {
       try {
@@ -431,25 +431,23 @@ test('upload video to douyin', async ({ page }) => {
         // Continue
       }
     }
-    
+
     if (!coverUploaded) {
       console.log('⚠️  Cover upload input not found automatically. Please upload manually.');
     }
   }
-  
+
   // Step 7: Wait for video processing
   console.log('⏳ Waiting for video to finish uploading/processing...');
   await page.waitForTimeout(10000);
-  
+
   // Check for any processing indicators
   const processingSelectors = [
     'text=处理中',
     'text=上传中',
     'text=转码中',
-    '[class*="processing"]',
-    '[class*="uploading"]',
   ];
-  
+
   let isProcessing = false;
   for (const selector of processingSelectors) {
     try {
@@ -464,22 +462,50 @@ test('upload video to douyin', async ({ page }) => {
       // Continue
     }
   }
-  
-  // Step 8: Click submit/publish button
+
+  // Step 8: Required declaration + publish
+  // Open 自主声明 picker, then select "内容为个人观点或见解" before 发布 is allowed.
   console.log('');
   console.log('📝 Video upload/form filling completed!');
-  console.log('🚀 Looking for submit/publish button...');
+  console.log('☑️  Opening self-declaration and selecting "内容为个人观点或见解"...');
   await page.waitForTimeout(2000);
-  
+
+  const selfDeclarationTrigger = page.getByText('请选择自主声明', { exact: true });
+  await selfDeclarationTrigger.waitFor({ state: 'visible', timeout: 20000 });
+  await selfDeclarationTrigger.scrollIntoViewIfNeeded();
+  await selfDeclarationTrigger.click();
+  await page.waitForTimeout(500);
+
+  const personalOpinionLabel = page
+    .locator('label.semi-radio')
+    .filter({ hasText: '内容为个人观点或见解' })
+    .first();
+
+  await personalOpinionLabel.waitFor({ state: 'visible', timeout: 20000 });
+  await personalOpinionLabel.scrollIntoViewIfNeeded();
+  const alreadyChecked = await personalOpinionLabel.evaluate((el) =>
+    el.classList.contains('semi-radio-checked')
+  );
+  if (!alreadyChecked) {
+    await personalOpinionLabel.click();
+    await page.waitForTimeout(400);
+  }
+  await expect(personalOpinionLabel).toHaveClass(/semi-radio-checked/);
+  await expect(personalOpinionLabel.locator('input[type="radio"]')).toBeChecked();
+
+  await page.getByRole('button', { name: '确定' }).click();
+  console.log('✅ Content declaration is selected and verified');
+
+  console.log('🚀 Looking for submit/publish button...');
+  await page.waitForTimeout(1000);
+
   // Scroll to bottom to ensure submit button is visible
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(1000);
 
-  
-  
   // Try to find submit/publish button using getByRole (recommended for Douyin)
   let submitClicked = false;
-  
+
   try {
     // Use getByRole for Douyin publish button (exact match)
     const submitButton = page.getByRole('button', { name: '发布', exact: true });
@@ -499,7 +525,7 @@ test('upload video to douyin', async ({ page }) => {
   } catch (e) {
     console.log('⚠️  Publish button not found with getByRole, trying fallback selectors...');
   }
-  
+
   // Fallback to other selectors if getByRole fails
   if (!submitClicked) {
     const submitSelectors = [
@@ -515,7 +541,7 @@ test('upload video to douyin', async ({ page }) => {
       '[data-e2e="publish-button"]',
       '[data-e2e="submit-button"]',
     ];
-    
+
     for (const selector of submitSelectors) {
       try {
         const submitButton = page.locator(selector).first();
@@ -538,7 +564,7 @@ test('upload video to douyin', async ({ page }) => {
       }
     }
   }
-  
+
   if (!submitClicked) {
     console.log('⚠️  Submit button not found automatically.');
     console.log('💡 Pausing for manual review - please click submit button manually');
@@ -547,7 +573,7 @@ test('upload video to douyin', async ({ page }) => {
     // Wait for submission to complete
     console.log('⏳ Waiting for submission to complete...');
     await page.waitForTimeout(5000);
-    
+
     // Check for success indicators
     const successSelectors = [
       'text=发布成功',
@@ -556,7 +582,7 @@ test('upload video to douyin', async ({ page }) => {
       '[class*="success"]',
       '[class*="Success"]',
     ];
-    
+
     let submissionSuccess = false;
     for (const selector of successSelectors) {
       try {
@@ -570,7 +596,7 @@ test('upload video to douyin', async ({ page }) => {
         // Continue
       }
     }
-    
+
     if (!submissionSuccess) {
       console.log('Success: Douyin (check manually)');
     } else {
