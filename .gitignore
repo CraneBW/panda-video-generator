@@ -79,3 +79,16 @@ output/tts/*.vtt
 
 # local archive (moved from working tree, not deleted)
 /del/
+output.del/spider/book-yi-ri-wei-jian.txt
+output.del/spider/captions.vtt
+output.del/spider/input.txt
+output.del/spider/output.json
+output.del/spider/title.json
+output.del/spider/xiaoheihe-test.json
+output.del/tts/audio.mp3
+output.del/tts/audio.vtt
+output.del/video/cover.jpg
+output.del/video/cover.png
+output.del/video/ppt-deck-cover.jpg
+output.del/video/ppt-deck-cover.png
+output.del/video/video.mp4

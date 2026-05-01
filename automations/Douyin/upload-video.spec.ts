@@ -470,31 +470,36 @@ test('upload video to douyin', async ({ page }) => {
   console.log('☑️  Opening self-declaration and selecting "内容为个人观点或见解"...');
   await page.waitForTimeout(2000);
 
-  const selfDeclarationTrigger = page.getByText('请选择自主声明', { exact: true });
-  await selfDeclarationTrigger.waitFor({ state: 'visible', timeout: 20000 });
-  await selfDeclarationTrigger.scrollIntoViewIfNeeded();
-  await selfDeclarationTrigger.click();
-  await page.waitForTimeout(500);
+  const selfDeclarationTrigger = page.getByText('请选择自主声明', { exact: true }).first();
+  const hasSelfDeclaration = await selfDeclarationTrigger.isVisible({ timeout: 5000 }).catch(() => false);
 
-  const personalOpinionLabel = page
-    .locator('label.semi-radio')
-    .filter({ hasText: '内容为个人观点或见解' })
-    .first();
+  if (hasSelfDeclaration) {
+    await selfDeclarationTrigger.scrollIntoViewIfNeeded();
+    await selfDeclarationTrigger.click();
+    await page.waitForTimeout(500);
 
-  await personalOpinionLabel.waitFor({ state: 'visible', timeout: 20000 });
-  await personalOpinionLabel.scrollIntoViewIfNeeded();
-  const alreadyChecked = await personalOpinionLabel.evaluate((el) =>
-    el.classList.contains('semi-radio-checked')
-  );
-  if (!alreadyChecked) {
-    await personalOpinionLabel.click();
-    await page.waitForTimeout(400);
+    const personalOpinionLabel = page
+      .locator('label.semi-radio')
+      .filter({ hasText: '内容为个人观点或见解' })
+      .first();
+
+    await personalOpinionLabel.waitFor({ state: 'visible', timeout: 20000 });
+    await personalOpinionLabel.scrollIntoViewIfNeeded();
+    const alreadyChecked = await personalOpinionLabel.evaluate((el) =>
+      el.classList.contains('semi-radio-checked')
+    );
+    if (!alreadyChecked) {
+      await personalOpinionLabel.click();
+      await page.waitForTimeout(400);
+    }
+    await expect(personalOpinionLabel).toHaveClass(/semi-radio-checked/);
+    await expect(personalOpinionLabel.locator('input[type="radio"]')).toBeChecked();
+
+    await page.getByRole('button', { name: '确定' }).click();
+    console.log('✅ Content declaration is selected and verified');
+  } else {
+    console.log('ℹ️  Self-declaration trigger is not visible; skipping optional declaration step.');
   }
-  await expect(personalOpinionLabel).toHaveClass(/semi-radio-checked/);
-  await expect(personalOpinionLabel.locator('input[type="radio"]')).toBeChecked();
-
-  await page.getByRole('button', { name: '确定' }).click();
-  console.log('✅ Content declaration is selected and verified');
 
   console.log('🚀 Looking for submit/publish button...');
   await page.waitForTimeout(1000);
