@@ -101,6 +101,18 @@
   <img src="./docs/assets/2.png" alt="使用演示 · 点击在 Bilibili 播放" width="480" />
 </a>
 
+<a id="demo-github-actions"></a>
+
+## ~~❇️ 功能演示3 - GitHub Actions 云端成片~~
+
+~~> 《用自动化的方式一人运营十个自媒体账号》~~
+
+<a href="https://www.bilibili.com/video/BV1q9QABeEM3">
+  <img src="./docs/assets/4.png" alt="使用演示 · 点击在 Bilibili 播放" width="480" />
+</a>  
+
+[为什么移除了这个功能?](#changelog-github-actions)
+
 
 
 ## 🎉 成品展示
@@ -118,8 +130,10 @@
 <a id="changelog"></a>
 ## 📅 更新日志
 
+
 - **V1.4.1** · 2026-04-12
-  - 经过网友提醒, Github Actions 云端渲染视频可能存在违反 Action 服务条款的风险, 所以移除了 Github Actions 的示例, 但是你依然可以从 `f74291b` 这个 commit 中找到 Github Actions 的示例和文档, 这里又除了`自动化发布`之外的完整功能, 仅供参考!
+  <a id="changelog-github-actions"></a>
+  - 经过网友提醒, Github Actions 云端渲染视频可能存在违反 Action 服务条款的风险, 所以移除了 Github Actions 的示例, 但是你依然可以从 [4953884](https://github.com/szhshp/panda-video-generator/commit/4953884e978ccc96f8d1a7cebb1b7f88754d2de7) 这个 commit 中找到 Github Actions 的示例, 其中包含除了`自动化发布`之外的完整功能.
 - **V1.4.0** · 2026-04-10
   - 支持 GitHub Actions 测试视频生成
 - **V1.3.1** · 2026-04-05
