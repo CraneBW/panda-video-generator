@@ -46,11 +46,6 @@ const PLAYWRIGHT_PLATFORMS = [
     uploadScript: "upload:kuaishou",
   },
   {
-    labelZh: "小红书 (谨慎使用, 官方检测机制严格)",
-    loginScript: "login:rednote",
-    uploadScript: "upload:rednote",
-  },
-  {
     labelZh: "视频号",
     loginScript: "login:weixin-video",
     uploadScript: "upload:weixin-video",

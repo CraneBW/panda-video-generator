@@ -34,7 +34,7 @@
     </td>
     <td width="33%" valign="top">
       <h3>🚀 <mark>一键</mark>多平台发布</h3>
-      <p>一键驱动浏览器自动化上传；B 站、抖音、视频号、YouTube、小红书、快手等共用相近流程。</p>
+      <p>一键驱动浏览器自动化上传；B 站、抖音、视频号、YouTube、快手等共用相近流程。</p>
     </td>
   </tr>
 </table>
@@ -133,6 +133,7 @@
 - **V1.5.0** · 2026-05-24
   - 浏览器自动化底层切换为 [`@panda-video-automation/pva`](https://github.com/szhshp/panda-video-automations-publisher)，统一登录/上传命令为 `pva` CLI
   - 移除项目对 `playwright` / `@playwright/test` 的直接依赖
+  - 移除对小红书的支持 (小红书 ~~这平台的逼事特别多~~ 反爬虫过于严格, 可能导致账号功能限制) 
 - **V1.4.1** · 2026-04-12
   <a id="changelog-github-actions"></a>
   - 经过网友提醒, Github Actions 云端渲染视频可能存在违反 Action 服务条款的风险, 所以移除了 Github Actions 的示例, 但是你依然可以从 [4953884](https://github.com/szhshp/panda-video-generator/commit/4953884e978ccc96f8d1a7cebb1b7f88754d2de7) 这个 commit 中找到 Github Actions 的示例, 其中包含除了`自动化发布`之外的完整功能.
@@ -167,8 +168,6 @@
   <tr>
     <td align="center" valign="top" colspan="3">
       <img src="./public/media/bilibili.webp" width="240" alt="哔哩哔哩 · 熊猫智研社">
-      &emsp;&emsp;
-      <img src="./public/media/rednote.webp" width="240" alt="小红书 · 熊猫智研社">
     </td>
   </tr>
 </table>
@@ -309,7 +308,6 @@ pnpm remotion
 │   ├── ✅ Bilibili 自动发布
 │   ├── ✅ 抖音自动发布
 │   ├── ✅ 微信视频号自动发布
-│   ├── ✅ 小红书自动发布
 │   ├── ✅ YouTube 自动发布
 │   ├── ✅ 快手自动发布
 │   └── 🚧 And More...

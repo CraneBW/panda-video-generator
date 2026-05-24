@@ -32,7 +32,6 @@ const mediaFiles = [
   { id: "weichat", path: "/media/weichat.webp", label: "微信视频号 · 熊猫智研社" },
   { id: "kuaishou", path: "/media/kuaishou.webp", label: "快手 · 熊猫智研社" },
   { id: "bilibili", path: "/media/bilibili.webp", label: "哔哩哔哩 · 熊猫智研社" },
-  { id: "rednote", path: "/media/rednote.webp", label: "小红书 · 熊猫智研社" },
 ];
 
 function SectionTitle({
@@ -312,7 +311,7 @@ export default function Home() {
             </h3>
             <p className="mt-3 grow text-sm leading-relaxed text-zinc-400">
               一键驱动浏览器自动化上传；B
-              站、抖音、视频号、YouTube、小红书、快手等共用相近流程。
+              站、抖音、视频号、YouTube、快手等共用相近流程。
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="rounded-full border border-white/5 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-300">
