@@ -11,8 +11,10 @@ import {
   Terminal,
   Video,
   Upload,
+  X,
 } from "lucide-react";
 import { defaultMyCompProps } from "../../types/constants";
+import { useState } from "react";
 
 // Emoji labels aligned with README (Unicode escapes keep the file encoding-safe)
 const readmeEmoji = {
@@ -74,6 +76,8 @@ const videoInnerClass =
   "relative w-full overflow-hidden rounded-[0.9rem] border border-zinc-800/90 bg-black shadow-inner shadow-black/60";
 
 export default function Home() {
+  const [showCliAlert, setShowCliAlert] = useState(true);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-zinc-950 text-zinc-100">
       {/* Ambient background */}
@@ -123,6 +127,30 @@ export default function Home() {
         </nav>
       </header>
 
+      {showCliAlert && (
+        <div className="bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-zinc-950 border-b border-emerald-700/30">
+          <div className="container mx-auto flex items-center justify-between px-4 py-2.5 sm:px-6">
+            <div className="flex items-center gap-2 text-sm">
+              <Terminal size={16} className="shrink-0 text-emerald-400" />
+              <span className="text-zinc-300">
+                <span className="font-semibold text-emerald-300">新工具：</span>
+                Panda Video Automation Publisher CLI 现已独立发布，可自由集成至自有视频项目 —
+                <Link href="/cli" className="ml-1 font-medium text-emerald-400 underline underline-offset-2 hover:text-emerald-300 transition-colors">
+                  查看详情
+                </Link>
+              </span>
+            </div>
+            <button
+              onClick={() => setShowCliAlert(false)}
+              className="shrink-0 rounded-lg p-1 text-zinc-500 hover:bg-white/5 hover:text-zinc-300 transition-colors"
+              aria-label="关闭提示"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="container mx-auto px-4 pb-12 pt-10 text-center sm:px-6 sm:pb-20 sm:pt-14 md:pt-20">
         <div className="mb-8 flex justify-center sm:mb-10">
@@ -164,16 +192,6 @@ export default function Home() {
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-3 px-2 sm:mt-12 sm:gap-4">
           <Link
-            href="https://github.com/szhshp/panda-video-generator"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-[#0969da] bg-[#0969da]/10 px-6 py-2.5 text-sm font-bold text-sky-300 shadow-[0_0_32px_-8px_rgba(9,105,218,0.55)] transition-[transform,box-shadow,background-color] hover:scale-[1.03] hover:bg-[#0969da]/20 hover:shadow-[0_0_48px_-6px_rgba(9,105,218,0.65)] sm:min-h-12 sm:px-7 sm:py-3 sm:text-base motion-reduce:hover:scale-100"
-            title="在 GitHub 打开仓库"
-          >
-            <Github size={18} className="shrink-0 sm:size-5" />
-            <span>GitHub</span>
-          </Link>
-          <Link
             href="https://github.com/szhshp/panda-video-generator?tab=readme-ov-file#-%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7"
             target="_blank"
             rel="noopener noreferrer"
@@ -181,6 +199,26 @@ export default function Home() {
           >
             开始使用
           </Link>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+            <Link
+              href="https://github.com/szhshp/panda-video-generator"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-[#0969da] bg-[#0969da]/10 px-6 py-2.5 text-sm font-bold text-sky-300 shadow-[0_0_32px_-8px_rgba(9,105,218,0.55)] transition-[transform,box-shadow,background-color] hover:scale-[1.03] hover:bg-[#0969da]/20 hover:shadow-[0_0_48px_-6px_rgba(9,105,218,0.65)] sm:min-h-12 sm:px-7 sm:py-3 sm:text-base motion-reduce:hover:scale-100"
+              title="在 GitHub 打开仓库"
+            >
+              <Github size={18} className="shrink-0 sm:size-5" />
+              <span>GitHub</span>
+            </Link>
+            <Link
+              href="/cli"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-emerald-600 bg-emerald-600/10 px-6 py-2.5 text-sm font-bold text-emerald-300 shadow-[0_0_32px_-8px_rgba(16,185,129,0.55)] transition-[transform,box-shadow,background-color] hover:scale-[1.03] hover:bg-emerald-600/20 hover:shadow-[0_0_48px_-6px_rgba(16,185,129,0.65)] sm:min-h-12 sm:px-7 sm:py-3 sm:text-base motion-reduce:hover:scale-100"
+              title="CLI 工具使用说明"
+            >
+              <Terminal size={18} className="shrink-0 sm:size-5" />
+              <span>CLI 工具 (可用于自行集成)</span>
+            </Link>
+          </div>
         </div>
       </section>
 
