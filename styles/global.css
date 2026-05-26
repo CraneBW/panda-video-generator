@@ -102,4 +102,16 @@ html {
 
   --animate-hero-float: hero-float 6s ease-in-out infinite;
   --animate-hero-orb: hero-orb 12s ease-in-out infinite;
+
+  /* Terminal-style cursor blink — instant on/off, no fade */
+  @keyframes cursor-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+  --animate-cursor-blink: cursor-blink 1s steps(2) infinite;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Loader2, RefreshCw, Square } from "lucide-react";
 import { outputVideoBasenameForComposition } from "../../../lib/remotion-compositions";
 import { useRunScriptStreamLog } from "../use-run-script-stream-log";
@@ -46,11 +46,6 @@ const PLAYWRIGHT_PLATFORMS = [
     uploadScript: "upload:kuaishou",
   },
   {
-    labelZh: "小红书 (谨慎使用, 官方检测机制严格)",
-    loginScript: "login:rednote",
-    uploadScript: "upload:rednote",
-  },
-  {
     labelZh: "视频号",
     loginScript: "login:weixin-video",
     uploadScript: "upload:weixin-video",
@@ -65,6 +60,9 @@ const PLAYWRIGHT_PLATFORMS = [
 /** Default rendered output on disk; same default as STEP3 `Video` composite. */
 const PREVIEW_COMPOSITION_ID = "Video";
 
+const RENDERED_VIDEO_PATH = "output/video/video.mp4";
+const RENDERED_COVER_PATH = "output/video/cover.jpg";
+
 export default function ScriptsStep4Page() {
   const { log, setLog, appendStream, appendImmediate, flushPending } =
     useRunScriptStreamLog();
@@ -72,9 +70,22 @@ export default function ScriptsStep4Page() {
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [runningLabel, setRunningLabel] = useState<string | null>(null);
+  const [videoTitle, setVideoTitle] = useState<string | null>(null);
   const { logPreRef, onLogPreScroll } = useStickToBottomLogScroll(log, running);
   const abortRef = useRef<AbortController | null>(null);
   const abortByUserRef = useRef(false);
+
+  // Load video title from rendered output for pva upload
+  useEffect(() => {
+    fetch("/video/title.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.title) setVideoTitle(data.title);
+      })
+      .catch(() => {
+        /* not available */
+      });
+  }, []);
 
   const previewSrc = useMemo(() => {
     const q = new URLSearchParams({
@@ -92,7 +103,7 @@ export default function ScriptsStep4Page() {
 
   const consumeRunScript = useCallback(
     async (
-      payload: { script: string; args?: string[] },
+      payload: { script: string; args?: string[]; env?: Record<string, string> },
       signal: AbortSignal,
     ): Promise<number | null> => {
       const res = await fetch("/api/dev/run-script", {
@@ -153,10 +164,18 @@ export default function ScriptsStep4Page() {
       setRunningLabel(labelZh);
       const stamp = new Date().toLocaleString();
       appendImmediate(
-        `\n──────── ${stamp} · STEP4 · Playwright · ${script}（${labelZh}）────────\n`,
+        `\n──────── ${stamp} · STEP4 · pva · ${script}（${labelZh}）────────\n`,
       );
+      // Pass rendered video paths to pva upload scripts
+      const env = script.startsWith("upload:")
+        ? {
+            VIDEO_PATH: RENDERED_VIDEO_PATH,
+            VIDEO_COVER: RENDERED_COVER_PATH,
+            ...(videoTitle ? { VIDEO_TITLE: videoTitle } : {}),
+          }
+        : undefined;
       try {
-        await consumeRunScript({ script }, ac.signal);
+        await consumeRunScript({ script, env }, ac.signal);
       } catch (e) {
         if ((e as Error).name === "AbortError") {
           if (abortByUserRef.current) {
@@ -180,7 +199,7 @@ export default function ScriptsStep4Page() {
         abortByUserRef.current = false;
       }
     },
-    [appendImmediate, consumeRunScript, running],
+    [appendImmediate, consumeRunScript, running, videoTitle],
   );
 
   return (
@@ -197,13 +216,10 @@ export default function ScriptsStep4Page() {
           STEP4：自动化上传。
         </p>
         <p className="mt-2 max-w-3xl text-xs text-zinc-500">
-          若提示缺少浏览器内核，在本项目目录终端执行一次：{" "}
-          <code className="rounded bg-zinc-900 px-1 text-zinc-400">
-            pnpm exec playwright install chromium
-          </code>
+          基于 <code className="rounded bg-zinc-900 px-1 text-zinc-400">pva</code> 本地依赖的浏览器自动化框架。浏览器内核通过 postinstall 自动安装。
         </p>
         <p className="text-xs text-zinc-500">
-          左侧先做各平台登录，再在右侧上传；登录状态在{" "}
+          左侧先做各平台登录，再在右侧上传；登录状态存储在 pva 的{" "}
           <code className="rounded bg-zinc-900 px-1 text-zinc-400">
             playwright/.auth/
           </code>
@@ -246,10 +262,15 @@ export default function ScriptsStep4Page() {
           <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-950/50 p-5">
             <h2 className="text-sm font-semibold text-zinc-200">上传视频</h2>
             <p className="text-xs text-zinc-500">
-              使用已渲染成片(可在下方预览)
+              使用已渲染成片（可在下方预览）
             </p>
             <p className="text-xs text-zinc-500">
-              所有上传脚本都会使用同一个视频文件。
+              路径：<code className="rounded bg-zinc-900 px-1">{RENDERED_VIDEO_PATH}</code>
+              {videoTitle ? (
+                <>
+                  ，标题：<code className="rounded bg-zinc-900 px-1">{videoTitle}</code>
+                </>
+              ) : null}
             </p>
             <div className="flex flex-col gap-2">
               {PLAYWRIGHT_PLATFORMS.map((p) => (
@@ -298,7 +319,7 @@ export default function ScriptsStep4Page() {
             </code>
           </div>
           <p className="text-xs text-zinc-500">
-            与第三步渲染产物相同；上传脚本使用该文件。
+            与第三步渲染产物相同；上传脚本自动使用该文件及封面（VIDEO_PATH={RENDERED_VIDEO_PATH}）。
           </p>
           <video
             key={previewSrc}

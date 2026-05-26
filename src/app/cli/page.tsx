@@ -9,6 +9,7 @@ import {
   BookOpen,
   Newspaper,
 } from "lucide-react";
+import Footer from "../../components/Footer";
 
 export default function CliPage() {
   return (
@@ -337,6 +338,8 @@ export default function CliPage() {
 
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

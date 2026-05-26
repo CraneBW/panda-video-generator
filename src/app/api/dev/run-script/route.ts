@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import { NextResponse } from "next/server";
+import path from "path";
 import { z } from "zod";
 import {
   assertScriptAllowed,
@@ -55,6 +56,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
+  // Resolve relative paths to absolute (pva runs playwright with its own cwd)
+  const cwd = process.cwd();
+  for (const key of ["VIDEO_PATH", "VIDEO_COVER"] as const) {
+    const val = extraEnv[key];
+    if (val && !path.isAbsolute(val)) {
+      extraEnv[key] = path.resolve(cwd, val);
+    }
+  }
+
   try {
     assertScriptAllowed(body.script);
   } catch (e) {
@@ -62,7 +72,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  const cwd = process.cwd();
   const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
   const pnpmArgs = ["run", body.script];
   if (args.length > 0) {
@@ -76,7 +85,7 @@ export async function POST(request: Request) {
       const proc = spawn(pnpmBin, pnpmArgs, {
         cwd,
         env: childEnv,
-        shell: false,
+        shell: process.platform === "win32",
       });
 
       const onClientAbort = () => {

@@ -59,7 +59,7 @@ export function isScriptRunnerEnabled(): boolean {
   );
 }
 
-/** Merged into `process.env` for `run-script` only (STEP1 / spider flows). */
+/** Merged into `process.env` for `run-script` only (STEP1 / spider / STEP4 pva upload flows). */
 const ALLOWED_PNPM_RUN_EXTRA_ENV_KEYS = new Set([
   "SPIDER_SOURCE",
   "CAPTION_INPUT_JSON",
@@ -69,6 +69,14 @@ const ALLOWED_PNPM_RUN_EXTRA_ENV_KEYS = new Set([
   "MOONSHOT_API_KEY",
   "KIMI_API_KEY",
   "EDGE_TTS_VOICE",
+  // pva upload env vars (STEP4)
+  "VIDEO_PATH",
+  "VIDEO_TITLE",
+  "VIDEO_DESC",
+  "VIDEO_TAGS",
+  "VIDEO_COVER",
+  "VIDEO_PRIVACY",
+  "PVA_HEADLESS",
 ]);
 
 const MAX_ENV_VALUE_LEN = 16384;

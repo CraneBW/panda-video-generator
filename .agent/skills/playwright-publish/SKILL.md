@@ -4,7 +4,7 @@ description: >-
   Multi-platform browser login and video upload via Playwright Test only (headed Chromium).
   Parallel uploads are allowed and encouraged: run one Playwright process per platform (e.g. separate terminals).
   Use when the user mentions publishing, uploading video, or logging in to Bilibili, Douyin,
-  Kuaishou, RedNote/Xiaohongshu, Weixin Channels, or YouTube; or STEP3 / 多平台发布 / login:* / upload:*.
+  Kuaishou, Weixin Channels, or YouTube; or STEP3 / 多平台发布 / login:* / upload:*.
 ---
 
 # Playwright 多平台登录与上传
@@ -34,11 +34,10 @@ pnpm exec playwright install --with-deps chromium
 | `bilibili` | `automations/Bilibili/login-bilibili.spec.ts` | `automations/Bilibili/upload-video.spec.ts` |
 | `douyin` | `automations/Douyin/login-douyin.spec.ts` | `automations/Douyin/upload-video.spec.ts` |
 | `kuaishou` | `automations/Kuaishou/login-kuaishou.spec.ts` | `automations/Kuaishou/upload-video.spec.ts` |
-| `rednote` | `automations/RedNote/login-rednote.spec.ts` | `automations/RedNote/upload-video.spec.ts` |
 | `weixin-video` | `automations/WeixinVideo/login-weixin-video.spec.ts` | `automations/WeixinVideo/upload-weixin-video.spec.ts` |
 | `youtube` | `automations/YouTube/login-youtube.spec.ts` | `automations/YouTube/upload-video.spec.ts` |
 
-**用户说法 → key：** B站/哔哩哔哩 → `bilibili`；抖音 → `douyin`；快手 → `kuaishou`；小红书 → `rednote`；微信视频号/视频号 → `weixin-video`；YouTube → `youtube`。
+**用户说法 → key：** B站/哔哩哔哩 → `bilibili`；抖音 → `douyin`；快手 → `kuaishou`；微信视频号/视频号 → `weixin-video`；YouTube → `youtube`。
 
 ---
 
@@ -81,7 +80,6 @@ pnpm exec playwright test \
   automations/Bilibili/upload-video.spec.ts \
   automations/Douyin/upload-video.spec.ts \
   automations/YouTube/upload-video.spec.ts \
-  automations/RedNote/upload-video.spec.ts \
   automations/Kuaishou/upload-video.spec.ts \
   automations/WeixinVideo/upload-weixin-video.spec.ts \
   --project=chromium --headed
