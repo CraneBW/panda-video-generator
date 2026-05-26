@@ -225,7 +225,60 @@ export default function LandingPage() {
       </section>
 
 
-      {/* Features — distinct product cards (not pipeline / mono spec style) */}
+      {/* Feature demos — aligned with README: Agent + wizard（CLI 无单独演示视频，见文档） */}
+      <section className="container mx-auto px-4 py-14 sm:px-6 sm:py-20">
+        <SectionTitle
+          eyebrow="实机演示"
+          title="功能演示"
+          subtitle="两段演示对应 Agent 与网页向导；命令行用法见 CLI 使用指南。"
+        />
+        <div className="mx-auto mt-12 flex max-w-4xl flex-col gap-14 sm:mt-16 sm:gap-16">
+          <div id="demo-agent" className="scroll-mt-28">
+            <h3 className="mb-2 text-center text-base font-bold text-zinc-100 sm:text-lg">
+              功能演示 1 · Agent 使用演示
+            </h3>
+            <p className="mb-5 text-center text-sm text-zinc-500 sm:text-base">
+              《用 AI 的方式一人运营十个自媒体账号》
+            </p>
+            <div className={videoFrameClass}>
+              <div className={`${videoInnerClass} aspect-video`}>
+                <iframe
+                  title="Panda Video Generator · Agent 使用演示"
+                  src="https://player.bilibili.com/player.html?bvid=BV1WXDABGEB7&autoplay=0&danmaku=0"
+                  className="absolute inset-0 w-full h-full border-0"
+                  scrolling="no"
+                  allow="fullscreen; encrypted-media; picture-in-picture"
+                  sandbox="allow-scripts allow-same-origin allow-presentation"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </div>
+          <div id="demo-wizard" className="scroll-mt-28">
+            <h3 className="mb-2 text-center text-base font-bold text-zinc-100 sm:text-lg">
+              功能演示 2 · 网页自动化向导
+            </h3>
+            <p className="mb-5 text-center text-sm text-zinc-500 sm:text-base">
+              《用程序员的方式一人运营十个自媒体账号》
+            </p>
+            <div className={videoFrameClass}>
+              <div className={`${videoInnerClass} aspect-video`}>
+                <iframe
+                  title="Panda Video Generator · 网页自动化向导"
+                  src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
+                  className="absolute inset-0 w-full h-full border-0"
+                  scrolling="no"
+                  allow="fullscreen; encrypted-media; picture-in-picture"
+                  sandbox="allow-scripts allow-same-origin allow-presentation"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+	      {/* Features — distinct product cards (not pipeline / mono spec style) */}
       <section className="container mx-auto px-4 py-14 sm:px-6 sm:py-20">
         <SectionTitle eyebrow="产品亮点" title="核心特性" />
         <div className="mt-12 grid gap-5 sm:gap-6 md:mt-16 md:grid-cols-3">
@@ -449,58 +502,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Feature demos — aligned with README: Agent + wizard（CLI 无单独演示视频，见文档） */}
-      <section className="container mx-auto px-4 py-14 sm:px-6 sm:py-20">
-        <SectionTitle
-          eyebrow="实机演示"
-          title="功能演示"
-          subtitle="两段演示对应 Agent 与网页向导；命令行用法见 CLI 使用指南。"
-        />
-        <div className="mx-auto mt-12 flex max-w-4xl flex-col gap-14 sm:mt-16 sm:gap-16">
-          <div id="demo-agent" className="scroll-mt-28">
-            <h3 className="mb-2 text-center text-base font-bold text-zinc-100 sm:text-lg">
-              功能演示 1 · Agent 使用演示
-            </h3>
-            <p className="mb-5 text-center text-sm text-zinc-500 sm:text-base">
-              《用 AI 的方式一人运营十个自媒体账号》
-            </p>
-            <div className={videoFrameClass}>
-              <div className={`${videoInnerClass} aspect-video`}>
-                <iframe
-                  title="Panda Video Generator · Agent 使用演示"
-                  src="https://player.bilibili.com/player.html?bvid=BV1WXDABGEB7&autoplay=0&danmaku=0"
-                  className="absolute inset-0 w-full h-full border-0"
-                  scrolling="no"
-                  allow="fullscreen; encrypted-media; picture-in-picture"
-                  sandbox="allow-scripts allow-same-origin allow-presentation"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          </div>
-          <div id="demo-wizard" className="scroll-mt-28">
-            <h3 className="mb-2 text-center text-base font-bold text-zinc-100 sm:text-lg">
-              功能演示 2 · 网页自动化向导
-            </h3>
-            <p className="mb-5 text-center text-sm text-zinc-500 sm:text-base">
-              《用程序员的方式一人运营十个自媒体账号》
-            </p>
-            <div className={videoFrameClass}>
-              <div className={`${videoInnerClass} aspect-video`}>
-                <iframe
-                  title="Panda Video Generator · 网页自动化向导"
-                  src="https://player.bilibili.com/player.html?bvid=BV141XfB3ELj&autoplay=0&danmaku=0"
-                  className="absolute inset-0 w-full h-full border-0"
-                  scrolling="no"
-                  allow="fullscreen; encrypted-media; picture-in-picture"
-                  sandbox="allow-scripts allow-same-origin allow-presentation"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
 
       {/* Finished work showcase */}
