@@ -51,7 +51,7 @@ export default function Home() {
         {/* Cards fill most of the available height */}
         <div className="grid w-full max-w-5xl flex-1 grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
           {/* PandaVideoGenerator card */}
-          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-amber-900/40 bg-gradient-to-b from-[#1a1710] to-[#0f0e0b] shadow-[0_0_0_1px_rgba(251, 191, 36, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-amber-400/30 before:to-transparent hover:border-amber-500/40 hover:shadow-[0_32px_100px_-24px_rgba(251, 191, 36, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none">
+          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-amber-900/40 bg-gradient-to-b from-[#2a1f0f] to-[#1a140e] shadow-[0_0_0_1px_rgba(251, 191, 36, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-amber-400/30 before:to-transparent hover:border-amber-500/40 hover:shadow-[0_32px_100px_-24px_rgba(251, 191, 36, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none">
             <Link href="/landing" className="flex flex-1 flex-col items-center p-8 sm:p-0">
               <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5 font-mono text-[0.5rem] text-zinc-600 sm:text-[0.6rem]">
                 <span className="rounded bg-zinc-900 px-1.5 py-0.5">#傻瓜式</span>
@@ -82,25 +82,28 @@ export default function Home() {
               <p className="mt-4 max-w-xs text-center font-mono text-xs leading-relaxed text-zinc-500 sm:text-sm">
                 超级简单的傻瓜式视频生成器
               </p>
-
-              <div className="grow min-h-3" />
-              <span className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all group-hover:bg-white/[0.12] group-hover:text-white">
-                点击查看 →
-              </span>
             </Link>
-            <a
-              href="https://github.com/szhshp/panda-video-generator"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mx-0 mb-4 mt-1 flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all hover:bg-white/[0.12] hover:text-white sm:mx-0 sm:mb-0 sm:mt-3"
-            >
-              <Github size={15} />
-              szhshp/panda-video-generator
-            </a>
+            <div className="flex flex-col mx-4 mb-4 sm:mx-0 sm:mb-0">
+              <Link
+                href="/landing"
+                className="flex w-full items-center justify-center gap-2 rounded-t-lg border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all group-hover:bg-white/[0.12] group-hover:text-white"
+              >
+                点击查看 →
+              </Link>
+              <a
+                href="https://github.com/szhshp/panda-video-generator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-b-lg border border-t-0 border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all hover:bg-white/[0.12] hover:text-white"
+              >
+                <Github size={15} />
+                szhshp/panda-video-generator
+              </a>
+            </div>
           </div>
 
           {/* publisher-cli card */}
-          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-emerald-900/40 bg-gradient-to-b from-[#0f1a12] to-[#0b0f0c] shadow-[0_0_0_1px_rgba(16, 185, 129, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/30 before:to-transparent hover:border-emerald-500/40 hover:shadow-[0_32px_100px_-24px_rgba(16, 185, 129, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none">
+          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-emerald-900/40 bg-gradient-to-b from-[#142918] to-[#0f1a12] shadow-[0_0_0_1px_rgba(16, 185, 129, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/30 before:to-transparent hover:border-emerald-500/40 hover:shadow-[0_32px_100px_-24px_rgba(16, 185, 129, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none">
             <Link href="/cli" className="flex flex-1 flex-col items-center p-8 sm:p-0">
               <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5 font-mono text-[0.5rem] text-zinc-600 sm:text-[0.6rem]">
                 <span className="rounded bg-zinc-900 px-1.5 py-0.5">#CLI 工具</span>
@@ -125,25 +128,28 @@ export default function Home() {
               <p className="mt-4 max-w-xs text-center font-mono text-xs leading-relaxed text-zinc-500 sm:text-sm">
                 视频自动化发布CLI
               </p>
-
-              <div className="grow min-h-3" />
-              <span className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all group-hover:bg-white/[0.12] group-hover:text-white">
-                点击查看 →
-              </span>
             </Link>
-            <a
-              href="https://github.com/szhshp/panda-video-automations-publisher"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mx-0 mb-4 mt-1 flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all hover:bg-white/[0.12] hover:text-white sm:mx-0 sm:mb-0 sm:mt-3"
-            >
-              <Github size={15} />
-              szhshp/panda-video-automations-publisher
-            </a>
+            <div className="flex flex-col mx-4 mb-4 sm:mx-0 sm:mb-0">
+              <Link
+                href="/cli"
+                className="flex w-full items-center justify-center gap-2 rounded-t-lg border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all group-hover:bg-white/[0.12] group-hover:text-white"
+              >
+                点击查看 →
+              </Link>
+              <a
+                href="https://github.com/szhshp/panda-video-automations-publisher"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-b-lg border border-t-0 border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs font-semibold text-zinc-300 transition-all hover:bg-white/[0.12] hover:text-white"
+              >
+                <Github size={15} />
+                szhshp/panda-video-automations-publisher
+              </a>
+            </div>
           </div>
 
           {/* NotebookLM card */}
-          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-purple-900/40 bg-gradient-to-b from-[#150f1a] to-[#0c0a0f] shadow-[0_0_0_1px_rgba(168, 85, 247, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-purple-400/30 before:to-transparent hover:border-purple-500/40 hover:shadow-[0_32px_100px_-24px_rgba(168, 85, 247, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none">
+          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-purple-900/40 bg-gradient-to-b from-[#22182e] to-[#150f1a] shadow-[0_0_0_1px_rgba(168, 85, 247, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-purple-400/30 before:to-transparent hover:border-purple-500/40 hover:shadow-[0_32px_100px_-24px_rgba(168, 85, 247, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none">
             <div className="flex flex-1 flex-col items-center p-8 sm:p-0">
 
               <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5 font-mono text-[0.5rem] text-zinc-600 sm:text-[0.6rem]">
@@ -188,7 +194,7 @@ export default function Home() {
           </div>
 
           {/* Suno card */}
-          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-rose-900/40 bg-gradient-to-b from-[#1a0f15] to-[#0f0a0c] shadow-[0_0_0_1px_rgba(244, 63, 94, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-rose-400/30 before:to-transparent hover:border-rose-500/40 hover:shadow-[0_32px_100px_-24px_rgba(244, 63, 94, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none brightness-[0.65]">
+          <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-rose-900/40 bg-gradient-to-b from-[#2a1518] to-[#1a0f12] shadow-[0_0_0_1px_rgba(244, 63, 94, 0.06)_inset] transition-all duration-500 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-rose-400/30 before:to-transparent hover:border-rose-500/40 hover:shadow-[0_32px_100px_-24px_rgba(244, 63, 94, 0.25)] sm:p-12 motion-reduce:transform-none motion-reduce:hover:transform-none brightness-[0.65]">
             <div className="flex flex-1 flex-col items-center p-8 sm:p-0">
               {/* Under development badge */}
               <div className="absolute right-3 top-3 rounded-full border border-rose-800/30 bg-rose-950/60 px-2.5 py-0.5 font-mono text-[0.6rem] text-rose-400/80 sm:right-4 sm:top-4">
@@ -255,7 +261,7 @@ export default function Home() {
       </main>
 
       {/* Platform Screenshots */}
-      <section className="container mx-auto px-4 py-14 sm:px-6 sm:py-20">
+      <section className="container mx-auto px-8 py-14 sm:px-6 sm:py-20">
         <div
           className="mb-10 h-px w-full bg-gradient-to-r from-transparent via-zinc-600/80 to-transparent sm:mb-12"
           aria-hidden
@@ -275,7 +281,7 @@ export default function Home() {
           {mediaFiles.map((file) => (
             <div
               key={file.id}
-              className="group overflow-hidden rounded-2xl border border-white/[0.06] bg-zinc-950/60 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:border-amber-500/20 hover:shadow-[0_28px_70px_-28px_rgba(251,191,36,0.18)] motion-reduce:transform-none"
+              className="group overflow-hidden rounded-2xl border border-white/20 bg-zinc-900/60 shadow-[0_0_0_1px_rgba(255,255,255,0.08)_inset] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-[0_28px_70px_-28px_rgba(251,191,36,0.18)] motion-reduce:transform-none"
             >
               <div className="flex items-center justify-between gap-2 border-b border-zinc-800/80 bg-zinc-950/60 px-3 py-1.5">
                 <span className="max-w-[52%] truncate font-mono text-xs text-zinc-600">
@@ -288,7 +294,7 @@ export default function Home() {
                   alt={file.label}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-contain p-2"
+                  className="object-contain"
                 />
               </div>
               <div className="border-t border-zinc-800/80 bg-zinc-950/40 px-3 py-3 text-center sm:px-4 sm:py-4">
