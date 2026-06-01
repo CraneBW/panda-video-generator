@@ -84,11 +84,7 @@ export const VideoVertical: React.FC<{
 		const contentTailExtension = 2; // 2 seconds extension at the tail
 		const contentDurationFrames = Math.ceil((contentDuration + contentTailExtension) * fps);
 
-		if (!loaded || contentDuration === 0) {
-			return null;
-		}
-
-	const [bgReady, setBgReady] = useState(false);
+		const [bgReady, setBgReady] = useState(false);
 	const [bgHandle] = useState(() => delayRender());
 	useEffect(() => {
 		fetch(staticFile('video/bg.jpg'))
@@ -97,7 +93,11 @@ export const VideoVertical: React.FC<{
 			.finally(() => continueRender(bgHandle));
 	}, []);
 
-	return (
+if (!loaded || contentDuration === 0) {
+			return null;
+		}
+
+		return (
 		<AbsoluteFill
 			style={{
 				backgroundColor: '#0a0a0a',
