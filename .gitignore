@@ -47,6 +47,10 @@ public/bgm/
 # Cursor IDE — rules, skills, MCP/local tooling (not versioned)
 .cursor/
 
+# Claude Code — config, agents, skills, memory (not versioned)
+.claude/
+CLAUDE.md
+
 venv/
 output/tts/audio.mp3
 output/tts/audio.vtt

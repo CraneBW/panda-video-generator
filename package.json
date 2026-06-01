@@ -70,7 +70,7 @@
     "lint": "eslint .",
     "check:setup": "node scripts/check-setup.mjs",
     "install:project": "node scripts/run-install.mjs",
-    "postinstall": "node scripts/puppeteer-postinstall.mjs",
+    "postinstall": "node scripts/puppeteer-postinstall.mjs && node scripts/patch-remotion-wsl2.mjs",
     "remotion": "remotion studio",
     "render": "remotion render",
     "tts": "cross-env SPIDER_OUTPUT_DIR=output/spider TTS_OUTPUT_DIR=output/tts TTS_PUBLIC_DIR=public/tts node scripts/run-tts.mjs",
