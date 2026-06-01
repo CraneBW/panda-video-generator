@@ -19,7 +19,7 @@ import {
 } from '../paths';
 
 async function main() {
-  const url = process.argv[2];
+  let url = process.argv[2];
 
   // Validate URL
   if (!url) {
@@ -34,6 +34,14 @@ async function main() {
     console.error('❌ 知乎链接格式无效');
     console.error('正确格式: https://www.zhihu.com/question/<问题 ID>');
     process.exit(1);
+  }
+
+  // Strip /answer/... suffix — keep only the question URL
+  const answerIdx = url.indexOf('/answer/');
+  if (answerIdx > 0) {
+    const cleaned = url.slice(0, answerIdx);
+    console.log(`🔗 从答案 URL 提取问题链接: ${cleaned}`);
+    url = cleaned;
   }
 
   const spider = new ZhihuSpider();
@@ -67,19 +75,30 @@ async function main() {
     // Load .env into process.env so LLM config can read API keys
     loadCaptionLlmEnvFromDotenv();
 
+    // Validate crawled content
+    if (!data.title && !data.content && data.answers.length === 0) {
+      console.error('❌ 抓取内容为空：标题、内容和回答均为空');
+      console.error('   请检查 URL 是否为有效的知乎问题页面');
+      process.exit(1);
+    }
+
+    if (!data.title) {
+      console.error('❌ 标题为空，无法生成视频');
+      process.exit(1);
+    }
+
     // Generate video script
-    if (data.title && (data.content || data.answers.length > 0)) {
-      try {
-        const scriptPath = await generateVideoScript(data);
-        if (!scriptPath) {
-          console.error('❌ 口播稿生成失败：LLM 返回空内容');
-          process.exit(1);
-        }
-      } catch (error) {
-        console.error('❌ 口播稿生成失败');
-        console.error(error);
+    loadCaptionLlmEnvFromDotenv();
+    try {
+      const scriptPath = await generateVideoScript(data);
+      if (!scriptPath) {
+        console.error('❌ 口播稿生成失败：LLM 返回空内容');
         process.exit(1);
       }
+    } catch (error) {
+      console.error('❌ 口播稿生成失败');
+      console.error(error);
+      process.exit(1);
     }
 
     // Generate title.json under spider output dir
