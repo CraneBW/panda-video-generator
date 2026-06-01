@@ -71,6 +71,17 @@
       <p><a href="#cli-usage-guide">查看更多</a></p>
     </td>
   </tr>
+  <tr valign="top">
+    <td width="100%" colspan="3" valign="top">
+      <h3>🔧 4. GitHub Actions CI 流水线</h3>
+      <ul>
+        <li><code>generate-video-general.yml</code> — 通用网页 URL → 视频 → 发布。</li>
+        <li><code>generate-video-zhihu.yml</code> — 知乎 URL → 视频 → 发布。</li>
+        <li>手动触发或 cron 定时任务，产物上传为 workflow artifact。</li>
+      </ul>
+      <p><a href=".github/workflows/">查看工作流</a> / <a href=".agent/skills/github-actions/SKILL.md">Agent Skill</a></p>
+    </td>
+  </tr>
 </table>
 
 ---
@@ -338,6 +349,9 @@ HTTPS_PROXY=http://127.0.0.1:10902 HTTP_PROXY=http://127.0.0.1:10902 npx remotio
 │   ├── ✅ YouTube 自动发布
 │   ├── ✅ 快手自动发布
 │   └── 🚧 And More...
+├── 🔁 GitHub Actions CI
+│   ├── ✅ 通用网页 → 视频流水线
+│   └── ✅ 知乎 → 视频流水线
 ├── 🔧 开发工具
 │   ├── ✅ 开发服务器
 │   └── ✅ CLI 命令行

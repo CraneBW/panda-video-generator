@@ -11,7 +11,6 @@ import {
 } from 'remotion';
 import { loadFont } from '@remotion/fonts';
 import { REMOTION_PATHS } from '../../../types/paths';
-import { WatermarkText } from './WatermarkText';
 
 // Load custom font for captions
 loadFont({
@@ -383,8 +382,6 @@ export const ContentVertical: React.FC<ContentVerticalProps> = ({
 				</div>
 			)}
 
-			{/* Attribution: GitHub + project name, left bottom */}
-			<WatermarkText style="content" />
 		</AbsoluteFill>
 	);
 };

@@ -1,0 +1,158 @@
+name: Generate Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      zhihu_url:
+        description: 'Zhihu question URL '
+        required: true
+        type: string
+      video_title:
+        description: 'Optional override for the rendered video title'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  generate-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90  # Set timeout for video generation (may take 30-60 minutes)
+    # Manual: zhihu_url; optional video_title. Push: vars.ZHIHU_DEFAULT_URL, optional vars.VIDEO_TITLE_OVERRIDE.
+    env:
+      ZHIHU_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.zhihu_url || vars.ZHIHU_DEFAULT_URL }}
+      VIDEO_TITLE_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.video_title || vars.VIDEO_TITLE_OVERRIDE }}
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+      PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Node.js dependencies
+        run: pnpm install
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            chromium-browser \
+            chromium-chromedriver \
+            xvfb \
+            ffmpeg \
+            libgbm-dev \
+            libnss3 \
+            libatk-bridge2.0-0 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libasound2t64
+
+      # Prefer secrets.DOTENV_FILE (full .env text). If unset, fall back to .env.example + secrets.DEEPSEEK_API_KEY.
+      - name: Create .env for CI
+        env:
+          DOTENV_FILE: ${{ secrets.DOTENV_FILE }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ -n "${DOTENV_FILE}" ]; then
+            python3 -c "import os; open('.env','w',encoding='utf-8').write(os.environ['DOTENV_FILE'])"
+          else
+            if [ -z "${DEEPSEEK_API_KEY}" ]; then
+              echo "::error::Set Actions secret DOTENV_FILE (full .env) or DEEPSEEK_API_KEY (DeepSeek-only fallback)."
+              exit 1
+            fi
+            cp .env.example .env
+            node -e "const fs=require('fs');const k=process.env.DEEPSEEK_API_KEY;let t=fs.readFileSync('.env','utf8');const re=/^DEEPSEEK_API_KEY=.*$/m;if(re.test(t))t=t.replace(re,()=>'DEEPSEEK_API_KEY='+k);else t=t.trimEnd()+'\\nDEEPSEEK_API_KEY='+k+'\\n';fs.writeFileSync('.env',t);"
+          fi
+
+      - name: Create necessary directories
+        run: |
+          mkdir -p output/tts output/video public/tts public/video
+
+      - name: Set up display server for headless browser
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      # Split from pipeline:zhihu-video so each stage is visible and artifacts are downloadable between steps.
+      - name: 'Stage 1/3: Zhihu spider (crawl + script)'
+        run: |
+          if [ -z "$ZHIHU_URL" ]; then
+            echo "::error::ZHIHU_URL is empty. Use workflow input (manual) or set repository variable ZHIHU_DEFAULT_URL (push)."
+            exit 1
+          fi
+          pnpm spider:zhihu -- "$ZHIHU_URL"
+
+      - name: Apply video title override (optional)
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const t = (process.env.VIDEO_TITLE_OVERRIDE || '').trim();
+          if (!t) {
+            console.log('No video title override; keeping spider title.json.');
+            process.exit(0);
+          }
+          const payload = JSON.stringify({ title: t }, null, 2) + '\n';
+          fs.mkdirSync('output/spider', { recursive: true });
+          fs.mkdirSync('public/video', { recursive: true });
+          fs.writeFileSync(path.join('output/spider', 'title.json'), payload);
+          fs.writeFileSync(path.join('public', 'video', 'title.json'), payload);
+          console.log('Overrode video title:', t);
+          "
+
+      - name: Upload Stage 1 artifact (spider output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: spider-output
+          path: output/spider
+          retention-days: 14
+
+      - name: 'Stage 2/3: TTS (Edge) + sync to public/tts'
+        run: pnpm tts
+
+      - name: Upload Stage 2 artifact (TTS output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-output
+          path: |
+            output/tts
+            public/tts
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: 'Stage 3/3: Remotion render (video.mp4)'
+        run: pnpm render:video
+
+      - name: Find generated video file
+        id: find-video
+        run: |
+          VIDEO_FILE="output/video/video.mp4"
+          if [ ! -f "$VIDEO_FILE" ]; then
+            echo "No video file found at $VIDEO_FILE"
+            ls -la output/video/ || echo "output/video directory does not exist"
+            exit 1
+          fi
+          echo "video_path=$VIDEO_FILE" >> $GITHUB_OUTPUT
+          echo "Found video: $VIDEO_FILE"
+
+      - name: Upload video as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-video
+          path: ${{ steps.find-video.outputs.video_path }}
+          retention-days: 30
+
