@@ -58,6 +58,8 @@ output/tts/input.txt
 public/tts/audio.mp3
 public/tts/audio.vtt
 .pnpm-store/
+# Remotion render cache
+.remotion/
 public/tts/*
 public/spider/*
 # Sound effects used by Remotion compositions (Intro, Video logo)

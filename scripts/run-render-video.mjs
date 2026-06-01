@@ -58,6 +58,19 @@ if (fs.existsSync(TITLE_PUBLIC)) {
   );
 }
 
+// Clear Remotion bundle cache to ensure latest static files are used
+const remotionCache = path.join(projectRoot, ".remotion", "bundle");
+if (fs.existsSync(remotionCache)) {
+  fs.rmSync(remotionCache, { recursive: true, force: true });
+  console.log(`${BLUE}Cleared Remotion bundle cache${NC}`);
+}
+
+// Remove old output to force fresh render
+if (fs.existsSync(OUTPUT_FILE)) {
+  fs.rmSync(OUTPUT_FILE, { force: true });
+  console.log(`${BLUE}Removed previous video output${NC}`);
+}
+
 const renderBase = [
   "exec",
   "remotion",
