@@ -88,24 +88,36 @@ export const VideoVertical: React.FC<{
 			return null;
 		}
 
+	const [bgReady, setBgReady] = useState(false);
+	const [bgHandle] = useState(() => delayRender());
+	useEffect(() => {
+		fetch(staticFile('video/bg.jpg'))
+			.then((r) => { if (r.ok) setBgReady(true); })
+			.catch(() => {})
+			.finally(() => continueRender(bgHandle));
+	}, []);
+
 	return (
 		<AbsoluteFill
 			style={{
+				backgroundColor: '#0a0a0a',
 			}}
 		>
-				{/* Background image from fetch-bg-image.mjs */}
-				<Img
-					src={staticFile('video/bg.jpg')}
-					style={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						width: '100%',
-						height: '100%',
-						objectFit: 'cover',
-						filter: 'brightness(0.55)',
-					}}
-				/>
+				{/* Background image from fetch-bg-image.mjs, skipped if not found */}
+				{bgReady && (
+					<Img
+						src={staticFile('video/bg.jpg')}
+						style={{
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%',
+							objectFit: 'cover',
+							filter: 'brightness(0.55)',
+						}}
+					/>
+				)}
 
 				{/* Cover sequence - displayed first */}
 				<Sequence from={coverStart} durationInFrames={coverDuration}>
