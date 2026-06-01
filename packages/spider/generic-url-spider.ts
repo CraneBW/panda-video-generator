@@ -51,10 +51,18 @@ async function launchBrowser(): Promise<Browser> {
 }
 
 async function applyCommonPageSetup(page: Page): Promise<void> {
-  await page.setViewport({ width: 1920, height: 1080 });
-  await page.setUserAgent(
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  );
+  // Slightly randomized viewport to look more human
+  const w = 1920 + Math.floor(Math.random() * 20);
+  const h = 1080 + Math.floor(Math.random() * 10);
+  await page.setViewport({ width: w, height: h });
+
+  // Use Linux Chrome UA in CI, Mac in local — both Chrome 130
+  const isCI = !!process.env.CI;
+  const ua = isCI
+    ? 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+    : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+  await page.setUserAgent(ua);
+
   await page.setExtraHTTPHeaders({
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
     Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -66,29 +74,48 @@ async function applyCommonPageSetup(page: Page): Promise<void> {
     'Sec-Fetch-Site': 'none',
     'Cache-Control': 'max-age=0',
   });
+
+  // Override navigator properties that leak headless detection
+  await page.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+    Object.defineProperty(navigator, 'languages', { get: () => ['zh-CN', 'zh', 'en'] });
+    // @ts-ignore
+    window.chrome = { runtime: {} };
+  });
 }
 
 async function gotoAndSettle(page: Page, url: string): Promise<void> {
-  const randomDelay = Math.random() * 2000 + 1000;
+  const randomDelay = 1500 + Math.random() * 2000;
   await new Promise((r) => setTimeout(r, randomDelay));
 
+  // Use networkidle2 for dynamic content (Zhihu loads via XHR)
+  const waitMode = isZhihuQuestionUrl(url) ? 'networkidle2' : 'domcontentloaded';
   await page.goto(url, {
-    waitUntil: 'domcontentloaded',
-    timeout: 60_000,
+    waitUntil: waitMode,
+    timeout: 90_000,
   });
 
-  await new Promise((r) => setTimeout(r, 2000 + Math.random() * 2000));
+  // Longer settle time for Zhihu pages
+  const settleMs = isZhihuQuestionUrl(url) ? 4000 + Math.random() * 3000 : 2000 + Math.random() * 2000;
+  await new Promise((r) => setTimeout(r, settleMs));
 
+  // Human-like scrolling: slow scroll down then back up
   await page.evaluate(async () => {
-    const scrollStep = 200;
-    const scrollDelay = 100;
-    for (let i = 0; i < window.innerHeight; i += scrollStep) {
+    const totalHeight = document.body.scrollHeight;
+    const step = 150;
+    const delay = 80 + Math.random() * 70;
+    for (let i = 0; i < totalHeight; i += step) {
       window.scrollTo(0, i);
-      await new Promise((res) => setTimeout(res, scrollDelay));
+      await new Promise((res) => setTimeout(res, delay));
     }
+    // Scroll back up a bit
+    await new Promise((res) => setTimeout(res, 1000));
+    window.scrollTo(0, totalHeight * 0.3);
+    await new Promise((res) => setTimeout(res, 800));
   });
 
-  await new Promise((r) => setTimeout(r, 1500));
+  await new Promise((r) => setTimeout(r, 2000));
 
   try {
     await page.waitForSelector('body', { timeout: 5000 });
