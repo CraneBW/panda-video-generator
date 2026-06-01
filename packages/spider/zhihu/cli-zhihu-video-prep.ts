@@ -70,7 +70,11 @@ async function main() {
     // Generate video script
     if (data.title && (data.content || data.answers.length > 0)) {
       try {
-        await generateVideoScript(data);
+        const scriptPath = await generateVideoScript(data);
+        if (!scriptPath) {
+          console.error('❌ 口播稿生成失败：LLM 返回空内容');
+          process.exit(1);
+        }
       } catch (error) {
         console.error('❌ 口播稿生成失败');
         console.error(error);
