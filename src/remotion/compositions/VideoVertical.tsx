@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender } from 'remotion';
+import { AbsoluteFill, Sequence, useVideoConfig, staticFile, useDelayRender, Img } from 'remotion';
 import { REMOTION_PATHS } from '../../../types/paths';
 import { IntroVertical } from './IntroVertical';
 import { ContentVertical } from './ContentVertical';
@@ -93,6 +93,20 @@ export const VideoVertical: React.FC<{
 			style={{
 			}}
 		>
+				{/* Background image from fetch-bg-image.mjs */}
+				<Img
+					src={staticFile('video/bg.jpg')}
+					style={{
+						position: 'absolute',
+						top: 0,
+						left: 0,
+						width: '100%',
+						height: '100%',
+						objectFit: 'cover',
+						filter: 'brightness(0.55)',
+					}}
+				/>
+
 				{/* Cover sequence - displayed first */}
 				<Sequence from={coverStart} durationInFrames={coverDuration}>
 					<Cover title={title} />

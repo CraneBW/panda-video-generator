@@ -61,7 +61,8 @@ console.log(`Heat: ${top.heat}\n`);
 run("pnpm", ["spider:zhihu", "--", top.url]);
 
 if (isVertical) {
-  // Vertical: TTS -> render Video-Vertical
+  // Vertical: fetch background image -> TTS -> render Video-Vertical
+  run("node", ["scripts/fetch-bg-image.mjs", "--keyword=" + top.title]);
   run("pnpm", ["tts"]);
   run("pnpm", ["render:composition", "--", "Video-Vertical"]);
   console.log("\nVertical video generated: output/video/video.mp4");

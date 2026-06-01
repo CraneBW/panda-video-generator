@@ -78,6 +78,7 @@
     "tts": "cross-env SPIDER_OUTPUT_DIR=output/spider TTS_OUTPUT_DIR=output/tts TTS_PUBLIC_DIR=public/tts node scripts/run-tts.mjs",
     "render:video": "cross-env SPIDER_OUTPUT_DIR=output/spider TTS_OUTPUT_DIR=output/tts TTS_PUBLIC_DIR=public/tts node scripts/run-render-video.mjs",
     "render:composition": "node scripts/run-render-composition.mjs",
+    "fetch:bg": "node scripts/fetch-bg-image.mjs",
     "shuffle:bg-video": "node scripts/shuffle-bg-asset.mjs video",
     "shuffle:bgm": "node scripts/shuffle-bg-asset.mjs bgm",
     "shuffle:all": "node scripts/shuffle-bg-asset.mjs video && node scripts/shuffle-bg-asset.mjs bgm",
