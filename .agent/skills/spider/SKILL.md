@@ -1,11 +1,11 @@
 ---
 name: spider
 description: >-
-  Atomic reference for three spider flows: spider:extract:file, spider:extract:url, spider:zhihu —
+  Four spider flows: spider:extract:file, spider:extract:url, spider:zhihu, hot:zhihu —
   inputs, outputs, env vars only.
 ---
 
-# Spider — 三种用法（输入 / 输出 / 环境变量）
+# Spider — 四种用法（输入 / 输出 / 环境变量）
 
 在 **monorepo 根目录**执行（`cwd` 影响相对路径；DeepSeek 相关见仓库根 **`.env`**）。`packages/spider/README.md` 仅为路牌链回本文。
 
@@ -142,3 +142,35 @@ pnpm exec tsx packages/spider/zhihu/cli-zhihu-video-prep.ts https://www.zhihu.co
 | `TTS_INPUT_FILE` | 否 | 覆盖默认 `input.txt` 路径（caption-generator / `getTtsInputFile()`） |
 | `PUPPETEER_EXECUTABLE_PATH` | 否 | 自定义 Chromium |
 | `SPIDER_SAVE_DEBUG` | 否 | 设 `1` 时写调试 PNG/HTML（目录规则同用法 2） |
+
+---
+
+## 4. 知乎热榜 → Top N URL + 标题（无需 Puppeteer）
+
+**用法**
+
+```bash
+pnpm hot:zhihu                 # 输出 JSON，默认 Top 5
+node scripts/fetch-zhihu-hot.mjs --top=1 --json  # 仅 Top 1，JSON 格式
+node scripts/fetch-zhihu-hot.mjs --top=3         # Top 3，仅输出 URL
+```
+
+**一键热榜 → 成片：**
+
+```bash
+pnpm hot:zhihu:video           # Top 1 → 成片
+pnpm hot:zhihu:video --top=3 --publish  # Top 3 → 成片 + 发布
+```
+
+调用知乎公开 API `https://www.zhihu.com/api/v3/feed/topstory/hot-list-web`，无需 Puppeteer 浏览器。
+
+**输出**
+
+| 用法 | 输出内容 |
+|------|----------|
+| `--json` | JSON 数组：`[{ title, url, heat, answer_count, excerpt }]` |
+| 默认 | 仅 Top 1 的 URL 字符串 |
+
+**环境变量**
+
+无需特殊环境变量，仅需网络访问。

@@ -7,9 +7,21 @@ description: >-
 
 # GitHub Actions CI
 
-两个 GitHub Actions 工作流实现了从 URL 到成片的全自动云端流水线。
+三个 GitHub Actions 工作流实现了从 URL 到成片的自动化流水线。
 
 ## 工作流概览
+
+### `daily-zhihu-video.yml` 🆕
+
+**每日自动**获取知乎热榜第一的问题，一键生成视频：
+
+1. `Fetch top Zhihu hot question` — 调用知乎热榜 API 获取 Top 1 问题 URL 和标题
+2. `Zhihu spider` — `pnpm spider:zhihu -- <URL>`（抓取 + DeepSeek 口播）
+3. `TTS` — `pnpm tts`（Edge TTS 语音合成）
+4. `Render` — `pnpm render:video`（Remotion 渲染成片）
+5. `Upload artifact` — 上传 `video.mp4` + `cover.jpg`
+
+可选：多平台一键发布（需配置 Playwright auth secrets）
 
 ### `generate-video-general.yml`
 
@@ -37,10 +49,10 @@ description: >-
 
 ## 触发方式
 
-两个工作流都支持：
+三个工作流都支持：
 
 - **手动触发** — `workflow_dispatch`，在 GitHub Actions 页面点击 "Run workflow"
-- **定时触发** — `schedule`（cron），可在 workflow 文件中配置
+- **定时触发** — `daily-zhihu-video.yml` 每天北京时间 9:00 自动运行
 
 ## 环境变量（Secrets）
 
@@ -62,11 +74,15 @@ description: >-
 
 ## 产物
 
-- `output/video/video.mp4` — 最终成片（workflow artifact）
+- `output/video/video.mp4` — 最终成片（workflow artifact，保留 30 天）
 - `output/video/cover.jpg` — 封面图
+- `output/spider/` — 抓取数据（中间产物）
+- `output/tts/` — TTS 音频（中间产物）
 
 ## 注意事项
 
 - 需要 **ffmpeg**（GitHub Actions `ubuntu-latest` 自带）
 - 首次运行时 Remotion 会下载 Chrome Headless Shell（约 100MB）
 - 知乎流水线内置 DeepSeek 口播生成步骤
+- `daily-zhihu-video.yml` 每天 UTC 1:00（北京时间 9:00）自动获取热榜
+- 多平台自动发布需要预存 Playwright auth 状态为 GitHub Secrets

@@ -349,7 +349,7 @@ HTTPS_PROXY=http://127.0.0.1:10902 HTTP_PROXY=http://127.0.0.1:10902 npx remotio
 │   ├── ✅ YouTube 自动发布
 │   ├── ✅ 快手自动发布
 │   └── 🚧 And More...
-├── 🔁 GitHub Actions CI
+├── 🔥 知乎热榜自动获取\n│   ├── ✅ 每日自动获取 Top 1 热榜\n│   ├── ✅ 一键生成视频\n│   └── ✅ 可选多平台发布\n├── 🔁 GitHub Actions CI
 │   ├── ✅ 通用网页 → 视频流水线
 │   └── ✅ 知乎 → 视频流水线
 ├── 🔧 开发工具

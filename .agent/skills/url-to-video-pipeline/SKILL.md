@@ -1,7 +1,7 @@
 ---
 name: url-to-video-pipeline
 description: >-
-  Orchestrates repo pipeline from a single URL: branch Zhihu vs generic page → spider → DeepSeek
+  Orchestrates repo pipeline from a single URL or Zhihu hot list: spider → DeepSeek
   caption when needed → Edge TTS → Remotion render to output/video/video.mp4. Use when the user
   gives a URL for 一条龙、网页转视频、爬取+口播+渲染、or automate spider→tts→render from link.
 ---
@@ -117,3 +117,42 @@ pnpm render:all
 - **`render:video` / `render:all` 报缺 TTS**：先 **`pnpm tts`** 或跑全 **`pnpm render:all`**；确认 **`output/tts/audio.mp3`** 与 **`audio.vtt`** 存在。  
 - **密钥未生效**：在仓库根执行；确认 **`.env`** 与 **`process.cwd()`**（见 **`.agent/rules/env-file.md`**）。  
 - **成片没有标题 overlay**：检查 **`public/video/title.json`**（通常 **`pnpm tts`** 或 **`render:video`** 内 sync 会从 **`output/spider/title.json`** 复制）。
+
+---
+
+## C. 知乎热榜（自动获取 Top 1）
+
+**本地一键：**
+
+```bash
+pnpm hot:zhihu:video
+```
+
+**GitHub Actions 每日自动：**
+
+`.github/workflows/daily-zhihu-video.yml`，每天北京时间 9:00 自动获取热榜 Top 1 并生成视频。
+
+### 命令
+
+```bash
+# 本地：获取热榜 + 渲染成片
+pnpm hot:zhihu:video --top=1
+
+# 本地：获取热榜 + 渲染 + 多平台发布
+pnpm hot:zhihu:video --top=1 --publish
+```
+
+### 每步输入 / 输出
+
+| 步骤 | 主要输入 | 主要输出 |
+|------|----------|----------|
+| **`node scripts/fetch-zhihu-hot.mjs`** | 知乎热榜 API | Top 1 的 URL + title（JSON） |
+| **`pnpm spider:zhihu -- <URL>`** | 热榜 URL | `output/spider/output.json`、`input.txt` |
+| **`pnpm render:all`** | `input.txt` → TTS → render | `output/video/video.mp4` |
+
+### 环境变量
+
+| 变量 | 默认 | 影响 |
+|------|------|------|
+| `DEEPSEEK_API_KEY` | 必填 | 口播生成 |
+| 其他同分支 A（知乎） | — | — |

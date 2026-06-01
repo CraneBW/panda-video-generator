@@ -91,6 +91,8 @@
     "sync:public": "cross-env SPIDER_OUTPUT_DIR=output/spider TTS_OUTPUT_DIR=output/tts TTS_PUBLIC_DIR=public/tts SPIDER_PUBLIC_DIR=public/spider VIDEO_PUBLIC_DIR=public/video node scripts/sync-outputs-to-public.mjs",
     "pipeline:zhihu-video": "cross-env SPIDER_OUTPUT_DIR=output/spider node scripts/run-pipeline-zhihu-video.mjs",
     "video:zhihu": "cross-env SPIDER_OUTPUT_DIR=output/spider node scripts/run-pipeline-zhihu-video.mjs",
+    "hot:zhihu": "node scripts/fetch-zhihu-hot.mjs --json --top=5",
+    "hot:zhihu:video": "cross-env SPIDER_OUTPUT_DIR=output/spider node scripts/run-hot-zhihu-video.mjs",
     "login:bilibili": "pva bilibili login",
     "login:douyin": "pva douyin login",
     "login:kuaishou": "pva kuaishou login",

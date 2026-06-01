@@ -1,0 +1,178 @@
+name: Daily Zhihu Hot Video
+
+on:
+  schedule:
+    # Daily at 9:00 AM CST (1:00 AM UTC)
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      top_n:
+        description: 'Fetch top N hot questions (default: 1)'
+        required: false
+        type: number
+        default: 1
+      publish:
+        description: 'Auto-publish to all platforms after render (requires auth secrets)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+  PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
+
+jobs:
+  fetch-and-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Node.js dependencies
+        run: pnpm install
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            chromium-browser \
+            chromium-chromedriver \
+            xvfb \
+            ffmpeg \
+            libgbm-dev \
+            libnss3 \
+            libatk-bridge2.0-0 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libasound2t64
+
+      - name: Create .env for CI
+        env:
+          DOTENV_FILE: ${{ secrets.DOTENV_FILE }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ -n "${DOTENV_FILE}" ]; then
+            python3 -c "import os; open('.env','w',encoding='utf-8').write(os.environ['DOTENV_FILE'])"
+          else
+            if [ -z "${DEEPSEEK_API_KEY}" ]; then
+              echo "::error::Set Actions secret DOTENV_FILE or DEEPSEEK_API_KEY."
+              exit 1
+            fi
+            cp .env.example .env
+            node -e "const fs=require('fs');const k=process.env.DEEPSEEK_API_KEY;let t=fs.readFileSync('.env','utf8');const re=/^DEEPSEEK_API_KEY=.*$/m;if(re.test(t))t=t.replace(re,()=>'DEEPSEEK_API_KEY='+k);else t=t.trimEnd()+'\\nDEEPSEEK_API_KEY='+k+'\\n';fs.writeFileSync('.env',t);"
+          fi
+
+      - name: Create necessary directories
+        run: mkdir -p output/tts output/video public/tts public/video
+
+      - name: Set up display server
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Fetch top Zhihu hot question
+        id: hotlist
+        run: |
+          TOP_N="${{ inputs.top_n || 1 }}"
+          echo "Fetching top ${TOP_N} Zhihu hot question(s)..."
+          node scripts/fetch-zhihu-hot.mjs --top="${TOP_N}" --json > hot-questions.json
+          cat hot-questions.json
+
+          # Extract top question URL and title
+          ZHIHU_URL=$(node -e "console.log(require('./hot-questions.json')[0].url)")
+          ZHIHU_TITLE=$(node -e "console.log(require('./hot-questions.json')[0].title)")
+
+          echo "zhihu_url=${ZHIHU_URL}" >> $GITHUB_OUTPUT
+          echo "zhihu_title=${ZHIHU_TITLE}" >> $GITHUB_OUTPUT
+          echo "URL: ${ZHIHU_URL}"
+          echo "Title: ${ZHIHU_TITLE}"
+
+      - name: 'Stage 1/3: Zhihu spider (crawl + narration)'
+        run: pnpm spider:zhihu -- "${{ steps.hotlist.outputs.zhihu_url }}"
+
+      - name: Upload Stage 1 artifact (spider output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: spider-output
+          path: output/spider
+          retention-days: 7
+
+      - name: 'Stage 2/3: TTS (Edge) + sync'
+        run: pnpm tts
+
+      - name: Upload Stage 2 artifact (TTS output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-output
+          path: |
+            output/tts
+            public/tts
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: 'Stage 3/3: Remotion render'
+        run: pnpm render:video
+
+      - name: Upload final video artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-video
+          path: |
+            output/video/video.mp4
+            output/video/cover.jpg
+          retention-days: 30
+          if-no-files-found: error
+
+      # ---- Optional: Multi-platform publish (requires Playwright auth) ----
+      # To enable auto-publishing:
+      # 1. Run login specs locally to generate auth files in playwright/.auth/
+      # 2. Base64-encode each auth file and save as GitHub Secret (e.g. BILIBILI_AUTH)
+      # 3. Uncomment the steps below
+
+      # - name: Restore Playwright auth states
+      #   if: inputs.publish == true
+      #   run: |
+      #     mkdir -p playwright/.auth
+      #     [ -n "$BILIBILI_AUTH" ] && echo "$BILIBILI_AUTH" | base64 -d > playwright/.auth/bilibili.json
+      #     [ -n "$DOUYIN_AUTH" ] && echo "$DOUYIN_AUTH" | base64 -d > playwright/.auth/douyin.json
+      #     [ -n "$KUAISHOU_AUTH" ] && echo "$KUAISHOU_AUTH" | base64 -d > playwright/.auth/kuaishou.json
+      #     [ -n "$WEIXIN_AUTH" ] && echo "$WEIXIN_AUTH" | base64 -d > playwright/.auth/weixin-video.json
+      #     [ -n "$YOUTUBE_AUTH" ] && echo "$YOUTUBE_AUTH" | base64 -d > playwright/.auth/youtube.json
+      #   env:
+      #     BILIBILI_AUTH: ${{ secrets.BILIBILI_AUTH }}
+      #     DOUYIN_AUTH: ${{ secrets.DOUYIN_AUTH }}
+      #     KUAISHOU_AUTH: ${{ secrets.KUAISHOU_AUTH }}
+      #     WEIXIN_AUTH: ${{ secrets.WEIXIN_AUTH }}
+      #     YOUTUBE_AUTH: ${{ secrets.YOUTUBE_AUTH }}
+      #
+      # - name: Install Playwright Chromium
+      #   if: inputs.publish == true
+      #   run: pnpm exec playwright install --with-deps chromium
+      #
+      # - name: Publish to all platforms
+      #   if: inputs.publish == true
+      #   run: |
+      #     pnpm exec playwright test \
+      #       automations/Bilibili/upload-video.spec.ts \
+      #       automations/Douyin/upload-video.spec.ts \
+      #       automations/Kuaishou/upload-video.spec.ts \
+      #       automations/WeixinVideo/upload-weixin-video.spec.ts \
+      #       automations/YouTube/upload-video.spec.ts \
+      #       --project=chromium
