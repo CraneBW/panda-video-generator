@@ -1,7 +1,10 @@
 import { resolve } from 'path';
 import { promises as fs } from 'fs';
-import { generateVideoScriptText, type VideoScriptSourcePayload } from './caption-generator';
+import { generateVideoScriptText, loadCaptionLlmEnvFromDotenv, type VideoScriptSourcePayload } from './caption-generator';
 import { scriptToEstimatedWebVtt } from './webvtt-estimate';
+
+// Ensure .env values are loaded before any LLM call
+loadCaptionLlmEnvFromDotenv();
 
 export type RunFromSpiderJsonOptions = {
   /** Seconds per character for timing heuristic (default 0.12). */

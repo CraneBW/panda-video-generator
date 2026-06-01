@@ -6,7 +6,7 @@
  */
 
 import { ZhihuSpider } from './zhihu-question-spider';
-import { generateVideoScript } from '@panda-video-generator/caption-generator';
+import { generateVideoScript, loadCaptionLlmEnvFromDotenv } from '@panda-video-generator/caption-generator';
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
 import { getTtsInputFile } from '@panda-video-generator/caption-generator/paths';
@@ -64,13 +64,17 @@ async function main() {
 
     console.log('\n✅ 抓取完成');
 
+    // Load .env into process.env so LLM config can read API keys
+    loadCaptionLlmEnvFromDotenv();
+
     // Generate video script
     if (data.title && (data.content || data.answers.length > 0)) {
       try {
         await generateVideoScript(data);
       } catch (error) {
-        console.error('⚠️  口播稿生成失败（抓取已成功）');
+        console.error('❌ 口播稿生成失败');
         console.error(error);
+        process.exit(1);
       }
     }
 
