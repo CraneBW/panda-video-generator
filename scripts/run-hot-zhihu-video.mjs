@@ -2,9 +2,12 @@
  * Fetches the top Zhihu hot question and runs the full pipeline.
  *
  * Usage:
- *   pnpm hot:zhihu:video              # Top 1
- *   pnpm hot:zhihu:video --top=3      # Top 3
+ *   pnpm hot:zhihu:video                 # Top 1, horizontal
+ *   pnpm hot:zhihu:video:vertical        # Top 1, vertical
+ *   pnpm hot:zhihu:video --vertical      # Top 1, vertical
+ *   pnpm hot:zhihu:video --top=3         # Top 3
  *   pnpm hot:zhihu:video --top=1 --publish  # Top 1 + auto publish
+ *   pnpm hot:zhihu:video --vertical --publish  # Vertical + publish
  */
 
 import { spawnSync } from "node:child_process";
@@ -19,6 +22,7 @@ const topN = parseInt(
   10,
 );
 const doPublish = args.includes("--publish");
+const isVertical = args.includes("--vertical");
 
 function run(cmd, subArgs) {
   console.log(`\n> ${cmd} ${subArgs.join(" ")}\n`);
@@ -55,10 +59,18 @@ console.log(`Heat: ${top.heat}\n`);
 
 // Step 2: Run pipeline
 run("pnpm", ["spider:zhihu", "--", top.url]);
-run("pnpm", ["render:all"]);
 
-console.log("\nVideo generated: output/video/video.mp4");
-console.log(`Title: ${top.title}`);
+if (isVertical) {
+  // Vertical: TTS -> render Video-Vertical
+  run("pnpm", ["tts"]);
+  run("pnpm", ["render:composition", "--", "Video-Vertical"]);
+  console.log("\nVertical video generated: output/video/video.mp4");
+} else {
+  // Horizontal: full pipeline
+  run("pnpm", ["render:all"]);
+  console.log("\nVideo generated: output/video/video.mp4");
+}
+console.log("Title: " + top.title);
 
 // Step 3: Optional publish
 if (doPublish) {
