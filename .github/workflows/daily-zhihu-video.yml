@@ -20,6 +20,7 @@ on:
 env:
   PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
   PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
 
 jobs:
   fetch-and-render:
