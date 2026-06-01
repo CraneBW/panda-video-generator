@@ -1,6 +1,9 @@
 name: Generate Video
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       zhihu_url:

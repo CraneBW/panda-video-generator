@@ -3,7 +3,7 @@ name: Generate Video
 on:
   push:
     branches:
-      - ci/github-actions-recharge
+      - main
   workflow_dispatch:
     inputs:
       source_url:
